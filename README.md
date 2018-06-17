@@ -16,7 +16,6 @@ Successor of [ContinuousTransformations.jl](https://github.com/tpapp/ContinuousT
 
 ## Caveat
 
-- Work in progress.
-- API will change rapidly, without warning.
+- **Work in progress.** API will change rapidly, without warning.
 - Expect speed regressions until API is finalized.
 - Will be optimized for Julia v0.7.
