@@ -2,4 +2,4 @@ julia 0.6
 ArgCheck
 Compat
 Parameters
-StatsBase
+StatsFuns
