@@ -2,19 +2,23 @@ __precompile__()
 module TransformVariables
 
 using ArgCheck: @argcheck
+using Compat: axes
+using DocStringExtensions: SIGNATURES
 # import ForwardDiff
 # import DiffResults: JacobianResult
 using Parameters: @unpack
-using StatsFuns: logit, logistic
 
-export
-    TransformReals, dimension, transform, inverse, # logjac, transform_and_logjac,
-    ∞
+export TransformReals, dimension, transform, LOGJAC, inverse
+
+
+# utilities
+
+isoneindexed(v::AbstractVector) = axes(v, 1) isa Base.OneTo
 
 
 # general
 
-const RealVector = AbstractVector{<: Real}
+const RealVector{T <: Real} = AbstractVector{T}
 
 abstract type TransformReals end
 
@@ -26,8 +30,12 @@ function transform_at end
 
 function transform(t::TransformReals, x::RealVector)
     @argcheck dimension(t) == length(x)
-    transform_at(t, x, 1)
+    transform_at(t, isoneindexed(x) ? x : convert(Vector, x), 1)
 end
+
+struct LogJac end
+
+const LOGJAC = LogJac()
 
 # function _value_and_logjac(t::TransformReals{N}, x::RealVector)
 #     J = DiffResults.JacobianResult(x)
@@ -39,6 +47,7 @@ end
 
 # value_and_logjac(t::TransformReals, x) = _value_and_logjac(t, x)
 
+include("utilities.jl")
 include("scalar.jl")
 include("aggregation.jl")
 
