@@ -1,6 +1,9 @@
 using TransformVariables
-using TransformVariables: logistic, logit
+using TransformVariables: logistic, logistic_logjac, logit
 using Compat.Test
+using ForwardDiff: derivative
+
+srand(1)
 
 @testset "logistic and logit" begin
     for _ in 1:10000
@@ -8,14 +11,37 @@ using Compat.Test
         bx = BigFloat(x)
         lbx = 1/(1+exp(-bx))
         @test logistic(x) ≈ lbx
-        lx, ljx = logistic(LOGJAC, x)
-        @test lx ≈ lbx
+        ljx = logistic_logjac(x)
         ljbx = -(log(1+exp(-bx))+log(1+exp(bx)))
         @test ljx ≈ ljbx rtol = eps(Float64)
     end
     for _ in 1:10000
         y = rand(Float64)
         @test logistic(logit(y)) ≈ y
+    end
+end
+
+function test_scalar_transformation(t, is_valid_y; N = 10000)
+    for _ in 1:N
+        x = randn(Float64)
+        y = transform(t, [x])
+        @test y isa Float64
+        @test is_valid_y(y)
+        y2, lj = transform(t, LOGJAC, [x])
+        @test y == y2
+        @test log(abs(derivative(x -> transform(t, [x]), x))) ≈ lj atol = √eps()
+        x2 = inverse(t, y)[1]
+        @test x2 ≈ x atol = √eps()
+    end
+end
+
+@testset "scalar transformations consistency" begin
+    for _ in 1:100
+        a = randn() * 100
+        test_scalar_transformation(to_interval(-∞, a), y -> y < a)
+        test_scalar_transformation(to_interval(a, ∞), y -> y > a)
+        b = a + 0.5 + rand(Float64) + exp(randn() * 10)
+        test_scalar_transformation(to_interval(a, b), y -> a < y < b)
     end
 end
 

@@ -7,6 +7,11 @@ dimension(::TransformScalar) = 1
 transform_at(t::TransformScalar, x::RealVector, index::Int) =
     transform_scalar(t, x[index])
 
+function transform_at(t::TransformScalar, ::LogJac, x::RealVector, index::Int)
+    xi = x[index]
+    transform_scalar(t, xi), logjac_scalar(t, xi)
+end
+
 inverse(t::TransformScalar, y::Real) = [inverse_scalar(t, y)]
 
 # result_vec(t::TransformScalar, y::Real) = Vector(y)
@@ -20,9 +25,7 @@ transform_scalar(::Identity, x::Real) = x
 
 inverse_scalar(::Identity, x::Real) = x
 
-# logjac(::Identity, x) = zero(x)
-
-# transform_and_logjac(::Identity, x) = (x, zero(x))
+logjac_scalar(::Identity, x) = zero(x)
 
 
 # shifted exponential
@@ -41,7 +44,7 @@ ShiftedExp(ispositive::Bool, shift::T) where {T <: Real} =
 transform_scalar(t::ShiftedExp{D}, x::Real) where D =
     D ? t.shift + exp(x) : t.shift - exp(x)
 
-# transform_and_logjac(t::ShiftedExp, x::Real) = (t.shift + exp(x), abs(x))
+logjac_scalar(t::ShiftedExp, x::Real) = x
 
 function inverse_scalar(t::ShiftedExp{D}, x::Real) where D
     @unpack shift = t
@@ -75,9 +78,9 @@ ScaledShiftedLogistic(scale::Real, shift::Real, ) =
 transform_scalar(t::ScaledShiftedLogistic, x::Real) =
     fma(logistic(x), t.scale, t.shift)
 
-# logjac(t::ScaledShiftedLogistic, x) = log(t.scale)-(log1pexp(x)+log1pexp(-x))
+logjac_scalar(t::ScaledShiftedLogistic, x) = log(t.scale) + logistic_logjac(x)
 
-inverse_scalar(t::ScaledShiftedLogistic, x) = logit((x - t.shift) / t.scale)
+inverse_scalar(t::ScaledShiftedLogistic, x) = logit(fma(x, inv(t.scale), - t.shift/ t.scale))
 
 
 # to_interval interface

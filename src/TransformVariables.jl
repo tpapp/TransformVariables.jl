@@ -20,6 +20,10 @@ isoneindexed(v::AbstractVector) = axes(v, 1) isa Base.OneTo
 
 const RealVector{T <: Real} = AbstractVector{T}
 
+struct LogJac end
+
+const LOGJAC = LogJac()
+
 abstract type TransformReals end
 
 function dimension end
@@ -33,9 +37,10 @@ function transform(t::TransformReals, x::RealVector)
     transform_at(t, isoneindexed(x) ? x : convert(Vector, x), 1)
 end
 
-struct LogJac end
-
-const LOGJAC = LogJac()
+function transform(t::TransformReals, ::LogJac, x::RealVector)
+    @argcheck dimension(t) == length(x)
+    transform_at(t, LOGJAC, isoneindexed(x) ? x : convert(Vector, x), 1)
+end
 
 # function _value_and_logjac(t::TransformReals{N}, x::RealVector)
 #     J = DiffResults.JacobianResult(x)
