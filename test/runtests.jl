@@ -15,7 +15,7 @@ srand(1)
 end
 
 @testset "logistic and logit" begin
-    for _ in 1:10000
+    for _ in 1:1000
         x = randn(Float64) * 50
         bx = BigFloat(x)
         lbx = 1/(1+exp(-bx))
@@ -24,13 +24,13 @@ end
         ljbx = -(log(1+exp(-bx))+log(1+exp(bx)))
         @test ljx ≈ ljbx rtol = eps(Float64)
     end
-    for _ in 1:10000
+    for _ in 1:1000
         y = rand(Float64)
         @test logistic(logit(y)) ≈ y
     end
 end
 
-function test_scalar_transformation(t, is_valid_y; N = 1000)
+function test_scalar_transformation(t, is_valid_y; N = 100)
     for _ in 1:N
         x = randn(Float64)
         y = transform(t, [x])
