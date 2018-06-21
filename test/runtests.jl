@@ -105,9 +105,11 @@ println("starting cholesky tests")
 @testset "to correlation cholesky factor" begin
     println("starting cholesky tests inner")
     for K in 1:10
+        println("cholesky K=$K")
         t = to_corr_cholesky(K)
         @test dimension(t) == (K - 1)*K/2
         if K > 1
+            println("vector test for K=$K")
             test_vector_transformation(t, is_valid_corr_cholesky,
                                        vec_unit_triangular)
         end
