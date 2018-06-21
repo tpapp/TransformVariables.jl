@@ -2,11 +2,13 @@ __precompile__()
 module TransformVariables
 
 using ArgCheck: @argcheck
-using Compat: axes
+using Compat: axes, undef
+using Compat.LinearAlgebra: UpperTriangular
 using DocStringExtensions: SIGNATURES
 # import ForwardDiff
 # import DiffResults: JacobianResult
 using Parameters: @unpack
+
 
 export TransformReals, dimension, transform, LOGJAC, inverse
 
@@ -42,11 +44,6 @@ function transform(t::TransformReals, ::LogJac, x::RealVector)
     transform_at(t, LOGJAC, isoneindexed(x) ? x : convert(Vector, x), 1)
 end
 
-# function _value_and_logjac(t::TransformReals{N}, x::RealVector)
-#     J = DiffResults.JacobianResult(x)
-#     ForwardDiff.jacobian!(J, x -> result_vec(t, transform(t, x)), x)
-#     DiffResults.value(J), logdet(DiffResults.jacobian(J))
-# end
 
 # logjac(t::TransformReals, x) = _value_and_logjac(t, x)[2]
 
@@ -54,6 +51,7 @@ end
 
 include("utilities.jl")
 include("scalar.jl")
+include("special_arrays.jl")
 include("aggregation.jl")
 
 end # module

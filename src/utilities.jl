@@ -9,3 +9,10 @@ function logistic_logjac(x::Real)
 end
 
 logit(x::Real) = log(x / (one(x) - x))
+
+"""
+    $SIGNATURES
+
+Number of elements (strictly) above the diagonal in an ``n×n`` matrix.
+"""
+unit_triangular_dimension(n::Int) = n * (n-1) ÷ 2
