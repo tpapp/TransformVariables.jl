@@ -30,7 +30,7 @@ end
     end
 end
 
-function test_scalar_transformation(t, is_valid_y; N = 10000)
+function test_scalar_transformation(t, is_valid_y; N = 1000)
     for _ in 1:N
         x = randn(Float64)
         y = transform(t, [x])
@@ -59,7 +59,7 @@ function AD_logjac(t::TransformReals, x, fvec)
     logdet(J)
 end
 
-function test_vector_transformation(t::TransformReals, isvalid, fvec; N = 10000)
+function test_vector_transformation(t::TransformReals, isvalid, fvec; N = 1000)
     for _ in 1:N
         x = randn(dimension(t))
         y = transform(t, x)
