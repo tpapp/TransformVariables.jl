@@ -100,7 +100,10 @@ function is_valid_corr_cholesky(U::UpperTriangular)
     all(isapprox.(diag(Ω), 1)) && all(@. abs(Ω) ≤ (1+√eps()))
 end
 
+println("starting cholesky tests")
+
 @testset "to correlation cholesky factor" begin
+    println("starting cholesky tests inner")
     for K in 1:10
         t = to_corr_cholesky(K)
         @test dimension(t) == (K - 1)*K/2
