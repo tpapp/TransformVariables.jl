@@ -14,8 +14,6 @@ end
 
 inverse(t::TransformScalar, y::Real) = [inverse_scalar(t, y)]
 
-# result_vec(t::TransformScalar, y::Real) = Vector(y)
-
 
 # identity
 
@@ -80,7 +78,8 @@ transform_scalar(t::ScaledShiftedLogistic, x::Real) =
 
 logjac_scalar(t::ScaledShiftedLogistic, x) = log(t.scale) + logistic_logjac(x)
 
-inverse_scalar(t::ScaledShiftedLogistic, x) = logit(fma(x, inv(t.scale), - t.shift/ t.scale))
+inverse_scalar(t::ScaledShiftedLogistic, x) =
+    logit(fma(x, inv(t.scale), - t.shift/ t.scale))
 
 
 # to_interval interface
@@ -95,7 +94,8 @@ Base.show(::Infinity{T}) where T = print(io, T ? "∞" : "-∞")
 
 Base.:(-)(::Infinity{T}) where T = Infinity{!T}()
 
-to_interval(left, right) = ArgumentError("($(left), $(right)) must be an interval")
+to_interval(left, right) =
+    ArgumentError("($(left), $(right)) must be an interval")
 
 to_interval(::Infinity{false}, ::Infinity{true}) = Identity()
 
@@ -108,10 +108,14 @@ function to_interval(left::Real, right::Real)
     ScaledShiftedLogistic(right - left, left)
 end
 
+"Transform to a non-negative real number."
 const to_ℝ₊ = to_interval(0.0, ∞)
 
+"Transform to a non-positive real number."
 const to_ℝ₋ = to_interval(-∞, 0.0)
 
+"Transform to the unit interval `(0, 1)`."
 const to_𝕀 = to_interval(0.0, 1.0)
 
+"Transform to the real line (identity)."
 const to_ℝ = to_interval(-∞, ∞)

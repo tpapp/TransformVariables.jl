@@ -30,8 +30,6 @@ abstract type TransformReals end
 
 function dimension end
 
-function result_vec end
-
 function transform_at end
 
 function transform(t::TransformReals, x::RealVector)
@@ -43,11 +41,6 @@ function transform(t::TransformReals, ::LogJac, x::RealVector)
     @argcheck dimension(t) == length(x)
     transform_at(t, LOGJAC, isoneindexed(x) ? x : convert(Vector, x), 1)
 end
-
-
-# logjac(t::TransformReals, x) = _value_and_logjac(t, x)[2]
-
-# value_and_logjac(t::TransformReals, x) = _value_and_logjac(t, x)
 
 include("utilities.jl")
 include("scalar.jl")
