@@ -16,11 +16,12 @@ to_array(transformation::TransformReals, dims::Tuple{Vararg{Int}}) =
 to_array(transformation::TransformReals, dims::Int...) =
     to_array(transformation, dims)
 
-function transform_at(t::TransformationArray, x::RealVector, index::Int)
+function transform_at(t::TransformationArray, flag::LogJacFlag, x::RealVector, index::Int)
     @unpack transformation, dims = t
-    reshape([transform_at(transformation, x, i) for i in
-             StepRangeLen(index, dimension(transformation), prod(dims))],
-            dims)
+    yℓ = reshape([transform_at(transformation, flag, x, i) for i in
+                  StepRangeLen(index, dimension(transformation), prod(dims))],
+                 dims)
+    first.(yℓ), sum(last, yℓ)
 end
 
 function inverse(transformation_array::TransformationArray, y::Array)
@@ -58,15 +59,15 @@ function transform_at(transformation_tuple::TransformationTuple,
         end, transformations)
 end
 
-function transform_at(transformation_tuple::TransformationTuple, ::LogJac,
+function transform_at(transformation_tuple::TransformationTuple, flag::LogJacFlag,
                       x::RealVector, index::Int)
     @unpack transformations = transformation_tuple
-    y_ljs = map(t -> begin
-                result = transform_at(t, LOGJAC, x, index)
-                index += dimension(t)
-                result
-                end, transformations)
-    first.(y_ljs), sum(last, y_ljs)
+    yℓ = map(t -> begin
+             result = transform_at(t, flag, x, index)
+             index += dimension(t)
+             result
+             end, transformations)
+    first.(yℓ), sum(last, yℓ)
 end
 
 function inverse(t::TransformationTuple{<:Tuple{Vararg{<:TransformReals,K}}},

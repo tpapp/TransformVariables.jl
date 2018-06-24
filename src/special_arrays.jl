@@ -1,25 +1,21 @@
 export to_unitvec, to_corr_cholesky
 
 """
-    (y, r) = $SIGNATURES
+    (y, r, ℓ) = $SIGNATURES
 
 Given ``x ∈ ℝ`` and ``0 ≤ r ≤ 1``, return `(y, r′)` such that
 
 1. ``y² + r′² = r²``,
 
 2. ``y: |y| ≤ r`` is mapped with a bijection from `x`.
+
+`ℓ` is the log Jacobian (whether it is evaluated depends on `flag`).
 """
-@inline function l2_remainder_transform(x, r)
+@inline function l2_remainder_transform(flag::LogJacFlag, x, r)
     z = 2*logistic(x) - 1
-    z * √r, r*(1 - abs2(z))
+    (z * √r, r*(1 - abs2(z)),
+     flag isa NoLogJac ? flag : log(2) + logistic_logjac(x) + 0.5*log(r))
 end
-
-"""
-    $SIGNATURES
-
-The log Jacobian determinant for `y(x)` in [`l2_remainder_transform`].
-"""
-@inline l2_remainder_logjac(x, r) = log(2) + logistic_logjac(x) + 0.5*log(r)
 
 """
     (x, r′) = $SIGNATURES
@@ -47,24 +43,21 @@ to_unitvec(n) = UnitVector(n)
 
 dimension(t::UnitVector) = t.n - 1
 
-function transform_at(t::UnitVector, ::LogJac, x::RealVector{T},
+function transform_at(t::UnitVector, flag::LogJacFlag, x::RealVector{T},
                       index::Int) where T
     @unpack n = t
     r = one(T)
-    ℓ = zero(T)
     y = Vector{T}(undef, n)
+    ℓ = logjac_zero(flag, T)
     for i in 1:(n - 1)
         xi = x[index]
         index += 1
-        ℓ += l2_remainder_logjac(xi, r)
-        y[i], r = l2_remainder_transform(xi, r)
+        y[i], r, ℓi = l2_remainder_transform(flag, xi, r)
+        ℓ += ℓi
     end
     y[end] = √r
     y, ℓ
 end
-
-transform_at(t::UnitVector, x::RealVector, index::Int) =
-    first(transform_at(t, LOGJAC, x, index))
 
 function inverse(t::UnitVector, y::AbstractVector{T}) where T
     @unpack n = t
@@ -97,26 +90,23 @@ to_corr_cholesky(n) = CorrelationCholeskyFactor(n)
 
 dimension(t::CorrelationCholeskyFactor) = unit_triangular_dimension(t.n)
 
-function transform_at(t::CorrelationCholeskyFactor, ::LogJac,
+function transform_at(t::CorrelationCholeskyFactor, flag::LogJacFlag,
                       x::RealVector{T}, index::Int) where T
     @unpack n = t
-    lj = zero(T)
+    ℓ = logjac_zero(flag, T)
     U = zeros(T, n, n)
     for col in 1:n
         r = one(T)
         for row in 1:(col-1)
             xi = x[index]
-            lj += l2_remainder_logjac(xi, r)
-            U[row, col], r = l2_remainder_transform(xi, r)
+            U[row, col], r, ℓi = l2_remainder_transform(flag, xi, r)
+            ℓ += ℓi
             index += 1
         end
         U[col, col] = √r
     end
-    UpperTriangular(U), lj
+    UpperTriangular(U), ℓ
 end
-
-transform_at(t::CorrelationCholeskyFactor, x::RealVector, index::Int) =
-    first(transform_at(t, LOGJAC, x, index))
 
 function inverse(t::CorrelationCholeskyFactor,
                  U::UpperTriangular{T}) where T

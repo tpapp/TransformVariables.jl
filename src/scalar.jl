@@ -4,8 +4,8 @@ abstract type TransformScalar <: TransformReals end
 
 dimension(::TransformScalar) = 1
 
-transform_at(t::TransformScalar, x::RealVector, index::Int) =
-    transform_scalar(t, x[index])
+transform_at(t::TransformScalar, flag::NoLogJac, x::RealVector, index::Int) =
+    transform_scalar(t, x[index]), flag
 
 function transform_at(t::TransformScalar, ::LogJac, x::RealVector, index::Int)
     xi = x[index]
