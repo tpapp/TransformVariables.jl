@@ -32,15 +32,16 @@ end
 
 # tuples
 
-struct TransformationTuple{T <: Tuple{Vararg{TransformReals}}, N} <: TransformReals
+struct TransformationTuple{T <: Tuple{Vararg{TransformReals}}} <: TransformReals
     transformations::T
+    total_dimension::Int
     function TransformationTuple(transformations::T) where {T <: Tuple{Vararg{TransformReals}}}
-        N = sum(dimension, transformations)
-        new{T, N}(transformations)
+        new{T}(transformations, sum(dimension, transformations))
     end
 end
 
-dimension(::TransformationTuple{T, N}) where {T, N} = N
+dimension(transformation_tuple::TransformationTuple) =
+    transformation_tuple.total_dimension
 
 to_tuple(transformations::Tuple{Vararg{TransformReals}}) =
     TransformationTuple(transformations)
@@ -57,7 +58,18 @@ function transform_at(transformation_tuple::TransformationTuple,
         end, transformations)
 end
 
-function inverse(t::TransformationTuple{<:Tuple{Vararg{<:TransformReals,K}},K},
-                 y::NTuple{K}) where K
+function transform_at(transformation_tuple::TransformationTuple, ::LogJac,
+                      x::RealVector, index::Int)
+    @unpack transformations = transformation_tuple
+    y_ljs = map(t -> begin
+                result = transform_at(t, LOGJAC, x, index)
+                index += dimension(t)
+                result
+                end, transformations)
+    first.(y_ljs), sum(last, y_ljs)
+end
+
+function inverse(t::TransformationTuple{<:Tuple{Vararg{<:TransformReals,K}}},
+                 y::Tuple{Vararg{<:Any,K}}) where K
     mapreduce(ty -> inverse(ty...), vcat, zip(t.transformations, y))
 end

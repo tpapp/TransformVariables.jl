@@ -84,15 +84,26 @@ end
     @test inverse(ta, y) ≈ x
 end
 
-@testset "to tuple scalar" begin
+@testset "to tuple various" begin
     t1 = to_ℝ
     t2 = to_𝕀
-    t3 = to_ℝ₊
+    t3 = to_corr_cholesky(7)
     tt = to_tuple(t1, t2, t3)
     x = randn(dimension(tt))
     y = transform(tt, x)
-    for (i, t) in enumerate((t1, t2, t3))
-        @test y[i] == transform(t, x[i:i])
-    end
     @test inverse(tt, y) ≈ x
+    index = 0
+    ljacc = 0.0
+    for (i, t) in enumerate((t1, t2, t3))
+        d = dimension(t)
+        xpart = x[index .+ (1:d)]
+        @test y[i] == transform(t, xpart)
+        ypart, ljpart = transform(t, LOGJAC, xpart)
+        @test ypart == y[i]
+        ljacc += ljpart
+        index += d
+    end
+    y2, lj2 = transform(tt, LOGJAC, x)
+    @test y == y2
+    @test lj2 ≈ ljacc
 end
