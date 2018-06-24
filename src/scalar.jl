@@ -70,7 +70,7 @@ end
 ScaledShiftedLogistic(scale::T, shift::T) where {T <: Real} =
     ScaledShiftedLogistic{T}(scale, shift)
 
-ScaledShiftedLogistic(scale::Real, shift::Real, ) =
+ScaledShiftedLogistic(scale::Real, shift::Real) =
     ScaledShiftedLogistic(promote(scale, shift)...)
 
 transform_scalar(t::ScaledShiftedLogistic, x::Real) =

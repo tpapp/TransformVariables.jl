@@ -1,10 +1,18 @@
 using TransformVariables
-using TransformVariables: unit_triangular_dimension, logistic, logistic_logjac, logit
+using TransformVariables:
+    unit_triangular_dimension, logistic, logistic_logjac, logit
+
+using Base: vect
+using DocStringExtensions
+using ForwardDiff: derivative, jacobian
+
+# TODO remove/change when only depending on v0.7
 using Compat: undef
 using Compat.Test
-using Compat.LinearAlgebra: diag, logdet, UpperTriangular
+using Compat.LinearAlgebra: diag, logabsdet, UpperTriangular
+using Compat.Random
 
-using ForwardDiff: derivative, jacobian
+include("test_utilities.jl")
 
 srand(1)
 
@@ -30,45 +38,13 @@ end
     end
 end
 
-function test_scalar_transformation(t, is_valid_y; N = 100)
-    for _ in 1:N
-        x = randn(Float64)
-        y = transform(t, [x])
-        @test y isa Float64
-        @test is_valid_y(y)
-        y2, lj = transform(t, LOGJAC, [x])
-        @test y == y2
-        @test log(abs(derivative(x -> transform(t, [x]), x))) ≈ lj atol = √eps()
-        x2 = inverse(t, y)[1]
-        @test x2 ≈ x atol = √eps()
-    end
-end
-
 @testset "scalar transformations consistency" begin
     for _ in 1:100
         a = randn() * 100
-        test_scalar_transformation(to_interval(-∞, a), y -> y < a)
-        test_scalar_transformation(to_interval(a, ∞), y -> y > a)
+        test_transformation(to_interval(-∞, a), y -> y < a, vect)
+        test_transformation(to_interval(a, ∞), y -> y > a, vect)
         b = a + 0.5 + rand(Float64) + exp(randn() * 10)
-        test_scalar_transformation(to_interval(a, b), y -> a < y < b)
-    end
-end
-
-function AD_logjac(t::TransformReals, x, fvec)
-    J = jacobian(x -> fvec(transform(t, x)), x)
-    logdet(J)
-end
-
-function test_vector_transformation(t::TransformReals, isvalid, fvec; N = 1000)
-    for _ in 1:N
-        x = randn(dimension(t))
-        y = transform(t, x)
-        @test isvalid(y)
-        x2 = inverse(t, y)
-        @test x ≈ x2
-        y2, lj = transform(t, LOGJAC, x)
-        @test y2 == y
-        @test lj ≈ AD_logjac(t, x, fvec)
+        test_transformation(to_interval(a, b), y -> a < y < b, vect)
     end
 end
 
@@ -77,41 +53,17 @@ end
         t = to_unitvec(K)
         @test dimension(t) == K - 1
         if K > 1
-            test_vector_transformation(t, y -> sum(abs2, y) ≈ 1, y -> y[1:(end-1)])
+            test_transformation(t, y -> sum(abs2, y) ≈ 1, y -> y[1:(end-1)])
         end
     end
 end
-
-function vec_unit_triangular(U::UpperTriangular{T}) where T
-    n = size(U, 1)
-    index = 1
-    x = Vector{T}(undef, unit_triangular_dimension(n))
-    for col in 1:n
-        for row in 1:(col-1)
-            x[index] = U[row, col]
-            index += 1
-        end
-    end
-    x
-end
-
-function is_valid_corr_cholesky(U::UpperTriangular)
-    Ω = U'*U
-    all(isapprox.(diag(Ω), 1)) && all(@. abs(Ω) ≤ (1+√eps()))
-end
-
-println("starting cholesky tests")
 
 @testset "to correlation cholesky factor" begin
-    println("starting cholesky tests inner")
     for K in 1:10
-        println("cholesky K=$K")
         t = to_corr_cholesky(K)
         @test dimension(t) == (K - 1)*K/2
         if K > 1
-            println("vector test for K=$K")
-            test_vector_transformation(t, is_valid_corr_cholesky,
-                                       vec_unit_triangular)
+            test_transformation(t, is_valid_corr_cholesky, vec_above_diagonal)
         end
     end
 end
