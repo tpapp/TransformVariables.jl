@@ -18,7 +18,7 @@ function test_transformation(t::TransformReals, is_valid_y, vec_y; N = 1000)
         @test is_valid_y(y)
         x2 = inverse(t, y)
         @test x ≈ x2
-        y2, lj = transform(t, LOGJAC, x)
+        y2, lj = transform_and_logjac(t, x)
         @test y2 == y
         @test lj ≈ AD_logjac(t, x, vec_y)
     end

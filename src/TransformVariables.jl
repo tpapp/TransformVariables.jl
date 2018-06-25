@@ -9,7 +9,7 @@ using DocStringExtensions: SIGNATURES
 # import DiffResults: JacobianResult
 using Parameters: @unpack
 
-export TransformReals, dimension, transform, LOGJAC, inverse
+export TransformReals, dimension, transform, transform_and_logjac, inverse
 
 
 # utilities
@@ -56,7 +56,7 @@ end
 
 transform(t::TransformReals, x::RealVector) = first(_transform(t, NOLOGJAC, x))
 
-transform(t::TransformReals, ::LogJac, x::RealVector) = _transform(t, LOGJAC, x)
+transform_and_logjac(t::TransformReals, x::RealVector) = _transform(t, LOGJAC, x)
 
 include("utilities.jl")
 include("scalar.jl")

@@ -81,11 +81,11 @@ end
     @test inverse(ta, y) ≈ x
     ℓacc = 0.0
     for i in 1:length(x)
-        yi, ℓi = transform(t, LOGJAC, [x[i]])
+        yi, ℓi = transform_and_logjac(t, [x[i]])
         @test yi == y[i]
         ℓacc += ℓi
     end
-    y2, ℓ2 = transform(ta, LOGJAC, x)
+    y2, ℓ2 = transform_and_logjac(ta, x)
     @test y == y2
     @test ℓ2 ≈ ℓacc
 end
@@ -104,12 +104,12 @@ end
         d = dimension(t)
         xpart = x[index .+ (1:d)]
         @test y[i] == transform(t, xpart)
-        ypart, ljpart = transform(t, LOGJAC, xpart)
+        ypart, ljpart = transform_and_logjac(t, xpart)
         @test ypart == y[i]
         ljacc += ljpart
         index += d
     end
-    y2, lj2 = transform(tt, LOGJAC, x)
+    y2, lj2 = transform_and_logjac(tt, x)
     @test y == y2
     @test lj2 ≈ ljacc
 end
