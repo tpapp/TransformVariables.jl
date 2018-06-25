@@ -49,16 +49,6 @@ to_tuple(transformations::Tuple{Vararg{TransformReals}}) =
 
 to_tuple(transformations::TransformReals...) = to_tuple(transformations)
 
-function transform_at(transformation_tuple::TransformationTuple,
-                      x::RealVector, index::Int)
-    @unpack transformations = transformation_tuple
-    map(t -> begin
-        result = transform_at(t, x, index)
-        index += dimension(t)
-        result
-        end, transformations)
-end
-
 function transform_at(transformation_tuple::TransformationTuple, flag::LogJacFlag,
                       x::RealVector, index::Int)
     @unpack transformations = transformation_tuple
