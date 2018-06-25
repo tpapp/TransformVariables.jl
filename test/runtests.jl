@@ -16,7 +16,7 @@ include("test_utilities.jl")
 
 srand(1)
 
-const CIENV = get(ENV, "TRAVIS", false) || get(ENV, "CI", false)
+const CIENV = get(ENV, "TRAVIS", "") == "true"  || get(ENV, "CI", "") == "true"
 
 @testset "misc utilities" begin
     @test unit_triangular_dimension(1) == 0
