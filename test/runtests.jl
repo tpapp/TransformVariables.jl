@@ -16,6 +16,8 @@ include("test_utilities.jl")
 
 srand(1)
 
+const CIENV = get(ENV, "TRAVIS", false) || get(ENV, "CI", false)
+
 @testset "misc utilities" begin
     @test unit_triangular_dimension(1) == 0
     @test unit_triangular_dimension(2) == 1
@@ -69,7 +71,7 @@ end
     for K in 1:10
         t = to_corr_cholesky(K)
         @test dimension(t) == (K - 1)*K/2
-        println("Travis keepalive correlation cholesky K = $(K)")
+        CIENV && println("correlation cholesky K = $(K)")
         if K > 1
             test_transformation(t, is_valid_corr_cholesky, vec_above_diagonal)
         end
