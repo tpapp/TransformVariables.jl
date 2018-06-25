@@ -46,6 +46,13 @@ end
         b = a + 0.5 + rand(Float64) + exp(randn() * 10)
         test_transformation(to_interval(a, b), y -> a < y < b, vect)
     end
+    test_transformation(to_interval(-∞, ∞), _ -> true, vect)
+end
+
+@testset "scalar transformation corner cases" begin
+    @test_throws ArgumentError to_interval("a fish", 9)
+    @test to_interval(1, 4.0) == to_interval(1.0, 4.0)
+    @test_throws ArgumentError to_interval(3.0, -4.0)
 end
 
 @testset "to unit vector" begin

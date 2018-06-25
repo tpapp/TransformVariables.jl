@@ -95,7 +95,7 @@ Base.show(::Infinity{T}) where T = print(io, T ? "∞" : "-∞")
 Base.:(-)(::Infinity{T}) where T = Infinity{!T}()
 
 to_interval(left, right) =
-    ArgumentError("($(left), $(right)) must be an interval")
+    throw(ArgumentError("($(left), $(right)) must be an interval"))
 
 to_interval(::Infinity{false}, ::Infinity{true}) = Identity()
 
@@ -104,7 +104,7 @@ to_interval(left::Real, ::Infinity{true}) = ShiftedExp(true, left)
 to_interval(::Infinity{false}, right::Real) = ShiftedExp(false, right)
 
 function to_interval(left::Real, right::Real)
-    @argcheck left < right "the interval ($(a), $(b)) is empty"
+    @argcheck left < right "the interval ($(left), $(right)) is empty"
     ScaledShiftedLogistic(right - left, left)
 end
 
