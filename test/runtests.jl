@@ -78,10 +78,16 @@ end
     y = transform(ta, x)
     @test typeof(y) == Array{Float64, length(dims)}
     @test size(y) == dims
-    for i in 1:length(x)
-        @test transform(t, [x[i]]) == y[i]
-    end
     @test inverse(ta, y) ≈ x
+    ℓacc = 0.0
+    for i in 1:length(x)
+        yi, ℓi = transform(t, LOGJAC, [x[i]])
+        @test yi == y[i]
+        ℓacc += ℓi
+    end
+    y2, ℓ2 = transform(ta, LOGJAC, x)
+    @test y == y2
+    @test ℓ2 ≈ ℓacc
 end
 
 @testset "to tuple various" begin
