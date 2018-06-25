@@ -9,7 +9,7 @@ using DocStringExtensions: SIGNATURES
 # import DiffResults: JacobianResult
 using Parameters: @unpack
 
-export TransformReals, dimension, transform, transform_and_logjac, inverse
+export dimension, transform, transform_and_logjac, inverse
 
 
 # utilities

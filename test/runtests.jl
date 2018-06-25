@@ -1,6 +1,6 @@
 using TransformVariables
 using TransformVariables:
-    unit_triangular_dimension, logistic, logistic_logjac, logit
+    TransformReals, unit_triangular_dimension, logistic, logistic_logjac, logit
 
 using Base: vect
 using DocStringExtensions
