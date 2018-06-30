@@ -3,15 +3,15 @@
     t2 = to_𝕀
     t3 = to_corr_cholesky(7)
     tn = to_tuple((a = t1, b = t2, c = t3))
-    @test dimension(tn) == dimension(t1) + dimension(t2) + dimension(t3)
-    x = randn(dimension(tn))
+    @test length(tn) == length(t1) + length(t2) + length(t3)
+    x = randn(length(tn))
     y = transform(tn, x)
     @test y isa NamedTuple{(:a,:b,:c)}
     @test inverse(tn, y) ≈ x
     index = 0
     ljacc = 0.0
     for (i, t) in enumerate((t1, t2, t3))
-        d = dimension(t)
+        d = length(t)
         xpart = x[index .+ (1:d)]
         @test y[i] == transform(t, xpart)
         ypart, ljpart = transform_and_logjac(t, xpart)

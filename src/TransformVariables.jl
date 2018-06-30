@@ -2,6 +2,7 @@ __precompile__()
 module TransformVariables
 
 using ArgCheck: @argcheck
+import Base: length
 using Compat: axes, undef
 using Compat.LinearAlgebra: UpperTriangular
 using DocStringExtensions: SIGNATURES
@@ -9,7 +10,7 @@ using DocStringExtensions: SIGNATURES
 # import DiffResults: JacobianResult
 using Parameters: @unpack
 
-export dimension, transform, transform_and_logjac, inverse
+export transform, transform_and_logjac, inverse
 
 
 # utilities
@@ -45,12 +46,10 @@ const RealVector{T <: Real} = AbstractVector{T}
 
 abstract type TransformReals end
 
-function dimension end
-
 function transform_at end
 
 @inline function _transform(t::TransformReals, flag::LogJacFlag, x::RealVector)
-    @argcheck dimension(t) == length(x)
+    @argcheck length(t) == length(x)
     transform_at(t, flag, ensureoneindexed(x), 1)
 end
 

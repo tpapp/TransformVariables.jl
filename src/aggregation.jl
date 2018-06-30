@@ -8,7 +8,7 @@ struct TransformationArray{T <: TransformReals,M} <: TransformReals
     dims::NTuple{M, Int}
 end
 
-dimension(t::TransformationArray) = dimension(t.transformation) * prod(t.dims)
+length(t::TransformationArray) = length(t.transformation) * prod(t.dims)
 
 to_array(transformation::TransformReals, dims::Tuple{Vararg{Int}}) =
     TransformationArray(transformation, dims)
@@ -19,7 +19,7 @@ to_array(transformation::TransformReals, dims::Int...) =
 function transform_at(t::TransformationArray, flag::LogJacFlag, x::RealVector, index::Int)
     @unpack transformation, dims = t
     yℓ = reshape([transform_at(transformation, flag, x, i) for i in
-                  StepRangeLen(index, dimension(transformation), prod(dims))],
+                  StepRangeLen(index, length(transformation), prod(dims))],
                  dims)
     first.(yℓ), sum(last, yℓ)
 end
@@ -37,13 +37,13 @@ const NTransformations{N} = Tuple{Vararg{TransformReals,N}}
 
 struct TransformationTuple{K, T <: NTransformations{K}} <: TransformReals
     transformations::T
-    dimension::Int
+    length::Int
     function TransformationTuple(transformations::T) where {K, T <: NTransformations{K}}
-        new{K,T}(transformations, sum(dimension, transformations))
+        new{K,T}(transformations, sum(length, transformations))
     end
 end
 
-dimension(tt::TransformationTuple) = tt.dimension
+length(tt::TransformationTuple) = tt.length
 
 to_tuple(transformations::NTransformations) = TransformationTuple(transformations)
 
@@ -53,7 +53,7 @@ to_tuple(transformations::TransformReals...) = to_tuple(transformations)
                                   x::RealVector, index::Int)
     yℓ = map(t -> begin
              result = transform_at(t, flag, x, index)
-             index += dimension(t)
+             index += length(t)
              result
              end, tt)
     first.(yℓ), sum(last, yℓ)
@@ -71,10 +71,10 @@ inverse(tt::TransformationTuple{K}, y::NTuple{K,Any}) where K =
 if VERSION ≥ v"0.7-"
     struct TransformationNamedTuple{names, T <: NTransformations} <: TransformReals
         transformations::T
-        dimension::Int
+        length::Int
         function TransformationNamedTuple(transformations::NamedTuple{names,T}) where
             {names, T <: NTransformations}
-            new{names,T}(values(transformations), sum(dimension, transformations))
+            new{names,T}(values(transformations), sum(length, transformations))
         end
     end
 
@@ -84,7 +84,7 @@ if VERSION ≥ v"0.7-"
     to_tuple(; transformations::NTransformations...) =
         to_tuple(collect(transformations))
 
-    dimension(tn::TransformationNamedTuple) = tn.dimension
+    length(tn::TransformationNamedTuple) = tn.length
 
     function transform_at(tt::TransformationNamedTuple{names},
                           flag::LogJacFlag, x::RealVector,

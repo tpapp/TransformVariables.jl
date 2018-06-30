@@ -13,7 +13,7 @@ automatic differentiation.
 """
 function test_transformation(t::TransformReals, is_valid_y, vec_y; N = 1000)
     for _ in 1:N
-        x = randn(dimension(t))
+        x = randn(length(t))
         y = transform(t, x)
         @test is_valid_y(y)
         x2 = inverse(t, y)
@@ -27,7 +27,7 @@ end
 function vec_above_diagonal(U::UpperTriangular{T}) where T
     n = size(U, 1)
     index = 1
-    x = Vector{T}(undef, unit_triangular_dimension(n))
+    x = Vector{T}(undef, unit_triangular_length(n))
     for col in 1:n
         for row in 1:(col-1)
             x[index] = U[row, col]
