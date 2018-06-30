@@ -7,10 +7,8 @@ using DocStringExtensions
 using ForwardDiff: derivative, jacobian
 
 # TODO remove/change when only depending on v0.7
-using Compat: undef
-using Compat.Test
-using Compat.LinearAlgebra: diag, logabsdet, UpperTriangular
-using Compat.Random
+using Test, Random
+using LinearAlgebra: diag, logabsdet, UpperTriangular
 
 include("test_utilities.jl")
 
