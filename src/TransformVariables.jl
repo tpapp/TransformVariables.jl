@@ -7,7 +7,7 @@ using LinearAlgebra: UpperTriangular
 using DocStringExtensions: SIGNATURES
 using Parameters: @unpack
 
-export transform, transform_and_logjac, inverse
+export transform, transform_and_logjac, transform_logdensity, inverse
 
 
 # utilities
@@ -53,6 +53,11 @@ end
 transform(t::TransformReals, x::RealVector) = first(_transform(t, NOLOGJAC, x))
 
 transform_and_logjac(t::TransformReals, x::RealVector) = _transform(t, LOGJAC, x)
+
+function transform_logdensity(t::TransformReals, f, x)
+    y, ℓ = transform_and_logjac(t, x)
+    ℓ + f(y)
+end
 
 include("utilities.jl")
 include("scalar.jl")

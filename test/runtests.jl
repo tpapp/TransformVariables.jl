@@ -147,3 +147,16 @@ end
     @test y == y2
     @test lj2 ≈ ljacc
 end
+
+@testset "transform logdensity" begin
+    # the density is p(σ) = σ⁻³
+    # let z = log(σ), so σ = exp(z)
+    # the transformed density is q(z) = -3z + z = -2z
+    f(σ) = -3*log(σ)
+    q(z) = -2*z
+    for _ in 1:1000
+        z = randn()
+        qz = transform_logdensity(to_ℝ₊, f, [z])
+        @test q(z) ≈ qz
+    end
+end
