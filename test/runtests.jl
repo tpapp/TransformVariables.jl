@@ -6,7 +6,6 @@ using Base: vect
 using DocStringExtensions
 using ForwardDiff: derivative, jacobian
 
-# TODO remove/change when only depending on v0.7
 using Test, Random
 using LinearAlgebra: diag, logabsdet, UpperTriangular
 
