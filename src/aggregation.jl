@@ -68,31 +68,29 @@ transform_at(tt::TransformationTuple, flag::LogJacFlag, x::RealVector,
 inverse(tt::TransformationTuple{K}, y::NTuple{K,Any}) where K =
     _inverse_tuple(tt.transformations, y)
 
-if VERSION ≥ v"0.7-"
-    struct TransformationNamedTuple{names, T <: NTransformations} <: TransformReals
-        transformations::T
-        length::Int
-        function TransformationNamedTuple(transformations::NamedTuple{names,T}) where
-            {names, T <: NTransformations}
-            new{names,T}(values(transformations), sum(length, transformations))
-        end
+struct TransformationNamedTuple{names, T <: NTransformations} <: TransformReals
+    transformations::T
+    length::Int
+    function TransformationNamedTuple(transformations::NamedTuple{names,T}) where
+        {names, T <: NTransformations}
+        new{names,T}(values(transformations), sum(length, transformations))
     end
-
-    to_tuple(transformations::NamedTuple{_,<:NTransformations}) where _ =
-        TransformationNamedTuple(transformations)
-
-    to_tuple(; transformations::NTransformations...) =
-        to_tuple(collect(transformations))
-
-    length(tn::TransformationNamedTuple) = tn.length
-
-    function transform_at(tt::TransformationNamedTuple{names},
-                          flag::LogJacFlag, x::RealVector,
-                          index::Int) where {names}
-        y, ℓ = _transform_tuple(tt.transformations, flag, x, index)
-        NamedTuple{names}(y), ℓ
-    end
-
-    inverse(tn::TransformationNamedTuple{names}, y::NamedTuple{names}) where names =
-        _inverse_tuple(tn.transformations, values(y))
 end
+
+to_tuple(transformations::NamedTuple{_,<:NTransformations}) where _ =
+    TransformationNamedTuple(transformations)
+
+to_tuple(; transformations::NTransformations...) =
+    to_tuple(collect(transformations))
+
+length(tn::TransformationNamedTuple) = tn.length
+
+function transform_at(tt::TransformationNamedTuple{names},
+                      flag::LogJacFlag, x::RealVector,
+                      index::Int) where {names}
+    y, ℓ = _transform_tuple(tt.transformations, flag, x, index)
+    NamedTuple{names}(y), ℓ
+end
+
+inverse(tn::TransformationNamedTuple{names}, y::NamedTuple{names}) where names =
+    _inverse_tuple(tn.transformations, values(y))

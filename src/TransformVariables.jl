@@ -3,11 +3,8 @@ module TransformVariables
 
 using ArgCheck: @argcheck
 import Base: length
-using Compat: axes, undef
-using Compat.LinearAlgebra: UpperTriangular
+using LinearAlgebra: UpperTriangular
 using DocStringExtensions: SIGNATURES
-# import ForwardDiff
-# import DiffResults: JacobianResult
 using Parameters: @unpack
 
 export transform, transform_and_logjac, inverse
