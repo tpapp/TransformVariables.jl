@@ -66,7 +66,7 @@ end
 end
 
 @testset "to correlation cholesky factor" begin
-    for K in 1:10
+    for K in 1:8
         t = to_corr_cholesky(K)
         @test length(t) == (K - 1)*K/2
         CIENV && println("correlation cholesky K = $(K)")
