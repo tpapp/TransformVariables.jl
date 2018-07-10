@@ -50,10 +50,19 @@ function transform_at end
     transform_at(t, flag, ensureoneindexed(x), 1)
 end
 
+"""
+    $SIGNATURES
+"""
 transform(t::TransformReals, x::RealVector) = first(_transform(t, NOLOGJAC, x))
 
+"""
+    $SIGNATURES
+"""
 transform_and_logjac(t::TransformReals, x::RealVector) = _transform(t, LOGJAC, x)
 
+"""
+    $SIGNATURES
+"""
 function transform_logdensity(t::TransformReals, f, x)
     y, ℓ = transform_and_logjac(t, x)
     ℓ + f(y)
