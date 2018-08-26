@@ -2,12 +2,11 @@ __precompile__()
 module TransformVariables
 
 using ArgCheck: @argcheck
-import Base: length
 using LinearAlgebra: UpperTriangular
 using DocStringExtensions: SIGNATURES
 using Parameters: @unpack
 
-export transform, transform_and_logjac, transform_logdensity, inverse
+export dimension, transform, transform_and_logjac, transform_logdensity, inverse
 
 
 # utilities
@@ -46,7 +45,7 @@ abstract type TransformReals end
 function transform_at end
 
 @inline function _transform(t::TransformReals, flag::LogJacFlag, x::RealVector)
-    @argcheck length(t) == length(x)
+    @argcheck dimension(t) == length(x)
     transform_at(t, flag, ensureoneindexed(x), 1)
 end
 
@@ -67,6 +66,13 @@ function transform_logdensity(t::TransformReals, f, x)
     y, ℓ = transform_and_logjac(t, x)
     ℓ + f(y)
 end
+
+"""
+    dimension(t::TransformReals)
+
+The dimension (number of elements) that `t` transforms.
+"""
+function dimension end
 
 include("utilities.jl")
 include("scalar.jl")
