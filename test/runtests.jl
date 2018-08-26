@@ -11,7 +11,7 @@ using LinearAlgebra: diag, logabsdet, UpperTriangular
 
 include("test_utilities.jl")
 
-srand(1)
+Random.seed!(1)
 
 const CIENV = get(ENV, "TRAVIS", "") == "true"  || get(ENV, "CI", "") == "true"
 
