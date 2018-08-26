@@ -41,7 +41,7 @@ end
 
 to_unitvec(n) = UnitVector(n)
 
-length(t::UnitVector) = t.n - 1
+dimension(t::UnitVector) = t.n - 1
 
 function transform_at(t::UnitVector, flag::LogJacFlag, x::RealVector{T},
                       index::Int) where T
@@ -88,7 +88,7 @@ end
 
 to_corr_cholesky(n) = CorrelationCholeskyFactor(n)
 
-length(t::CorrelationCholeskyFactor) = unit_triangular_length(t.n)
+dimension(t::CorrelationCholeskyFactor) = unit_triangular_dimension(t.n)
 
 function transform_at(t::CorrelationCholeskyFactor, flag::LogJacFlag,
                       x::RealVector{T}, index::Int) where T
@@ -112,7 +112,7 @@ function inverse(t::CorrelationCholeskyFactor,
                  U::UpperTriangular{T}) where T
     @unpack n = t
     @argcheck size(U, 1) == n
-    x = Vector{T}(undef, unit_triangular_length(n))
+    x = Vector{T}(undef, dimension(t))
     index = 1
     for col in 1:n
         r = one(T)

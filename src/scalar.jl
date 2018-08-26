@@ -2,7 +2,7 @@ export ∞, to_interval, to_ℝ, to_ℝ₊, to_ℝ₋, to_𝕀
 
 abstract type TransformScalar <: TransformReals end
 
-length(::TransformScalar) = 1
+dimension(::TransformScalar) = 1
 
 transform_at(t::TransformScalar, flag::NoLogJac, x::RealVector, index::Int) =
     transform_scalar(t, x[index]), flag

@@ -5,6 +5,7 @@ os:
   # - osx
 julia:
   - 0.7
+  - 1.0
   - nightly
 matrix:
   allow_failures:
@@ -29,8 +30,8 @@ git:
 #  - if [ $TRAVIS_OS_NAME = osx ]; then brew install gcc; fi
 
 ## uncomment the following lines to override the default test script
-script:
-  - julia -e 'using Pkg; Pkg.add(pwd()); Pkg.build("TransformVariables"); Pkg.test("TransformVariables"; coverage=true)'
+# script:
+#   - julia -e 'using Pkg; Pkg.add(pwd()); Pkg.build("TransformVariables"); Pkg.test("TransformVariables"; coverage=true)'
 after_success:
   # push coverage results to Coveralls
   - julia -e 'using Pkg; cd(Pkg.dir("TransformVariables")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'

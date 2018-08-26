@@ -1,6 +1,6 @@
 using TransformVariables
 using TransformVariables:
-    TransformReals, unit_triangular_length, logistic, logistic_logjac, logit
+    TransformReals, unit_triangular_dimension, logistic, logistic_logjac, logit
 
 using Base: vect
 using DocStringExtensions
@@ -16,9 +16,9 @@ Random.seed!(1)
 const CIENV = get(ENV, "TRAVIS", "") == "true"  || get(ENV, "CI", "") == "true"
 
 @testset "misc utilities" begin
-    @test unit_triangular_length(1) == 0
-    @test unit_triangular_length(2) == 1
-    @test unit_triangular_length(5) == 10
+    @test unit_triangular_dimension(1) == 0
+    @test unit_triangular_dimension(2) == 1
+    @test unit_triangular_dimension(5) == 10
 end
 
 @testset "logistic and logit" begin
@@ -57,7 +57,7 @@ end
 @testset "to unit vector" begin
     for K in 1:10
         t = to_unitvec(K)
-        @test length(t) == K - 1
+        @test dimension(t) == K - 1
         if K > 1
             test_transformation(t, y -> sum(abs2, y) ≈ 1, y -> y[1:(end-1)])
         end
@@ -67,7 +67,7 @@ end
 @testset "to correlation cholesky factor" begin
     for K in 1:8
         t = to_corr_cholesky(K)
-        @test length(t) == (K - 1)*K/2
+        @test dimension(t) == (K - 1)*K/2
         CIENV && println("correlation cholesky K = $(K)")
         if K > 1
             test_transformation(t, is_valid_corr_cholesky, vec_above_diagonal)
@@ -79,8 +79,8 @@ end
     dims = (3, 4, 5)
     t = to_𝕀
     ta = to_array(t, dims...)
-    @test length(ta) == prod(dims)
-    x = randn(length(ta))
+    @test dimension(ta) == prod(dims)
+    x = randn(dimension(ta))
     y = transform(ta, x)
     @test typeof(y) == Array{Float64, length(dims)}
     @test size(y) == dims
@@ -101,14 +101,14 @@ end
     t2 = to_𝕀
     t3 = to_corr_cholesky(7)
     tt = to_tuple(t1, t2, t3)
-    @test length(tt) == length(t1) + length(t2) + length(t3)
-    x = randn(length(tt))
+    @test dimension(tt) == dimension(t1) + dimension(t2) + dimension(t3)
+    x = randn(dimension(tt))
     y = transform(tt, x)
     @test inverse(tt, y) ≈ x
     index = 0
     ljacc = 0.0
     for (i, t) in enumerate((t1, t2, t3))
-        d = length(t)
+        d = dimension(t)
         xpart = x[index .+ (1:d)]
         @test y[i] == transform(t, xpart)
         ypart, ljpart = transform_and_logjac(t, xpart)
@@ -126,15 +126,15 @@ end
     t2 = to_𝕀
     t3 = to_corr_cholesky(7)
     tn = to_tuple((a = t1, b = t2, c = t3))
-    @test length(tn) == length(t1) + length(t2) + length(t3)
-    x = randn(length(tn))
+    @test dimension(tn) == dimension(t1) + dimension(t2) + dimension(t3)
+    x = randn(dimension(tn))
     y = transform(tn, x)
     @test y isa NamedTuple{(:a,:b,:c)}
     @test inverse(tn, y) ≈ x
     index = 0
     ljacc = 0.0
     for (i, t) in enumerate((t1, t2, t3))
-        d = length(t)
+        d = dimension(t)
         xpart = x[index .+ (1:d)]
         @test y[i] == transform(t, xpart)
         ypart, ljpart = transform_and_logjac(t, xpart)
