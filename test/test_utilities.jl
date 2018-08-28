@@ -10,17 +10,23 @@ Test transformation `t` with random values, `N` times.
 
 `vec_y` converts the result to a vector, for checking the log Jacobian with
 automatic differentiation.
+
+`test_inverse` determines whether the inverse is tested.
 """
-function test_transformation(t::TransformReals, is_valid_y, vec_y; N = 1000)
+function test_transformation(t::TransformReals, is_valid_y, vec_y;
+                             N = 1000, test_inverse = true)
     for _ in 1:N
         x = randn(dimension(t))
         y = transform(t, x)
         @test is_valid_y(y)
-        x2 = inverse(t, y)
-        @test x ≈ x2
         y2, lj = transform_and_logjac(t, x)
         @test y2 == y
         @test lj ≈ AD_logjac(t, x, vec_y)
+        if test_inverse
+            x2 = inverse(t, y)
+            @test x ≈ x2
+        end
+
     end
 end
 
