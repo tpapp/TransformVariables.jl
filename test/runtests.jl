@@ -159,3 +159,16 @@ end
         @test q(z) ≈ qz
     end
 end
+
+@testset "custom transformations" begin
+    tfun = let t = to_array(to_𝕀, 2)
+        x -> begin
+            y = transform(t, x) # triangle below diagonal in unit square
+            y[1], y[1]*y[2]
+        end
+    end
+    ffun = ((y1, y2), ) -> [y1, y2]
+    t = CustomTransform(2, tfun, ffun)
+    test_transformation(t, ((y1, y2),) -> 0 ≤ y2 ≤ y1 ≤ 1, ffun;
+                        test_inverse = false)
+end
