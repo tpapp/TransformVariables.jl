@@ -116,6 +116,13 @@ the second value.
 transform_and_logjac(t::TransformReals, x::RealVector) = _transform(t, LOGJAC, x)
 
 """
+    inverse(t::TransformReals, y)
+
+Return `x` so that `transform(t, x) ≈ y`.
+"""
+function inverse end
+
+"""
 $(SIGNATURES)
 
 Let ``y = t(x)``, and ``f(y)`` a log density at `y`. This function evaluates `f

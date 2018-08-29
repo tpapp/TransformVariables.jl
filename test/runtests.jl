@@ -68,9 +68,9 @@ end
     for K in 1:8
         t = to_corr_cholesky(K)
         @test dimension(t) == (K - 1)*K/2
-        CIENV && println("correlation cholesky K = $(K)")
+        CIENV && @info "testing correlation cholesky K = $(K)"
         if K > 1
-            test_transformation(t, is_valid_corr_cholesky, vec_above_diagonal)
+            test_transformation(t, is_valid_corr_cholesky, vec_above_diagonal; N = 100)
         end
     end
 end
@@ -172,3 +172,6 @@ end
     test_transformation(t, ((y1, y2),) -> 0 ≤ y2 ≤ y1 ≤ 1, ffun;
                         test_inverse = false)
 end
+
+# also generate documentation
+include("../docs/make.jl")
