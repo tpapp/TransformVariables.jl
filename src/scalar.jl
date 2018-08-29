@@ -88,12 +88,28 @@ struct Infinity{ispositive}
     Infinity{T}() where T = (@argcheck T isa Bool; new{T}())
 end
 
+"""
+Placeholder representing of infinity for specifing interval boundaries. Supports
+the `-` operator, ie `-∞`.
+"""
 const ∞ = Infinity{true}()
 
 Base.show(::Infinity{T}) where T = print(io, T ? "∞" : "-∞")
 
 Base.:(-)(::Infinity{T}) where T = Infinity{!T}()
 
+"""
+    $(SIGNATURES)
+
+Return a transformation that transforms a single real number to the given (open)
+interval.
+
+`left < right` is required, but may be `-∞` or `∞`, respectively, in which case
+the appropriate transformation is selected. See [`∞`](@ref).
+
+Some common transformations are predefined as constants, see [`to_ℝ`](@ref),
+[`to_ℝ₋`](@ref), [`to_ℝ₊`](@ref), [`to_𝕀`](@ref).
+"""
 to_interval(left, right) =
     throw(ArgumentError("($(left), $(right)) must be an interval"))
 

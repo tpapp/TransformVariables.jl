@@ -15,7 +15,7 @@ logjac_forwarddiff(transformation, flatten, x) =
 """
     CustomTransform(dimension, transformation, flatten)
 
-Wrap a custom transform ``y = transformation(x)`` in a type that calculates the
+Wrap a custom transform `y = transformation(x)` in a type that calculates the
 log Jacobian using `ForwardDiff` when necessary. See [`logjac_forwarddiff`] for
 the documentation of `flatten`.
 """

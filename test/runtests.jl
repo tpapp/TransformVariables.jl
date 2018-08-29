@@ -172,3 +172,6 @@ end
     test_transformation(t, ((y1, y2),) -> 0 ≤ y2 ≤ y1 ≤ 1, ffun;
                         test_inverse = false)
 end
+
+# also generate documentation
+include("../docs/make.jl")

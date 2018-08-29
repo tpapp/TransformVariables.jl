@@ -10,6 +10,12 @@ end
 
 dimension(t::TransformationArray) = dimension(t.transformation) * prod(t.dims)
 
+"""
+$(SIGNATURES)
+
+Return a transformation that applies `transformation` repeatedly to create an
+array with the given `dims`.
+"""
 to_array(transformation::TransformReals, dims::Tuple{Vararg{Int}}) =
     TransformationArray(transformation, dims)
 
@@ -45,8 +51,17 @@ end
 
 dimension(tt::TransformationTuple) = tt.dimension
 
+"""
+$(SIGNATURES)
+
+Return a transformation that transforms consecutive groups of real numbers to a
+(named) tuple, using the given transformations.
+"""
 to_tuple(transformations::NTransformations) = TransformationTuple(transformations)
 
+"""
+$(SIGNATURES)
+"""
 to_tuple(transformations::TransformReals...) = to_tuple(transformations)
 
 @inline function _transform_tuple(tt::NTransformations, flag::LogJacFlag,
@@ -77,9 +92,15 @@ struct TransformationNamedTuple{names, T <: NTransformations} <: TransformReals
     end
 end
 
-to_tuple(transformations::NamedTuple{_,<:NTransformations}) where _ =
+"""
+$(SIGNATURES)
+"""
+to_tuple(transformations::NamedTuple{T,<:NTransformations}) where T =
     TransformationNamedTuple(transformations)
 
+"""
+$(SIGNATURES)
+"""
 to_tuple(; transformations::NTransformations...) =
     to_tuple(collect(transformations))
 

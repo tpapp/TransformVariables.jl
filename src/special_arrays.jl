@@ -39,6 +39,12 @@ struct UnitVector <: TransformReals
     end
 end
 
+"""
+$(SIGNATURES)
+
+Return a transformation that transforms `n - 1` real numbers to a unit vector
+(under Euclidean norm).
+"""
 to_unitvec(n) = UnitVector(n)
 
 dimension(t::UnitVector) = t.n - 1
@@ -76,7 +82,8 @@ end
 """
     CorrelationCholeskyFactor(n)
 
-Cholesky factor of a correlation matrix of size `n`.
+Cholesky factor of a correlation matrix of size `n`. See
+[`to_corr_cholesky`](@ref) for details.
 """
 struct CorrelationCholeskyFactor <: TransformReals
     n::Int
@@ -86,6 +93,13 @@ struct CorrelationCholeskyFactor <: TransformReals
     end
 end
 
+"""
+$(SIGNATURES)
+
+Return a transformation that transforms real numbers to an ``n×n``
+upper-triangular matrix `Ω`, such that `Ω'*Ω` is a correlation matrix (positive
+definite, with unit diagonal).
+"""
 to_corr_cholesky(n) = CorrelationCholeskyFactor(n)
 
 dimension(t::CorrelationCholeskyFactor) = unit_triangular_dimension(t.n)
