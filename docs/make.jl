@@ -12,4 +12,7 @@ makedocs(;
 deploydocs(
     repo = "github.com/tpapp/TransformVariables.jl.git",
     julia = "1.0"
+    target = "build",
+    deps = nothing,
+    make = nothing
 )
