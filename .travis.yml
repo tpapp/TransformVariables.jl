@@ -32,6 +32,4 @@ git:
 # script:
 #   - julia -e 'using Pkg; Pkg.add(pwd()); Pkg.build("TransformVariables"); Pkg.test("TransformVariables"; coverage=true)'
 after_success:
-  # deploy docs
-  - julia docs/deploy.jl
-  - julia submit_coverage.jl
+  - julia submit_coverage.jl    # submit coverage

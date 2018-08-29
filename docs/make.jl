@@ -8,3 +8,8 @@ makedocs(;
          checkdocs = :exports,
          pages = Any["Manual" => "index.md"]
 )
+
+deploydocs(
+    repo = "github.com/tpapp/TransformVariables.jl.git",
+    julia = "1.0"
+)
