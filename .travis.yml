@@ -34,7 +34,4 @@ git:
 after_success:
   # deploy docs
   - julia docs/deploy.jl
-  # push coverage results to Coveralls
-  - julia -e 'using Pkg; cd(Pkg.dir("TransformVariables")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
-  # push coverage results to Codecov
-  - julia -e 'using Pkg; cd(Pkg.dir("TransformVariables")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+  - julia submit_coverage.jl
