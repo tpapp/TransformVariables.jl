@@ -1,3 +1,5 @@
+import Pkg
+pkg"add Documenter"
 using Documenter
 
 deploydocs(
