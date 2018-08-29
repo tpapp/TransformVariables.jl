@@ -1,5 +1,5 @@
 using Pkg
-add"Coverage"
+pkg"add Coverage"
 using Coverage
 # push coverage results to Coveralls
 Coveralls.submit(Coveralls.process_folder())

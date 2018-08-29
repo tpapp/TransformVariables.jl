@@ -1,4 +1,4 @@
-import Pkg
+using Pkg
 pkg"add Documenter"
 using Documenter
 
