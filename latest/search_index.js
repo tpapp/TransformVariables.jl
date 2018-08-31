@@ -181,7 +181,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Manual",
     "title": "TransformVariables.logjac_forwarddiff",
     "category": "function",
-    "text": "logjac_forwarddiff(transformation, flatten, x)\n\n\nCalculate the log Jacobian of transformation at x using ForwardDiff.jacobian.\n\nflatten should be a bijection that maps the result of the transformation to a vector of reals. This means that elements which are redundant should not be part of the result; since f is continuous, this means that flatten should have the same number of elements as x.\n\n\n\n\n\n"
+    "text": "logjac_forwarddiff(f, x)\n\n\nCalculate the log Jacobian determinant of f at x using `ForwardDiff.\n\nNote\n\nf should be a bijection, mapping from vectors of real numbers to vectors of equal length.\n\n\n\n\n\n"
 },
 
 {
@@ -189,7 +189,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Manual",
     "title": "TransformVariables.CustomTransform",
     "category": "type",
-    "text": "CustomTransform(dimension, transformation, flatten)\n\nWrap a custom transform y = transformation(x) in a type that calculates the log Jacobian using ForwardDiff when necessary. See [logjac_forwarddiff] for the documentation of flatten.\n\n\n\n\n\n"
+    "text": "CustomTransform(g, f, flatten)\n\nWrap a custom transform y = f(transform(g, x))in a type that calculates the log Jacobian of∂y/∂xusingForwardDiff` when necessary.\n\nUsually, g::TransformReals, but when an integer is used, it amounts to the identity transformation with that dimension.\n\nflatten should take the result from f, and return a flat vector with no redundant elements, so that x  y is a bijection. For example, for a covariance matrix the elements below the diagonal should be removed.\n\n\n\n\n\n"
 },
 
 {
