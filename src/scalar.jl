@@ -4,12 +4,12 @@ abstract type TransformScalar <: TransformReals end
 
 dimension(::TransformScalar) = 1
 
-transform_at(t::TransformScalar, flag::NoLogJac, x::RealVector, index::Int) =
-    transform_scalar(t, x[index]), flag
+transform_with(flag::NoLogJac, t::TransformScalar, x::RealVector) =
+    transform_scalar(t, @inbounds x[1]), flag
 
-function transform_at(t::TransformScalar, ::LogJac, x::RealVector, index::Int)
-    xi = x[index]
-    transform_scalar(t, xi), logjac_scalar(t, xi)
+function transform_with(::LogJac, t::TransformScalar, x::RealVector)
+    @inbounds x1 = x[1]
+    transform_scalar(t, x1), logjac_scalar(t, x1)
 end
 
 inverse(t::TransformScalar, y::Real) = [inverse_scalar(t, y)]

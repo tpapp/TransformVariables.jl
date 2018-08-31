@@ -80,24 +80,39 @@ logjac_zero(::NoLogJac, _) = NOLOGJAC
 
 const RealVector{T <: Real} = AbstractVector{T}
 
+"""
+$(TYPEDEF)
+
+A transformation of real numbers.
+
+# Interface
+
+Implements [`dimension`](@ref) (part of the user interface) and
+[`transform_with`] (internal).
+
+The latter is used by wrapper functions [`transform`](@ref) and
+[`transform_and_logjac`](@ref) which are part of the user interface.
+"""
 abstract type TransformReals end
 
 """
-    transform_at(transformation, flag::LogJacFlag, x::RealVector, index::Int)
+    transform_with(flag::LogJacFlag, t::TransformReals, x::RealVector)
 
-Transform elements of `x`, starting at `position`. Length of the vector is
-assumed to accommodate the `transformation`.
+Transform elements of `x`, starting using `transformation`.
 
-The first value returned is the transformed value `t(x)`, the second the log
-Jacobian determinant or a placeholder, depending on `flag`.
+The first value returned is the transformed value, the second the log Jacobian
+determinant or a placeholder, depending on `flag`.
 
-Types should implement *this* method, and [`dimension`](@ref).
+Implementation can assume that `length(x) == dimension(transformation)`, this is
+checked by a wrapper.
+
+Types should implement this method.
 """
-function transform_at end
+function transform_with end
 
-@inline function _transform(t::TransformReals, flag::LogJacFlag, x::RealVector)
+@inline function _transform(flag::LogJacFlag, t::TransformReals, x::RealVector)
     @argcheck dimension(t) == length(x)
-    transform_at(t, flag, ensureoneindexed(x), 1)
+    transform_with(flag, t, ensureoneindexed(x))
 end
 
 """
@@ -105,7 +120,7 @@ $(SIGNATURES)
 
 Transform `x` using `t`.
 """
-transform(t::TransformReals, x::RealVector) = first(_transform(t, NOLOGJAC, x))
+transform(t::TransformReals, x::RealVector) = first(_transform(NOLOGJAC, t, x))
 
 """
 $(SIGNATURES)
@@ -113,7 +128,7 @@ $(SIGNATURES)
 Transform `x` using `t`; calculating the log Jacobian determinant, returned as
 the second value.
 """
-transform_and_logjac(t::TransformReals, x::RealVector) = _transform(t, LOGJAC, x)
+transform_and_logjac(t::TransformReals, x::RealVector) = _transform(LOGJAC, t, x)
 
 """
     inverse(t::TransformReals, y)
@@ -137,6 +152,8 @@ end
     dimension(t::TransformReals)
 
 The dimension (number of elements) that `t` transforms.
+
+Types should implement this method.
 """
 function dimension end
 
