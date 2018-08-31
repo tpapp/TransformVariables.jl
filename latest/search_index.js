@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Manual",
     "title": "TransformVariables.dimension",
     "category": "function",
-    "text": "dimension(t::TransformReals)\n\nThe dimension (number of elements) that t transforms.\n\n\n\n\n\n"
+    "text": "dimension(t::TransformReals)\n\nThe dimension (number of elements) that t transforms.\n\nTypes should implement this method.\n\n\n\n\n\n"
 },
 
 {
