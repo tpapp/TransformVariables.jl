@@ -34,16 +34,15 @@ CustomTransform(n::Integer, f, flatten) =
 
 dimension(t::CustomTransform) = dimension(t.g)
 
-function transform_at(t::CustomTransform, flag::NoLogJac, x::RealVector,
-                      index::Int)
+function transform_with(flag::NoLogJac, t::CustomTransform, x::RealVector)
     @unpack g, f = t
-    f(first(transform_at(g, flag, x, index))), flag
+    f(first(transform_with(flag, g, x))), flag
 end
 
-function transform_at(t::CustomTransform, flag::LogJac, x::RealVector,
-                      index::Int)
+function transform_with(flag::LogJac, t::CustomTransform, x::RealVector)
     @unpack g, f, flatten = t
-    xv = @view x[index:(index + dimension(t) - 1)]
+    index = firstindex(x)
+    xv = @view x[index:(index + dimension(g) - 1)]
     h(x) = f(transform(g, x))
     h(xv), logjac_forwarddiff(flatten ∘ h, xv)
 end

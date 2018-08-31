@@ -22,10 +22,14 @@ to_array(transformation::TransformReals, dims::Tuple{Vararg{Int}}) =
 to_array(transformation::TransformReals, dims::Int...) =
     to_array(transformation, dims)
 
-function transform_at(t::TransformationArray, flag::LogJacFlag, x::RealVector, index::Int)
+function transform_with(flag::LogJacFlag, t::TransformationArray, x::RealVector)
     @unpack transformation, dims = t
-    yℓ = reshape([transform_at(transformation, flag, x, i) for i in
-                  StepRangeLen(index, dimension(transformation), prod(dims))],
+    d = dimension(transformation)
+    index = firstindex(x)
+    yℓ = reshape([(y = transform_with(flag, transformation, index_into(x, index));
+                   index += d;
+                   y)
+                  for _ in Base.OneTo(prod(dims))],
                  dims)
     first.(yℓ), sum(last, yℓ)
 end
@@ -64,11 +68,13 @@ $(SIGNATURES)
 """
 to_tuple(transformations::TransformReals...) = to_tuple(transformations)
 
-@inline function _transform_tuple(tt::NTransformations, flag::LogJacFlag,
-                                  x::RealVector, index::Int)
+@inline function _transform_tuple(flag::LogJacFlag, tt::NTransformations,
+                                  x::RealVector)
+    index = firstindex(x)
     yℓ = map(t -> begin
-             result = transform_at(t, flag, x, index)
-             index += dimension(t)
+             d = dimension(t)
+             result = transform_with(flag, t, index_into(x, index))
+             index += d
              result
              end, tt)
     first.(yℓ), sum(last, yℓ)
@@ -77,8 +83,8 @@ end
 @inline _inverse_tuple(tt::NTransformations{K}, y::NTuple{K,Any}) where K =
     mapreduce(ty -> inverse(ty...), vcat, zip(tt, y))
 
-transform_at(tt::TransformationTuple, flag::LogJacFlag, x::RealVector,
-             index::Int) = _transform_tuple(tt.transformations, flag, x, index)
+transform_with(flag::LogJacFlag, tt::TransformationTuple, x::RealVector) =
+    _transform_tuple(flag, tt.transformations, x)
 
 inverse(tt::TransformationTuple{K}, y::NTuple{K,Any}) where K =
     _inverse_tuple(tt.transformations, y)
@@ -106,10 +112,9 @@ to_tuple(; transformations::NTransformations...) =
 
 dimension(tn::TransformationNamedTuple) = tn.dimension
 
-function transform_at(tt::TransformationNamedTuple{names},
-                      flag::LogJacFlag, x::RealVector,
-                      index::Int) where {names}
-    y, ℓ = _transform_tuple(tt.transformations, flag, x, index)
+function transform_with(flag::LogJacFlag, tt::TransformationNamedTuple{names},
+                      x::RealVector) where {names}
+    y, ℓ = _transform_tuple(flag, tt.transformations, x)
     NamedTuple{names}(y), ℓ
 end
 

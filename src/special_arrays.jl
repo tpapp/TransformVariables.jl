@@ -49,13 +49,13 @@ to_unitvec(n) = UnitVector(n)
 
 dimension(t::UnitVector) = t.n - 1
 
-function transform_at(t::UnitVector, flag::LogJacFlag, x::RealVector{T},
-                      index::Int) where T
+function transform_with(flag::LogJacFlag, t::UnitVector, x::RealVector{T}) where T
     @unpack n = t
     r = one(T)
     y = Vector{T}(undef, n)
     ℓ = logjac_zero(flag, T)
-    for i in 1:(n - 1)
+    index = firstindex(x)
+    @inbounds for i in 1:(n - 1)
         xi = x[index]
         index += 1
         y[i], r, ℓi = l2_remainder_transform(flag, xi, r)
@@ -70,7 +70,7 @@ function inverse(t::UnitVector, y::AbstractVector{T}) where T
     @argcheck length(y) == n
     r = one(T)
     x = Vector{T}(undef, n - 1)
-    for (xi, yi) in zip(1:(n - 1), axes(y, 1))
+    @inbounds for (xi, yi) in zip(1:(n - 1), axes(y, 1))
         x[xi], r = l2_remainder_inverse(y[yi], r)
     end
     x
@@ -104,12 +104,13 @@ to_corr_cholesky(n) = CorrelationCholeskyFactor(n)
 
 dimension(t::CorrelationCholeskyFactor) = unit_triangular_dimension(t.n)
 
-function transform_at(t::CorrelationCholeskyFactor, flag::LogJacFlag,
-                      x::RealVector{T}, index::Int) where T
+function transform_with( flag::LogJacFlag, t::CorrelationCholeskyFactor,
+                         x::RealVector{T}) where T
     @unpack n = t
     ℓ = logjac_zero(flag, T)
     U = zeros(T, n, n)
-    for col in 1:n
+    index = firstindex(x)
+    @inbounds for col in 1:n
         r = one(T)
         for row in 1:(col-1)
             xi = x[index]
@@ -128,7 +129,7 @@ function inverse(t::CorrelationCholeskyFactor,
     @argcheck size(U, 1) == n
     x = Vector{T}(undef, dimension(t))
     index = 1
-    for col in 1:n
+    @inbounds for col in 1:n
         r = one(T)
         for row in 1:(col-1)
             x[index], r = l2_remainder_inverse(U[row, col], r)
