@@ -25,8 +25,11 @@ to_array(transformation::TransformReals, dims::Int...) =
 function transform_with(flag::LogJacFlag, t::TransformationArray, x::RealVector)
     @unpack transformation, dims = t
     d = dimension(transformation)
-    yℓ = reshape([transform_with(flag, transformation, viewafter(x, i, d))
-                  for i in 0:d:(d*(prod(dims)-1))],
+    index = firstindex(x)
+    yℓ = reshape([(y = transform_with(flag, transformation, index_into(x, index));
+                   index += d;
+                   y)
+                  for _ in Base.OneTo(prod(dims))],
                  dims)
     first.(yℓ), sum(last, yℓ)
 end
@@ -67,10 +70,10 @@ to_tuple(transformations::TransformReals...) = to_tuple(transformations)
 
 @inline function _transform_tuple(flag::LogJacFlag, tt::NTransformations,
                                   x::RealVector)
-    index = 0
+    index = firstindex(x)
     yℓ = map(t -> begin
              d = dimension(t)
-             result = transform_with(flag, t, viewafter(x, index, d))
+             result = transform_with(flag, t, index_into(x, index))
              index += d
              result
              end, tt)

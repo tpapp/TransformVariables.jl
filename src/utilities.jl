@@ -17,10 +17,27 @@ Number of elements (strictly) above the diagonal in an ``n×n`` matrix.
 """
 unit_triangular_dimension(n::Int) = n * (n-1) ÷ 2
 
-"""
-$(SIGNATURES)
+struct IndexInto{T, S <: AbstractVector{T}} <: AbstractVector{T}
+    i::Int
+    parent::S
+end
 
-A view of `len` elements, starting after the index `previndex`.
-"""
-@inline viewafter(x::AbstractVector, previndex, len) =
-    @inbounds view(x, (previndex + 1):(previndex + len))
+index_into(v::AbstractVector, i) = IndexInto(i, v)
+
+index_into(v::IndexInto, i) = IndexInto(i, v.parent)
+
+Base.axes(I::IndexInto) = (firstindex(I):lastindex(I), )
+
+Base.IndexStyle(::Type{<:IndexInto}) = IndexLinear()
+
+Base.length(I::IndexInto) = length(I.parent) - I.i + 1
+
+Base.size(I::IndexInto) = (length(I), )
+
+Base.firstindex(I::IndexInto) = I.i
+
+Base.lastindex(I::IndexInto) = lastindex(I.parent)
+
+Base.getindex(I::IndexInto, i::Int) = I.parent[i]
+
+Base.first(I::IndexInto) = I.parent[I.i]

@@ -5,10 +5,10 @@ abstract type TransformScalar <: TransformReals end
 dimension(::TransformScalar) = 1
 
 transform_with(flag::NoLogJac, t::TransformScalar, x::RealVector) =
-    transform_scalar(t, @inbounds x[1]), flag
+    transform_scalar(t, @inbounds first(x)), flag
 
 function transform_with(::LogJac, t::TransformScalar, x::RealVector)
-    @inbounds x1 = x[1]
+    @inbounds x1 = first(x)
     transform_scalar(t, x1), logjac_scalar(t, x1)
 end
 

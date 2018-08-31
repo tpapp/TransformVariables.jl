@@ -54,7 +54,7 @@ function transform_with(flag::LogJacFlag, t::UnitVector, x::RealVector{T}) where
     r = one(T)
     y = Vector{T}(undef, n)
     ℓ = logjac_zero(flag, T)
-    index = 1
+    index = firstindex(x)
     @inbounds for i in 1:(n - 1)
         xi = x[index]
         index += 1
@@ -109,7 +109,7 @@ function transform_with( flag::LogJacFlag, t::CorrelationCholeskyFactor,
     @unpack n = t
     ℓ = logjac_zero(flag, T)
     U = zeros(T, n, n)
-    index = 1
+    index = firstindex(x)
     @inbounds for col in 1:n
         r = one(T)
         for row in 1:(col-1)

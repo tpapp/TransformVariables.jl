@@ -103,10 +103,13 @@ Transform elements of `x`, starting using `transformation`.
 The first value returned is the transformed value, the second the log Jacobian
 determinant or a placeholder, depending on `flag`.
 
-Implementation can assume that `length(x) == dimension(transformation)`, this is
-checked by a wrapper.
+Types should implement this method. It should assume
 
-Types should implement this method.
+1. that `length(x) ≥ dimension(transformation)`, this is checked by the wrapper.
+
+2. generalized indexing, ie start with `first(x)` or `x[firstindex(x)]` and
+increment the index as necessary as it traverses `x`.
+
 """
 function transform_with end
 

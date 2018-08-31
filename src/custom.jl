@@ -41,6 +41,8 @@ end
 
 function transform_with(flag::LogJac, t::CustomTransform, x::RealVector)
     @unpack g, f, flatten = t
+    index = firstindex(x)
+    xv = x[index:(index + dimension(g) - 1)]
     h(x) = f(transform(g, x))
-    h(x), logjac_forwarddiff(flatten ∘ h, x)
+    h(xv), logjac_forwarddiff(flatten ∘ h, xv)
 end
