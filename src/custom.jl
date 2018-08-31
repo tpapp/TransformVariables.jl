@@ -1,41 +1,49 @@
 """
 $SIGNATURES
 
-Calculate the log Jacobian of `transformation` at `x` using
-`ForwardDiff.jacobian`.
+Calculate the log Jacobian determinant of `f` at `x` using `ForwardDiff.
 
-`flatten` should be a **bijection** that maps the result of the transformation
-to a vector of reals. This means that elements which are redundant should not be
-part of the result; since `f` is continuous, this means that `flatten` should
-have the same number of elements as `x`.
+# Note
+
+`f` should be a bijection, mapping from vectors of real numbers to vectors of
+equal length.
 """
-logjac_forwarddiff(transformation, flatten, x) =
-    first(logabsdet(ForwardDiff.jacobian(flatten ∘ transformation, x)))
+logjac_forwarddiff(f, x) = first(logabsdet(ForwardDiff.jacobian(f, x)))
 
 """
-    CustomTransform(dimension, transformation, flatten)
+    CustomTransform(g, f, flatten)
 
-Wrap a custom transform `y = transformation(x)` in a type that calculates the
-log Jacobian using `ForwardDiff` when necessary. See [`logjac_forwarddiff`] for
-the documentation of `flatten`.
+Wrap a custom transform `y = f(transform(g, x))`` in a type that calculates the
+log Jacobian of ``∂y/∂x`` using `ForwardDiff` when necessary.
+
+Usually, `g::TransformReals`, but when an integer is used, it amounts to the
+identity transformation with that dimension.
+
+`flatten` should take the result from `f`, and return a flat vector with no
+redundant elements, so that ``x ↦ y`` is a bijection. For example, for a
+covariance matrix the elements below the diagonal should be removed.
 """
-struct CustomTransform{T,F} <: TransformReals
-    dimension::Int
-    transformation::T
-    flatten::F
+struct CustomTransform{G <: TransformReals, F, H} <: TransformReals
+    g::G
+    f::F
+    flatten::H
 end
 
-dimension(t::CustomTransform) = t.dimension
+CustomTransform(n::Integer, f, flatten) =
+    CustomTransform(to_array(to_ℝ, n), f, flatten)
+
+dimension(t::CustomTransform) = dimension(t.g)
 
 function transform_at(t::CustomTransform, flag::NoLogJac, x::RealVector,
                       index::Int)
-    @unpack transformation, dimension = t
-    transformation(@view x[index:(index + dimension - 1)]), flag
+    @unpack g, f = t
+    f(first(transform_at(g, flag, x, index))), flag
 end
 
 function transform_at(t::CustomTransform, flag::LogJac, x::RealVector,
                       index::Int)
-    @unpack dimension, transformation, flatten = t
-    xv = @view x[index:(index + dimension - 1)]
-    transformation(xv), logjac_forwarddiff(transformation, flatten, xv)
+    @unpack g, f, flatten = t
+    xv = @view x[index:(index + dimension(t) - 1)]
+    h(x) = f(transform(g, x))
+    h(xv), logjac_forwarddiff(flatten ∘ h, xv)
 end
