@@ -2,7 +2,7 @@ AD_logjac(t::TransformReals, x, vec_y) =
     logabsdet(jacobian(x -> vec_y(transform(t, x)), x))[1]
 
 """
-    $SIGNATURES
+$(SIGNATURES)
 
 Test transformation `t` with random values, `N` times.
 
@@ -30,6 +30,11 @@ function test_transformation(t::TransformReals, is_valid_y, vec_y;
     end
 end
 
+"""
+$(SIGNATURES)
+
+Elements (strictly) above the diagonal as a vector.
+"""
 function vec_above_diagonal(U::UpperTriangular{T}) where T
     n = size(U, 1)
     index = 1
@@ -44,7 +49,7 @@ function vec_above_diagonal(U::UpperTriangular{T}) where T
 end
 
 """
-    $SIGNATURES
+$(SIGNATURES)
 
 Check if the argument `U` makes a valid correlation matrix `U'*U`.
 """
