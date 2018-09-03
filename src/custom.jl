@@ -1,14 +1,18 @@
 """
 $SIGNATURES
 
-Calculate the log Jacobian determinant of `f` at `x` using `ForwardDiff.
+Calculate the `f` and `log(abs(det(∂f/∂x)`` at `x` using `ForwardDiff.
 
 # Note
 
 `f` should be a bijection, mapping from vectors of real numbers to vectors of
 equal length.
 """
-logjac_forwarddiff(f, x) = first(logabsdet(ForwardDiff.jacobian(f, x)))
+function value_and_logjac_forwarddiff(f, x)
+    r = DiffResults.JacobianResult(x)
+    r = ForwardDiff.jacobian!(r, f, x)
+    DiffResults.value(r), first(logabsdet(DiffResults.jacobian(r)))
+end
 
 """
     CustomTransform(g, f, flatten)
@@ -44,5 +48,5 @@ function transform_with(flag::LogJac, t::CustomTransform, x::RealVector)
     index = firstindex(x)
     xv = @view x[index:(index + dimension(g) - 1)]
     h(x) = f(transform(g, x))
-    h(xv), logjac_forwarddiff(flatten ∘ h, xv)
+    h(xv), value_and_logjac_forwarddiff(flatten ∘ h, xv)[2]
 end

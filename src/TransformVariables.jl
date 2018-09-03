@@ -1,6 +1,7 @@
 module TransformVariables
 
 using ArgCheck: @argcheck
+import DiffResults
 import ForwardDiff
 using LinearAlgebra: UpperTriangular, logabsdet
 using DocStringExtensions: SIGNATURES, TYPEDEF
@@ -8,7 +9,7 @@ using Parameters: @unpack
 
 export
     dimension, transform, transform_and_logjac, transform_logdensity, inverse,
-    logjac_forwarddiff, CustomTransform
+    value_and_logjac_forwarddiff, CustomTransform
 
 
 # utilities
