@@ -1,4 +1,5 @@
-export ∞, to_interval, to_ℝ, to_ℝ₊, to_ℝ₋, to_𝕀
+export ∞, to_interval, to_ℝ, to_ℝ₊, to_ℝ₋, to_𝕀,
+    transform_scalar, inverse_scalar, logjac_scalar
 
 abstract type TransformScalar <: TransformReals end
 
