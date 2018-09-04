@@ -43,6 +43,6 @@ to_tuple
 # Defining custom transformations
 
 ```@docs
-value_and_logjac_forwarddiff
+logjac_forwarddiff
 CustomTransform
 ```
