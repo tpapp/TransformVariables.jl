@@ -72,8 +72,10 @@ function inverse!(x::RealVector, t::UnitVector, y::RealVector)
     @argcheck length(y) == n
     @argcheck length(x) == n - 1
     r = one(eltype(y))
-    @inbounds for (xi, yi) in zip(1:(n - 1), axes(y, 1))
+    xi = firstindex(x)
+    @inbounds for yi in axes(y, 1)[1:(end-1)]
         x[xi], r = l2_remainder_inverse(y[yi], r)
+        xi += 1
     end
     x
 end
@@ -131,7 +133,7 @@ function inverse!(x::RealVector, t::CorrCholeskyFactor, U::UpperTriangular)
     @unpack n = t
     @argcheck size(U, 1) == n
     @argcheck length(x) == dimension(t)
-    index = 1
+    index = firstindex(x)
     @inbounds for col in 1:n
         r = one(eltype(U))
         for row in 1:(col-1)

@@ -10,15 +10,15 @@ methods of of the interface should have the right defaults.
 """
 abstract type ScalarTransform <: AbstractTransform end
 
-domain_dimension(::ScalarTransform) = 1
+dimension(::ScalarTransform) = 1
 
 transform_with(flag::NoLogJac, t::ScalarTransform, x::RealVector) =
     transform(t, @inbounds first(x)), flag
 
 transform_with(::LogJac, t::ScalarTransform, x::RealVector) =
-    transform_and_logjac(@inbounds first(x))
+    transform_and_logjac(t, @inbounds first(x))
 
-function inverse_into!(t::ScalarTransform, x::RealVector, y::Real)
+function inverse!(x::RealVector, t::ScalarTransform, y::Real)
     x[firstindex(x)] = inverse(t, y)
 end
 

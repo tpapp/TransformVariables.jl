@@ -20,6 +20,7 @@ function test_transformation(t::AbstractTransform, is_valid_y;
                              vec_y = identity, N = 1000, test_inverse = true)
     for _ in 1:N
         x = t isa ScalarTransform ? randn() : randn(dimension(t))
+        x isa ScalarTransform && @test dimension(x) == 1
         y = transform(t, x)
         @test is_valid_y(y)
         y2, lj = transform_and_logjac(t, x)

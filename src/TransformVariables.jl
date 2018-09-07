@@ -202,7 +202,7 @@ inverse(t::VectorTransform, y) =
 include("utilities.jl")
 include("scalar.jl")
 include("special_arrays.jl")
-# include("aggregation.jl")
+include("aggregation.jl")
 # include("custom.jl")
 
 end # module
