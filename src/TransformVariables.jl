@@ -8,7 +8,7 @@ using Parameters: @unpack
 
 export
     dimension, transform, transform_and_logjac, transform_logdensity, inverse,
-    logjac_forwarddiff, CustomTransform
+    logjac_forwarddiff, value_and_logjac_forwarddiff, CustomTransform
 
 
 # utilities
