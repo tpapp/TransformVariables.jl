@@ -1,4 +1,4 @@
-export logjac_forwarddiff, value_logjac_forwarddiff, CustomTransform
+export logjac_forwarddiff, value_and_logjac_forwarddiff, CustomTransform
 
 """
 $(SIGNATURES)
