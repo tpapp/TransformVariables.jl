@@ -1,9 +1,9 @@
 using TransformVariables
 using TransformVariables:
-    TransformReals, unit_triangular_dimension, logistic, logistic_logjac, logit
+    AbstractTransform, ScalarTransform, VectorTransform,
+    unit_triangular_dimension, logistic, logistic_logjac, logit
 
-using Base: vect
-using ForwardDiff: derivative, jacobian
+import ForwardDiff
 using DocStringExtensions, Test, Random, LinearAlgebra
 
 include("test_utilities.jl")
@@ -37,37 +37,39 @@ end
 @testset "scalar transformations consistency" begin
     for _ in 1:100
         a = randn() * 100
-        test_transformation(to_interval(-∞, a), y -> y < a, vect)
-        test_transformation(to_interval(a, ∞), y -> y > a, vect)
+        test_transformation(as(Real, -∞, a), y -> y < a)
+        test_transformation(as(Real, a, ∞), y -> y > a)
         b = a + 0.5 + rand(Float64) + exp(randn() * 10)
-        test_transformation(to_interval(a, b), y -> a < y < b, vect)
+        test_transformation(as(Real, a, b), y -> a < y < b)
     end
-    test_transformation(to_interval(-∞, ∞), _ -> true, vect)
+    test_transformation(as(Real, -∞, ∞), _ -> true)
 end
 
 @testset "scalar transformation corner cases" begin
-    @test_throws ArgumentError to_interval("a fish", 9)
-    @test to_interval(1, 4.0) == to_interval(1.0, 4.0)
-    @test_throws ArgumentError to_interval(3.0, -4.0)
+    @test_throws ArgumentError as(Real, "a fish", 9)
+    @test as(Real, 1, 4.0) == as(Real, 1.0, 4.0)
+    @test_throws ArgumentError as(Real, 3.0, -4.0)
 end
 
 @testset "to unit vector" begin
     for K in 1:10
-        t = to_unitvec(K)
+        t = UnitVector(K)
         @test dimension(t) == K - 1
         if K > 1
-            test_transformation(t, y -> sum(abs2, y) ≈ 1, y -> y[1:(end-1)])
+            test_transformation(t, y -> sum(abs2, y) ≈ 1,
+                                vec_y = y -> y[1:(end-1)])
         end
     end
 end
 
 @testset "to correlation cholesky factor" begin
     for K in 1:8
-        t = to_corr_cholesky(K)
+        t = CorrCholeskyFactor(K)
         @test dimension(t) == (K - 1)*K/2
         CIENV && @info "testing correlation cholesky K = $(K)"
         if K > 1
-            test_transformation(t, is_valid_corr_cholesky, vec_above_diagonal; N = 100)
+            test_transformation(t, is_valid_corr_cholesky;
+                                vec_y = vec_above_diagonal, N = 100)
         end
     end
 end

@@ -1,4 +1,4 @@
-export to_unitvec, to_corr_cholesky
+export UnitVector, CorrCholeskyFactor
 
 """
     (y, r, ℓ) = $SIGNATURES
@@ -31,7 +31,7 @@ Inverse of [`l2_remainder_transform`](@ref) in `x` and `y`.
 Transform `n-1` real numbers to a unit vector of length `n`, under the
 Euclidean norm.
 """
-struct UnitVector <: TransformReals
+struct UnitVector <: VectorTransform
     n::Int
     function UnitVector(n::Int)
         @argcheck n ≥ 1 "Dimension should be positive."
@@ -65,11 +65,13 @@ function transform_with(flag::LogJacFlag, t::UnitVector, x::RealVector{T}) where
     y, ℓ
 end
 
-function inverse(t::UnitVector, y::AbstractVector{T}) where T
+inverse_eltype(t::UnitVector, y::RealVector) = float(eltype(y))
+
+function inverse!(x::RealVector, t::UnitVector, y::RealVector)
     @unpack n = t
     @argcheck length(y) == n
-    r = one(T)
-    x = Vector{T}(undef, n - 1)
+    @argcheck length(x) == n - 1
+    r = one(eltype(y))
     @inbounds for (xi, yi) in zip(1:(n - 1), axes(y, 1))
         x[xi], r = l2_remainder_inverse(y[yi], r)
     end
@@ -80,14 +82,14 @@ end
 # correlation cholesky factor
 
 """
-    CorrelationCholeskyFactor(n)
+    CorrCholeskyFactor(n)
 
 Cholesky factor of a correlation matrix of size `n`. See
 [`to_corr_cholesky`](@ref) for details.
 """
-struct CorrelationCholeskyFactor <: TransformReals
+struct CorrCholeskyFactor <: VectorTransform
     n::Int
-    function CorrelationCholeskyFactor(n)
+    function CorrCholeskyFactor(n)
         @argcheck n ≥ 1 "Dimension should be positive."
         new(n)
     end
@@ -100,15 +102,15 @@ Return a transformation that transforms real numbers to an ``n×n``
 upper-triangular matrix `Ω`, such that `Ω'*Ω` is a correlation matrix (positive
 definite, with unit diagonal).
 """
-to_corr_cholesky(n) = CorrelationCholeskyFactor(n)
+to_corr_cholesky(n) = CorrCholeskyFactor(n)
 
-dimension(t::CorrelationCholeskyFactor) = unit_triangular_dimension(t.n)
+dimension(t::CorrCholeskyFactor) = unit_triangular_dimension(t.n)
 
-function transform_with( flag::LogJacFlag, t::CorrelationCholeskyFactor,
+function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor,
                          x::RealVector{T}) where T
     @unpack n = t
     ℓ = logjac_zero(flag, T)
-    U = zeros(T, n, n)
+    U = zeros(float(T), n, n)
     index = firstindex(x)
     @inbounds for col in 1:n
         r = one(T)
@@ -123,14 +125,15 @@ function transform_with( flag::LogJacFlag, t::CorrelationCholeskyFactor,
     UpperTriangular(U), ℓ
 end
 
-function inverse(t::CorrelationCholeskyFactor,
-                 U::UpperTriangular{T}) where T
+inverse_eltype(t::CorrCholeskyFactor, U::UpperTriangular) = float(eltype(U))
+
+function inverse!(x::RealVector, t::CorrCholeskyFactor, U::UpperTriangular)
     @unpack n = t
     @argcheck size(U, 1) == n
-    x = Vector{T}(undef, dimension(t))
+    @argcheck length(x) == dimension(t)
     index = 1
     @inbounds for col in 1:n
-        r = one(T)
+        r = one(eltype(U))
         for row in 1:(col-1)
             x[index], r = l2_remainder_inverse(U[row, col], r)
             index += 1
