@@ -86,8 +86,7 @@ end
 """
     CorrCholeskyFactor(n)
 
-Cholesky factor of a correlation matrix of size `n`. See
-[`to_corr_cholesky`](@ref) for details.
+Cholesky factor of a correlation matrix of size `n`.
 """
 struct CorrCholeskyFactor <: VectorTransform
     n::Int
