@@ -19,8 +19,12 @@ array with the given `dims`.
 as(::Type{Array}, transformation::AbstractTransform, dims::Tuple{Vararg{Int}}) =
     TransformationArray(transformation, dims)
 
+as(::Type{Array}, dims::Tuple{Vararg{Int}}) = as(Array, Identity, dims)
+
 as(::Type{Array}, transformation::AbstractTransform, dims::Int...) =
     TransformationArray(transformation, dims)
+
+as(::Type{Array}, dims::Int...) = as(Array, Identity, dims)
 
 function transform_with(flag::LogJacFlag, t::TransformationArray, x::RealVector)
     @unpack transformation, dims = t

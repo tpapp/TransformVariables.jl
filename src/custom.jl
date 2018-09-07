@@ -1,3 +1,5 @@
+export logjac_forwarddiff, value_logjac_forwarddiff, CustomTransform
+
 """
 $(SIGNATURES)
 
@@ -32,14 +34,14 @@ identity transformation with that dimension.
 redundant elements, so that ``x ↦ y`` is a bijection. For example, for a
 covariance matrix the elements below the diagonal should be removed.
 """
-struct CustomTransform{G <: TransformReals, F, H} <: TransformReals
+struct CustomTransform{G <: AbstractTransform, F, H} <: VectorTransform
     g::G
     f::F
     flatten::H
 end
 
 CustomTransform(n::Integer, f, flatten) =
-    CustomTransform(to_array(to_ℝ, n), f, flatten)
+    CustomTransform(as(Array, n), f, flatten)
 
 dimension(t::CustomTransform) = dimension(t.g)
 

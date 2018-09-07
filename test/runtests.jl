@@ -160,26 +160,26 @@ end
     end
 end
 
-# @testset "custom transformation: triangle below diagonal in [0,1]²" begin
-#     tfun(y) = y[1], y[1]*y[2]   # triangle below diagonal in unit square
-#     t = CustomTransform(to_array(to_𝕀, 2), tfun, collect)
-#     test_transformation(t, ((y1, y2),) -> 0 ≤ y2 ≤ y1 ≤ 1, collect;
-#                         test_inverse = false)
-# end
+@testset "custom transformation: triangle below diagonal in [0,1]²" begin
+    tfun(y) = y[1], y[1]*y[2]   # triangle below diagonal in unit square
+    t = CustomTransform(as(Array, 𝕀, 2), tfun, collect)
+    test_transformation(t, ((y1, y2),) -> 0 ≤ y2 ≤ y1 ≤ 1;
+                        vec_y = collect, test_inverse = false)
+end
 
-# @testset "custom transformation: covariance matrix" begin
-#     "Transform to a `n×n` covariance matrix."
-#     to_covariance(n) = CustomTransform(
-#         # pre-transform to standard deviations and correlation Cholesky factor
-#         to_tuple(to_array(to_ℝ₊, n), to_corr_cholesky(n)),
-#         # use these to construct a covariance matrix
-#         (((σ, Ω),) -> (Ω*Diagonal(σ) |> x -> Symmetric(x'*x))),
-#         # flatten to elements above the diagonal
-#         A -> A[axes(A, 1) .≤ axes(A, 2)'])
-#     C5 = to_covariance(5)
-#     test_transformation(C5, A -> all(diag(cholesky(A).U) .> 0), C5.flatten;
-#                         test_inverse = false)
-# end
+@testset "custom transformation: covariance matrix" begin
+    "Transform to a `n×n` covariance matrix."
+    to_covariance(n) = CustomTransform(
+        # pre-transform to standard deviations and correlation Cholesky factor
+        as((as(Array, ℝ₊, n), CorrCholeskyFactor(n))),
+        # use these to construct a covariance matrix
+        (((σ, Ω),) -> (Ω*Diagonal(σ) |> x -> Symmetric(x'*x))),
+        # flatten to elements above the diagonal
+        A -> A[axes(A, 1) .≤ axes(A, 2)'])
+    C5 = to_covariance(5)
+    test_transformation(C5, A -> all(diag(cholesky(A).U) .> 0);
+                        vec_y = C5.flatten, test_inverse = false)
+end
 
 # also generate documentation
-# include("../docs/make.jl")
+include("../docs/make.jl")
