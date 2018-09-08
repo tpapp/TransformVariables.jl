@@ -112,11 +112,27 @@ Implementations should assume generalized indexing on `x`.
 function transform_with end
 
 """
+$(TYPEDEF)
+
+Inverse of the wrapped transform. Use the 1-argument version of
+[`inverse`](@ref) to construct.
+"""
+struct InverseTransform{T}
+    transform::T
+end
+
+"""
     inverse(t::AbstractTransform, y)
 
 Return `x` so that `transform(t, x) ≈ y`.
+
+    $SIGNATURES
+
+Return a callable equivalen to `y -> inverse(t, y)`.
 """
-function inverse end
+inverse(t::AbstractTransform) = InverseTransform(t)
+
+(ι::InverseTransform)(y) = inverse(ι.transform, y)
 
 """
     inverse_eltype(t::AbstractTransform, y)

@@ -34,6 +34,8 @@ function test_transformation(t::AbstractTransform, is_valid_y;
         if test_inverse
             x2 = inverse(t, y)
             @test x ≈ x2
+            ι = inverse(t)
+            @test x ≈ ι(y)
         end
     end
 end
