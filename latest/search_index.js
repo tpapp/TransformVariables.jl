@@ -45,7 +45,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Manual",
     "title": "TransformVariables.inverse",
     "category": "function",
-    "text": "inverse(t::AbstractTransform, y)\n\nReturn x so that transform(t, x) ≈ y.\n\n\n\n\n\n"
+    "text": "inverse(t::AbstractTransform, y)\n\nReturn x so that transform(t, x) ≈ y.\n\ninverse(t)\n\n\nReturn a callable equivalen to y -> inverse(t, y).\n\n\n\n\n\n"
 },
 
 {
