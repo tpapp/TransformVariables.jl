@@ -32,7 +32,7 @@ $(TYPEDEF)
 
 Identity ``x ↦ x``.
 """
-struct Identity <: ScalarTransform end
+@calltrans struct Identity <: ScalarTransform end
 
 transform(::Identity, x::Real) = x
 
@@ -49,7 +49,7 @@ $(TYPEDEF)
 Shifted exponential. When `D::Bool == true`, maps to `(shift, ∞)` using `x ↦
 shift + eˣ`, otherwise to `(-∞, shift)` using `x ↦ shift - eˣ`.
 """
-struct ShiftedExp{D, T <: Real} <: ScalarTransform
+@calltrans struct ShiftedExp{D, T <: Real} <: ScalarTransform
     shift::T
     function ShiftedExp{D,T}(shift::T) where {D, T <: Real}
         @argcheck D isa Bool
@@ -83,7 +83,7 @@ $(TYPEDEF)
 
 Maps to `(scale, shift + scale)` using `x ↦ logistic(x)*scale + shift`.
 """
-struct ScaledShiftedLogistic{T <: Real} <: ScalarTransform
+@calltrans struct ScaledShiftedLogistic{T <: Real} <: ScalarTransform
     scale::T
     shift::T
     function ScaledShiftedLogistic{T}(scale::T, shift::T) where {T <: Real}

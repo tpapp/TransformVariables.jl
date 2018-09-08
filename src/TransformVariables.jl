@@ -1,9 +1,10 @@
 module TransformVariables
 
 using ArgCheck: @argcheck
+using DocStringExtensions: SIGNATURES, TYPEDEF
 import ForwardDiff
 using LinearAlgebra: UpperTriangular, logabsdet
-using DocStringExtensions: SIGNATURES, TYPEDEF
+using MacroTools: @capture
 using Parameters: @unpack
 
 export dimension, transform, transform_and_logjac, transform_logdensity,

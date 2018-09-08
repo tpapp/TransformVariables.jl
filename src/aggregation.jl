@@ -3,7 +3,7 @@ export to_array, to_tuple
 
 # arrays
 
-struct TransformArray{T <: AbstractTransform,M} <: VectorTransform
+@calltrans struct TransformArray{T <: AbstractTransform,M} <: VectorTransform
     transformation::T
     dims::NTuple{M, Int}
 end
@@ -63,7 +63,7 @@ end
 
 const NTransforms{N} = Tuple{Vararg{AbstractTransform,N}}
 
-struct TransformTuple{K, T <: NTransforms{K}} <: VectorTransform
+@calltrans struct TransformTuple{K, T <: NTransforms{K}} <: VectorTransform
     transformations::T
     dimension::Int
     function TransformTuple(transformations::T) where {K, T <: NTransforms{K}}
@@ -134,7 +134,7 @@ function inverse!(x::RealVector, tt::TransformTuple{K},
     _inverse!_tuple(x, tt.transformations, y)
 end
 
-struct TransformNamedTuple{names, T <: NTransforms} <: VectorTransform
+@calltrans struct TransformNamedTuple{names, T <: NTransforms} <: VectorTransform
     transformations::T
     dimension::Int
     function TransformNamedTuple(transformations::NamedTuple{names,T}) where

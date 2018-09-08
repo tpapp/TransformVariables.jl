@@ -34,7 +34,7 @@ identity transformation with that dimension.
 redundant elements, so that ``x ↦ y`` is a bijection. For example, for a
 covariance matrix the elements below the diagonal should be removed.
 """
-struct CustomTransform{G <: AbstractTransform, F, H} <: VectorTransform
+@calltrans struct CustomTransform{G <: AbstractTransform, F, H} <: VectorTransform
     g::G
     f::F
     flatten::H
