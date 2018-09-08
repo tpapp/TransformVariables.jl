@@ -31,7 +31,7 @@ Inverse of [`l2_remainder_transform`](@ref) in `x` and `y`.
 Transform `n-1` real numbers to a unit vector of length `n`, under the
 Euclidean norm.
 """
-struct UnitVector <: VectorTransform
+@calltrans struct UnitVector <: VectorTransform
     n::Int
     function UnitVector(n::Int)
         @argcheck n ≥ 1 "Dimension should be positive."
@@ -88,7 +88,7 @@ end
 
 Cholesky factor of a correlation matrix of size `n`.
 """
-struct CorrCholeskyFactor <: VectorTransform
+@calltrans struct CorrCholeskyFactor <: VectorTransform
     n::Int
     function CorrCholeskyFactor(n)
         @argcheck n ≥ 1 "Dimension should be positive."
