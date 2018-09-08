@@ -130,6 +130,8 @@ function inverse_eltype end
 Put `inverse(t, y)` into a preallocated vector `x`, returning `x`.
 
 Generalized indexing should be assumed on `x`.
+
+See [`inverse_eltype`](@ref) for determining the type of `x`.
 """
 function inverse! end
 
@@ -177,6 +179,8 @@ function as end
 
 """
 An `AbstractVector` of `<:Real` elements.
+
+Used internally as a type for transformations from vectors.
 """
 const RealVector{T <: Real} = AbstractVector{T}
 
@@ -187,8 +191,8 @@ Transformation that transforms `<: RealVector`s to other values.
 
 # Implementation
 
-Implements `transform` and `transform_logjac` via `transform_with`, `inverse`
-via `inverse!`.
+Implements [`transform`](@ref) and [`transform_logjac`](@ref) via
+[`transform_with`](@ref), and [`inverse`](@ref) via [`inverse!`](@ref).
 """
 abstract type VectorTransform <: AbstractTransform end
 

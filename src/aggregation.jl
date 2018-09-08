@@ -58,7 +58,6 @@ function inverse!(x::RealVector,
     x
 end
 
-
 
 # tuples
 
@@ -82,8 +81,12 @@ Return a transformation that transforms consecutive groups of real numbers to a
 """
 as(transformations::NTransformations) = TransformationTuple(transformations)
 
-@inline function _transform_tuple(flag::LogJacFlag, tt::NTransformations,
-                                  x::RealVector)
+"""
+$(SIGNATURES)
+
+Helper function for transforming tuples. Used internally.
+"""
+function _transform_tuple(flag::LogJacFlag, tt::NTransformations, x::RealVector)
     index = firstindex(x)
     yℓ = map(t -> begin
              d = dimension(t)
@@ -94,9 +97,20 @@ as(transformations::NTransformations) = TransformationTuple(transformations)
     first.(yℓ), sum(last, yℓ)
 end
 
+"""
+$(SIGNATURES)
+
+Helper function determining element type of inverses from tuples. Used
+internally.
+"""
 _inverse_eltype_tuple(ts::NTransformations{K}, ys::NTuple{K,Any}) where K =
     mapreduce(((t, y),) -> inverse_eltype(t, y), promote_type, zip(ts, ys))
 
+"""
+$(SIGNATURES)
+
+Helper function for inverting tuples of transformations. Used internally.
+"""
 function _inverse!_tuple(x::RealVector, ts::NTransformations{K},
                          ys::NTuple{K,Any}) where K
     index = firstindex(x)
@@ -114,8 +128,8 @@ transform_with(flag::LogJacFlag, tt::TransformationTuple, x::RealVector) =
 inverse_eltype(tt::TransformationTuple{K}, y::NTuple{K,Any}) where K =
     _inverse_eltype_tuple(tt.transformations, y)
 
-function inverse!(x::RealVector, tt::TransformationTuple{K}, y::NTuple{K,Any}
-                  ) where K
+function inverse!(x::RealVector, tt::TransformationTuple{K},
+                  y::NTuple{K,Any}) where K
     @argcheck length(x) == dimension(tt)
     _inverse!_tuple(x, tt.transformations, y)
 end
