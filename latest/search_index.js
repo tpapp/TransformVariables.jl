@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Manual",
     "title": "TransformVariables.dimension",
     "category": "function",
-    "text": "dimension(t::TransformReals)\n\nThe dimension (number of elements) that t transforms.\n\nTypes should implement this method.\n\n\n\n\n\n"
+    "text": "dimension(t::AbstractTransform)\n\nThe dimension (number of elements) that t transforms.\n\nTypes should implement this method.\n\n\n\n\n\n"
 },
 
 {
@@ -45,7 +45,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Manual",
     "title": "TransformVariables.inverse",
     "category": "function",
-    "text": "inverse(t::TransformReals, y)\n\nReturn x so that transform(t, x) ≈ y.\n\n\n\n\n\n"
+    "text": "inverse(t::AbstractTransform, y)\n\nReturn x so that transform(t, x) ≈ y.\n\n\n\n\n\n"
 },
 
 {
@@ -57,11 +57,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "index.html#TransformVariables.as",
+    "page": "Manual",
+    "title": "TransformVariables.as",
+    "category": "function",
+    "text": "as(T, args...)\n\nShorthand for constructing transformations with image in T. args determines or modifies behavior, details depend on T.\n\nNot all transformations have an as method, some just have direct constructors. See methods(as) for a list.\n\nExamples\n\nas(Real, -∞, 1)     # transform a real number to (-∞, 1)\nas(Array, 10, 2)    # reshape 20 real numbers to a 10x2 matrix\nas((a = ℝ₊, b = 𝕀)) # transform 2 real numbers a NamedTuple, with a > 0, 0 < b < 1\n\n\n\n\n\n"
+},
+
+{
     "location": "index.html#General-interface-1",
     "page": "Manual",
     "title": "General interface",
     "category": "section",
-    "text": "dimension\ntransform\ntransform_and_logjac\ninverse\ntransform_logdensity"
+    "text": "dimension\ntransform\ntransform_and_logjac\ninverse\ntransform_logdensity\nas"
 },
 
 {
@@ -73,14 +81,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.to_interval",
-    "page": "Manual",
-    "title": "TransformVariables.to_interval",
-    "category": "function",
-    "text": "to_interval(left, right)\n\n\nReturn a transformation that transforms a single real number to the given (open) interval.\n\nleft < right is required, but may be -∞ or ∞, respectively, in which case the appropriate transformation is selected. See ∞.\n\nSome common transformations are predefined as constants, see to_ℝ, to_ℝ₋, to_ℝ₊, to_𝕀.\n\n\n\n\n\n"
-},
-
-{
     "location": "index.html#TransformVariables.∞",
     "page": "Manual",
     "title": "TransformVariables.∞",
@@ -89,33 +89,33 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.to_ℝ",
+    "location": "index.html#TransformVariables.ℝ",
     "page": "Manual",
-    "title": "TransformVariables.to_ℝ",
+    "title": "TransformVariables.ℝ",
     "category": "constant",
     "text": "Transform to the real line (identity).\n\n\n\n\n\n"
 },
 
 {
-    "location": "index.html#TransformVariables.to_ℝ₊",
+    "location": "index.html#TransformVariables.ℝ₊",
     "page": "Manual",
-    "title": "TransformVariables.to_ℝ₊",
+    "title": "TransformVariables.ℝ₊",
     "category": "constant",
     "text": "Transform to a non-negative real number.\n\n\n\n\n\n"
 },
 
 {
-    "location": "index.html#TransformVariables.to_ℝ₋",
+    "location": "index.html#TransformVariables.ℝ₋",
     "page": "Manual",
-    "title": "TransformVariables.to_ℝ₋",
+    "title": "TransformVariables.ℝ₋",
     "category": "constant",
     "text": "Transform to a non-positive real number.\n\n\n\n\n\n"
 },
 
 {
-    "location": "index.html#TransformVariables.to_𝕀",
+    "location": "index.html#TransformVariables.𝕀",
     "page": "Manual",
-    "title": "TransformVariables.to_𝕀",
+    "title": "TransformVariables.𝕀",
     "category": "constant",
     "text": "Transform to the unit interval (0, 1).\n\n\n\n\n\n"
 },
@@ -125,23 +125,23 @@ var documenterSearchIndex = {"docs": [
     "page": "Manual",
     "title": "Scalar transforms",
     "category": "section",
-    "text": "to_interval\n∞to_ℝ\nto_ℝ₊\nto_ℝ₋\nto_𝕀"
+    "text": "∞ℝ\nℝ₊\nℝ₋\n𝕀"
 },
 
 {
-    "location": "index.html#TransformVariables.to_unitvec",
+    "location": "index.html#TransformVariables.UnitVector",
     "page": "Manual",
-    "title": "TransformVariables.to_unitvec",
-    "category": "function",
-    "text": "to_unitvec(n)\n\n\nReturn a transformation that transforms n - 1 real numbers to a unit vector (under Euclidean norm).\n\n\n\n\n\n"
+    "title": "TransformVariables.UnitVector",
+    "category": "type",
+    "text": "UnitVector(n)\n\nTransform n-1 real numbers to a unit vector of length n, under the Euclidean norm.\n\n\n\n\n\n"
 },
 
 {
-    "location": "index.html#TransformVariables.to_corr_cholesky",
+    "location": "index.html#TransformVariables.CorrCholeskyFactor",
     "page": "Manual",
-    "title": "TransformVariables.to_corr_cholesky",
-    "category": "function",
-    "text": "to_corr_cholesky(n)\n\n\nReturn a transformation that transforms real numbers to an nn upper-triangular matrix Ω, such that Ω\'*Ω is a correlation matrix (positive definite, with unit diagonal).\n\n\n\n\n\n"
+    "title": "TransformVariables.CorrCholeskyFactor",
+    "category": "type",
+    "text": "CorrCholeskyFactor(n)\n\nCholesky factor of a correlation matrix of size n.\n\n\n\n\n\n"
 },
 
 {
@@ -149,23 +149,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Manual",
     "title": "Special arrays",
     "category": "section",
-    "text": "to_unitvec\nto_corr_cholesky"
-},
-
-{
-    "location": "index.html#TransformVariables.to_array",
-    "page": "Manual",
-    "title": "TransformVariables.to_array",
-    "category": "function",
-    "text": "to_array(transformation, dims)\n\n\nReturn a transformation that applies transformation repeatedly to create an array with the given dims.\n\n\n\n\n\n"
-},
-
-{
-    "location": "index.html#TransformVariables.to_tuple",
-    "page": "Manual",
-    "title": "TransformVariables.to_tuple",
-    "category": "function",
-    "text": "to_tuple(transformations)\n\n\nReturn a transformation that transforms consecutive groups of real numbers to a (named) tuple, using the given transformations.\n\n\n\n\n\nto_tuple(transformations)\n\n\n\n\n\n\nto_tuple(transformations)\n\n\n\n\n\n\nto_tuple(; (:: transformations NTransformations)...)\n\n\n\n\n\n\n"
+    "text": "UnitVector\nCorrCholeskyFactor"
 },
 
 {
@@ -173,7 +157,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Manual",
     "title": "Aggregation of transformations",
     "category": "section",
-    "text": "to_array\nto_tuple"
+    "text": "FIXME explain as syntax"
 },
 
 {
@@ -182,6 +166,14 @@ var documenterSearchIndex = {"docs": [
     "title": "TransformVariables.logjac_forwarddiff",
     "category": "function",
     "text": "logjac_forwarddiff(f, x)\n\n\nCalculate the log Jacobian determinant of f at x using `ForwardDiff.\n\nNote\n\nf should be a bijection, mapping from vectors of real numbers to vectors of equal length.\n\n\n\n\n\n"
+},
+
+{
+    "location": "index.html#TransformVariables.value_and_logjac_forwarddiff",
+    "page": "Manual",
+    "title": "TransformVariables.value_and_logjac_forwarddiff",
+    "category": "function",
+    "text": "value_and_logjac_forwarddiff(f, x)\nvalue_and_logjac_forwarddiff(f, x, flatten)\n\n\nCalculate the value and the log Jacobian determinant of f at x. flatten is used to get a vector out of the result that makes f a bijection.\n\n\n\n\n\n"
 },
 
 {
@@ -197,7 +189,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Manual",
     "title": "Defining custom transformations",
     "category": "section",
-    "text": "logjac_forwarddiff\nCustomTransform"
+    "text": "logjac_forwarddiff\nvalue_and_logjac_forwarddiff\nCustomTransform"
 },
 
 ]}
