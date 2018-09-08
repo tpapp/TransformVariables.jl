@@ -27,31 +27,34 @@ indexing.
 """
 struct IndexInto{T, S <: AbstractVector{T}} <: AbstractVector{T}
     i::Int
+    len::Int
     parent::S
 end
 
 """
 $SIGNATURES
 
-A wrapper functionally equivalent to `@view v[i:end]`.
+A wrapper functionally equivalent to `@view v[i:end]`, no bounds checking.
 """
-index_into(v::AbstractVector, i) = IndexInto(i, v)
+index_into(v::AbstractVector, i, len) = IndexInto(i, len, v)
 
-index_into(v::IndexInto, i) = IndexInto(i, v.parent)
+index_into(v::IndexInto, i, len) = IndexInto(i, len, v.parent)
 
 Base.axes(I::IndexInto) = (firstindex(I):lastindex(I), )
 
 Base.IndexStyle(::Type{<:IndexInto}) = IndexLinear()
 
-Base.length(I::IndexInto) = length(I.parent) - I.i + 1
+Base.length(I::IndexInto) = I.len
 
 Base.size(I::IndexInto) = (length(I), )
 
 Base.firstindex(I::IndexInto) = I.i
 
-Base.lastindex(I::IndexInto) = lastindex(I.parent)
+Base.lastindex(I::IndexInto) = I.i + I.len - 1
 
 Base.getindex(I::IndexInto, i::Int) = I.parent[i]
+
+Base.setindex!(I::IndexInto, value, i::Int) = setindex!(I.parent, value, i)
 
 Base.first(I::IndexInto) = I.parent[I.i]
 

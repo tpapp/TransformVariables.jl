@@ -1,5 +1,8 @@
-AD_logjac(t::TransformReals, x, vec_y) =
-    logabsdet(jacobian(x -> vec_y(transform(t, x)), x))[1]
+AD_logjac(t::VectorTransform, x, vec_y) =
+    logabsdet(ForwardDiff.jacobian(x -> vec_y(transform(t, x)), x))[1]
+
+AD_logjac(t::ScalarTransform, x) =
+    log(abs(ForwardDiff.derivative(x -> transform(t, x), x)))
 
 """
 $(SIGNATURES)
@@ -13,20 +16,24 @@ automatic differentiation.
 
 `test_inverse` determines whether the inverse is tested.
 """
-function test_transformation(t::TransformReals, is_valid_y, vec_y;
-                             N = 1000, test_inverse = true)
+function test_transformation(t::AbstractTransform, is_valid_y;
+                             vec_y = identity, N = 1000, test_inverse = true)
     for _ in 1:N
-        x = randn(dimension(t))
+        x = t isa ScalarTransform ? randn() : randn(dimension(t))
+        x isa ScalarTransform && @test dimension(x) == 1
         y = transform(t, x)
         @test is_valid_y(y)
         y2, lj = transform_and_logjac(t, x)
         @test y2 == y
-        @test lj ≈ AD_logjac(t, x, vec_y)
+        if t isa ScalarTransform
+            @test lj ≈ AD_logjac(t, x)
+        else
+            @test lj ≈ AD_logjac(t, x, vec_y)
+        end
         if test_inverse
             x2 = inverse(t, y)
             @test x ≈ x2
         end
-
     end
 end
 

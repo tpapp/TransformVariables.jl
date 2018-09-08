@@ -1,5 +1,7 @@
+export logjac_forwarddiff, value_and_logjac_forwarddiff, CustomTransform
+
 """
-$SIGNATURES
+$(SIGNATURES)
 
 Calculate the log Jacobian determinant of `f` at `x` using `ForwardDiff.
 
@@ -9,6 +11,15 @@ Calculate the log Jacobian determinant of `f` at `x` using `ForwardDiff.
 equal length.
 """
 logjac_forwarddiff(f, x) = first(logabsdet(ForwardDiff.jacobian(f, x)))
+
+"""
+$(SIGNATURES)
+
+Calculate the value and the log Jacobian determinant of `f` at `x`. `flatten` is
+used to get a vector out of the result that makes `f` a bijection.
+"""
+value_and_logjac_forwarddiff(f, x, flatten = identity) =
+    f(x), logjac_forwarddiff(flatten ∘ f, x)
 
 """
     CustomTransform(g, f, flatten)
@@ -23,14 +34,14 @@ identity transformation with that dimension.
 redundant elements, so that ``x ↦ y`` is a bijection. For example, for a
 covariance matrix the elements below the diagonal should be removed.
 """
-struct CustomTransform{G <: TransformReals, F, H} <: TransformReals
+struct CustomTransform{G <: AbstractTransform, F, H} <: VectorTransform
     g::G
     f::F
     flatten::H
 end
 
 CustomTransform(n::Integer, f, flatten) =
-    CustomTransform(to_array(to_ℝ, n), f, flatten)
+    CustomTransform(as(Array, n), f, flatten)
 
 dimension(t::CustomTransform) = dimension(t.g)
 
@@ -43,6 +54,5 @@ function transform_with(flag::LogJac, t::CustomTransform, x::RealVector)
     @unpack g, f, flatten = t
     index = firstindex(x)
     xv = @view x[index:(index + dimension(g) - 1)]
-    h(x) = f(transform(g, x))
-    h(xv), logjac_forwarddiff(flatten ∘ h, xv)
+    value_and_logjac_forwarddiff(x -> f(transform(g, x)), xv, flatten)
 end

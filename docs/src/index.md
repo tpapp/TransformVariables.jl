@@ -8,6 +8,7 @@ transform
 transform_and_logjac
 inverse
 transform_logdensity
+as
 ```
 
 # Specific transformations
@@ -15,34 +16,31 @@ transform_logdensity
 ## Scalar transforms
 
 ```@docs
-to_interval
 ∞
 ```
 
 ```@docs
-to_ℝ
-to_ℝ₊
-to_ℝ₋
-to_𝕀
+ℝ
+ℝ₊
+ℝ₋
+𝕀
 ```
 
 ## Special arrays
 
 ```@docs
-to_unitvec
-to_corr_cholesky
+UnitVector
+CorrCholeskyFactor
 ```
 
 ## Aggregation of transformations
 
-```@docs
-to_array
-to_tuple
-```
+FIXME explain `as` syntax
 
 # Defining custom transformations
 
 ```@docs
 logjac_forwarddiff
+value_and_logjac_forwarddiff
 CustomTransform
 ```
