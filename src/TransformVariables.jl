@@ -102,13 +102,11 @@ Transform elements of `x`, starting using `transformation`.
 The first value returned is the transformed value, the second the log Jacobian
 determinant or a placeholder, depending on `flag`.
 
-Some types implement [`transform`] and [`transform_and_logjac`] via this method.
+In contrast to [`transform`] and [`transform_and_logjac`], this method always
+assumes that `x` is a `RealVector`, for efficient traversal. Some types
+implement the latter two via this method.
 
-`length(x) ≥ dimension(transformation)`, this is checked by the wrapper.
-
-2. generalized indexing, ie start with `first(x)` or `x[firstindex(x)]` and
-increment the index as necessary as it traverses `x`.
-
+Implementations should assume generalized indexing on `x`.
 """
 function transform_with end
 
@@ -130,6 +128,8 @@ function inverse_eltype end
     inverse!(x, t::AbstractTransform, y)
 
 Put `inverse(t, y)` into a preallocated vector `x`, returning `x`.
+
+Generalized indexing should be assumed on `x`.
 """
 function inverse! end
 
@@ -158,6 +158,17 @@ function dimension end
 
 Shorthand for constructing transformations with image in `T`. `args` determines
 or modifies behavior, details depend on `T`.
+
+Not all transformations have an `as` method, some just have direct constructors.
+See `methods(as)` for a list.
+
+# Examples
+
+```julia
+as(Real, -∞, 1)     # transform a real number to (-∞, 1)
+as(Array, 10, 2)    # reshape 20 real numbers to a 10x2 matrix
+as((a = ℝ₊, b = 𝕀)) # transform 2 real numbers a NamedTuple, with a > 0, 0 < b < 1
+```
 """
 function as end
 
