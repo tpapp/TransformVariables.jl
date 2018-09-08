@@ -41,5 +41,6 @@ FIXME explain `as` syntax
 
 ```@docs
 logjac_forwarddiff
+value_and_logjac_forwarddiff
 CustomTransform
 ```
