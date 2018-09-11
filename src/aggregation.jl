@@ -3,12 +3,12 @@ export to_array, to_tuple
 
 # arrays
 
-@calltrans struct TransformArray{T <: AbstractTransform,M} <: VectorTransform
+@calltrans struct ArrayTransform{T <: AbstractTransform,M} <: VectorTransform
     transformation::T
     dims::NTuple{M, Int}
 end
 
-dimension(t::TransformArray) = dimension(t.transformation) * prod(t.dims)
+dimension(t::ArrayTransform) = dimension(t.transformation) * prod(t.dims)
 
 """
 $(SIGNATURES)
@@ -17,16 +17,28 @@ Return a transformation that applies `transformation` repeatedly to create an
 array with the given `dims`.
 """
 as(::Type{Array}, transformation::AbstractTransform, dims::Tuple{Vararg{Int}}) =
-    TransformArray(transformation, dims)
+    ArrayTransform(transformation, dims)
 
-as(::Type{Array}, dims::Tuple{Vararg{Int}}) = as(Array, Identity, dims)
+as(::Type{Array}, dims::Tuple{Vararg{Int}}) = as(Array, Identity(), dims)
 
 as(::Type{Array}, transformation::AbstractTransform, dims::Int...) =
-    TransformArray(transformation, dims)
+    ArrayTransform(transformation, dims)
 
-as(::Type{Array}, dims::Int...) = as(Array, Identity, dims)
+as(::Type{Array}, dims::Int...) = as(Array, Identity(), dims)
 
-function transform_with(flag::LogJacFlag, t::TransformArray, x::RealVector)
+function as(::Type{Vector}, args...)
+    t = as(Array, args...)
+    @argcheck length(t.dims) == 1 "Vector should have 1 dimension."
+    t
+end
+
+function as(::Type{Matrix}, args...)
+    t = as(Array, args...)
+    @argcheck length(t.dims) == 2 "Matrix should have 2 dimensions."
+    t
+end
+
+function transform_with(flag::LogJacFlag, t::ArrayTransform, x::RealVector)
     @unpack transformation, dims = t
     d = dimension(transformation)
     index = firstindex(x)
@@ -38,14 +50,14 @@ function transform_with(flag::LogJacFlag, t::TransformArray, x::RealVector)
     first.(yℓ), sum(last, yℓ)
 end
 
-transform_with(flag, t::TransformArray{Identity}, x::RealVector) =
-    reshape(copy(x), t.dims)
+transform_with(flag::LogJacFlag, t::ArrayTransform{Identity}, x::RealVector) =
+    reshape(copy(x), t.dims), logjac_zero(flag, eltype(x))
 
-inverse_eltype(t::TransformArray, x::AbstractArray) =
-    inverse_eltype(t.transformation, first(x))
+inverse_eltype(t::ArrayTransform, x::AbstractArray) =
+    inverse_eltype(t.transformation, first(x)) # FIXME shortcut
 
 function inverse!(x::RealVector,
-                  transformation_array::TransformArray,
+                  transformation_array::ArrayTransform,
                   y::Array)
     @unpack transformation, dims = transformation_array
     @argcheck size(y) == dims
