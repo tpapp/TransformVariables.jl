@@ -1,6 +1,6 @@
 using TransformVariables
 using TransformVariables:
-    AbstractTransform, ScalarTransform, VectorTransform,
+    AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
     unit_triangular_dimension, logistic, logistic_logjac, logit
 
 import ForwardDiff
@@ -93,6 +93,18 @@ end
     y2, ℓ2 = transform_and_logjac(ta, x)
     @test y == y2
     @test ℓ2 ≈ ℓacc
+end
+
+@testset "as array fallback" begin
+    t = as(Array, 2, 3)
+    is_expected(t, dims) = t isa ArrayTransform && t.transformation == ℝ && t.dims == dims
+    @test is_expected(as(Array, 2, 3), (2, 3))
+    @test is_expected(as(Array, (2, 3)), (2, 3))
+    @test is_expected(as(Matrix, 2, 3), (2, 3))
+    @test is_expected(as(Matrix, (2, 3)), (2, 3))
+    @test_throws ArgumentError as(Vector, 2, 3)
+    @test_throws ArgumentError as(Vector, (2, 3))
+    @test is_expected(as(Vector, 2), (2, ))
 end
 
 @testset "to tuple" begin
