@@ -66,6 +66,11 @@ Base.first(I::IndexInto) = I.parent[I.i]
 
 Base.view(I::IndexInto, i) = view(I.parent, i)
 
+function Base.copy(I::IndexInto)
+    @unpack i, len, parent = I
+    I[i:(i + len - 1)]
+end
+
 
 # macrotools
 
