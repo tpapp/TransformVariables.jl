@@ -50,11 +50,11 @@ function transform_with(flag::LogJacFlag, t::ArrayTransform, x::RealVector)
     first.(yℓ), sum(last, yℓ)
 end
 
-transform_with(flag, t::ArrayTransform{Identity}, x::RealVector) =
-    reshape(copy(x), t.dims)
+transform_with(flag::LogJacFlag, t::ArrayTransform{Identity}, x::RealVector) =
+    reshape(copy(x), t.dims), logjac_zero(flag, eltype(x))
 
 inverse_eltype(t::ArrayTransform, x::AbstractArray) =
-    inverse_eltype(t.transformation, first(x))
+    inverse_eltype(t.transformation, first(x)) # FIXME shortcut
 
 function inverse!(x::RealVector,
                   transformation_array::ArrayTransform,

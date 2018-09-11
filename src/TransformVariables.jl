@@ -71,7 +71,7 @@ $(SIGNATURES)
 
 Initial value for log Jacobian calculations.
 """
-logjac_zero(::LogJac, x) = zero(x)
+logjac_zero(::LogJac, T::Type{<:Real}) = zero(T)
 
 logjac_zero(::NoLogJac, _) = NOLOGJAC
 

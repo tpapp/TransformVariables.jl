@@ -96,7 +96,6 @@ end
 end
 
 @testset "as array fallback" begin
-    t = as(Array, 2, 3)
     is_expected(t, dims) = t isa ArrayTransform && t.transformation == ℝ && t.dims == dims
     @test is_expected(as(Array, 2, 3), (2, 3))
     @test is_expected(as(Array, (2, 3)), (2, 3))
@@ -105,6 +104,16 @@ end
     @test_throws ArgumentError as(Vector, 2, 3)
     @test_throws ArgumentError as(Vector, (2, 3))
     @test is_expected(as(Vector, 2), (2, ))
+end
+
+@testset "as array w/ Identity" begin
+    d = (2, 3, 4)
+    t = as(Array, d)
+    v = randn(dimension(t))
+    y1 = transform(t, v)
+    y2, lj = transform_and_logjac(t, v)
+    @test y1 == y2 == reshape(v, d)
+    @test lj == 0
 end
 
 @testset "to tuple" begin
