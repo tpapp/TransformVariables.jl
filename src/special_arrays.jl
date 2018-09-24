@@ -39,14 +39,6 @@ Euclidean norm.
     end
 end
 
-"""
-$(SIGNATURES)
-
-Return a transformation that transforms `n - 1` real numbers to a unit vector
-(under Euclidean norm).
-"""
-to_unitvec(n) = UnitVector(n)
-
 dimension(t::UnitVector) = t.n - 1
 
 function transform_with(flag::LogJacFlag, t::UnitVector, x::RealVector{T}) where T
@@ -87,6 +79,9 @@ end
     CorrCholeskyFactor(n)
 
 Cholesky factor of a correlation matrix of size `n`.
+
+Transforms ``n×(n-1)/2`` real numbers to an ``n×n`` upper-triangular matrix `Ω`, such that
+`Ω'*Ω` is a correlation matrix (positive definite, with unit diagonal).
 """
 @calltrans struct CorrCholeskyFactor <: VectorTransform
     n::Int
@@ -95,15 +90,6 @@ Cholesky factor of a correlation matrix of size `n`.
         new(n)
     end
 end
-
-"""
-$(SIGNATURES)
-
-Return a transformation that transforms real numbers to an ``n×n``
-upper-triangular matrix `Ω`, such that `Ω'*Ω` is a correlation matrix (positive
-definite, with unit diagonal).
-"""
-to_corr_cholesky(n) = CorrCholeskyFactor(n)
 
 dimension(t::CorrCholeskyFactor) = unit_triangular_dimension(t.n)
 

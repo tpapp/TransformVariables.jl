@@ -7,8 +7,8 @@ using LinearAlgebra: UpperTriangular, logabsdet
 using MacroTools: @capture
 using Parameters: @unpack
 
-export dimension, transform, transform_and_logjac, transform_logdensity,
-    inverse, as
+export dimension, transform, transform_and_logjac, transform_logdensity, inverse, inverse!,
+    inverse_eltype, as
 
 
 # utilities
@@ -91,7 +91,7 @@ The user interface consists of
 - [`transform`](@ref)
 - [`transform_and_logjac`](@ref)
 - [`inverse`]@(ref), [`inverse!`](@ref)
-- [`inverse_eltype!`].
+- [`inverse_eltype`](@ref).
 """
 abstract type AbstractTransform end
 
