@@ -184,9 +184,9 @@ See `methods(as)` for a list.
 # Examples
 
 ```julia
-as(Real, -∞, 1)     # transform a real number to (-∞, 1)
-as(Array, 10, 2)    # reshape 20 real numbers to a 10x2 matrix
-as((a = ℝ₊, b = 𝕀)) # transform 2 real numbers a NamedTuple, with a > 0, 0 < b < 1
+as(Real, -∞, 1)          # transform a real number to (-∞, 1)
+as(Array, 10, 2)         # reshape 20 real numbers to a 10x2 matrix
+as((a = asℝ₊, b = as𝕀)) # transform 2 real numbers a NamedTuple, with a > 0, 0 < b < 1
 ```
 """
 function as end

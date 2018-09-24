@@ -76,7 +76,7 @@ end
 
 @testset "to array scalar" begin
     dims = (3, 4, 5)
-    t = 𝕀
+    t = as𝕀
     ta = as(Array, t, dims...)
     @test dimension(ta) == prod(dims)
     x = randn(dimension(ta))
@@ -96,7 +96,7 @@ end
 end
 
 @testset "as array fallback" begin
-    is_expected(t, dims) = t isa ArrayTransform && t.transformation == ℝ && t.dims == dims
+    is_expected(t, dims) = t isa ArrayTransform && t.transformation == asℝ && t.dims == dims
     @test is_expected(as(Array, 2, 3), (2, 3))
     @test is_expected(as(Array, (2, 3)), (2, 3))
     @test is_expected(as(Matrix, 2, 3), (2, 3))
@@ -117,8 +117,8 @@ end
 end
 
 @testset "to tuple" begin
-    t1 = ℝ
-    t2 = 𝕀
+    t1 = asℝ
+    t2 = as𝕀
     t3 = CorrCholeskyFactor(7)
     tt = as((t1, t2, t3))
     @test dimension(tt) == dimension(t1) + dimension(t2) + dimension(t3)
@@ -143,7 +143,7 @@ end
 end
 
 @testset "to named tuple" begin
-    t1 = ℝ
+    t1 = asℝ
     t2 = CorrCholeskyFactor(7)
     t3 = UnitVector(3)
     tn = as((a = t1, b = t2, c = t3))
@@ -176,14 +176,14 @@ end
     q(z) = -2*z
     for _ in 1:1000
         z = randn()
-        qz = transform_logdensity(ℝ₊, f, z)
+        qz = transform_logdensity(asℝ₊, f, z)
         @test q(z) ≈ qz
     end
 end
 
 @testset "custom transformation: triangle below diagonal in [0,1]²" begin
     tfun(y) = y[1], y[1]*y[2]   # triangle below diagonal in unit square
-    t = CustomTransform(as(Array, 𝕀, 2), tfun, collect)
+    t = CustomTransform(as(Array, as𝕀, 2), tfun, collect)
     test_transformation(t, ((y1, y2),) -> 0 ≤ y2 ≤ y1 ≤ 1;
                         vec_y = collect, test_inverse = false)
 end
@@ -192,7 +192,7 @@ end
     "Transform to a `n×n` covariance matrix."
     to_covariance(n) = CustomTransform(
         # pre-transform to standard deviations and correlation Cholesky factor
-        as((as(Array, ℝ₊, n), CorrCholeskyFactor(n))),
+        as((as(Array, asℝ₊, n), CorrCholeskyFactor(n))),
         # use these to construct a covariance matrix
         (((σ, Ω),) -> (Ω*Diagonal(σ) |> x -> Symmetric(x'*x))),
         # flatten to elements above the diagonal
