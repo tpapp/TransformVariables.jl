@@ -1,3 +1,5 @@
+using Documenter, TransformVariables
+
 makedocs(
     modules = [TransformVariables],
     format = :html,
