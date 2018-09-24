@@ -20,13 +20,15 @@ and the ``θⱼ`` are assume to have a hierarchical prior distribution
 θⱼ ∼ N(μ, τ²)
 ```
 
-One could use a transformation
+For this problem, one could define a transformation
 
 ```@example ex1
 using TransformVariables
 t = as((μ = asℝ, σ = asℝ₊, τ = asℝ₊, θs = as(Array, 8)))
 dimension(t)
 ```
+
+which would then yield a `NamedTuple` with the given names, with one of them being a `Vector`:
 
 ```@repl ex1
 x = randn(dimension(t))
