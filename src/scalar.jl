@@ -1,4 +1,4 @@
-export ∞, ℝ, ℝ₊, ℝ₋, 𝕀
+export ∞, asℝ, asℝ₊, asℝ₋, as𝕀
 
 """
 $(TYPEDEF)
@@ -151,13 +151,13 @@ function as(::Type{Real}, left::Real, right::Real)
 end
 
 "Transform to a non-negative real number."
-const ℝ₊ = as(Real, 0.0, ∞)
+const asℝ₊ = as(Real, 0.0, ∞)
 
 "Transform to a non-positive real number."
-const ℝ₋ = as(Real, -∞, 0.0)
+const asℝ₋ = as(Real, -∞, 0.0)
 
 "Transform to the unit interval `(0, 1)`."
-const 𝕀 = as(Real, 0.0, 1.0)
+const as𝕀 = as(Real, 0.0, 1.0)
 
 "Transform to the real line (identity)."
-const ℝ = as(Real, -∞, ∞)
+const asℝ = as(Real, -∞, ∞)

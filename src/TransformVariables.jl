@@ -7,27 +7,8 @@ using LinearAlgebra: UpperTriangular, logabsdet
 using MacroTools: @capture
 using Parameters: @unpack
 
-export dimension, transform, transform_and_logjac, transform_logdensity,
-    inverse, as
-
-
-# utilities
-
-"""
-$(SIGNATURES)
-
-Test if the argument vector has 1-based indexing.
-"""
-@inline isoneindexed(v::AbstractVector) = axes(v, 1) isa Base.OneTo
-
-"""
-$(SIGNATURES)
-
-If the argument vector does not have 1-based indexing, convert it to `Vector`,
-otherwise return as is.
-"""
-@inline ensureoneindexed(v::AbstractVector) =
-    isoneindexed(v) ? v : convert(Vector, v)
+export dimension, transform, transform_and_logjac, transform_logdensity, inverse, inverse!,
+    inverse_eltype, as
 
 
 # log absolute Jacobian determinant
@@ -91,7 +72,7 @@ The user interface consists of
 - [`transform`](@ref)
 - [`transform_and_logjac`](@ref)
 - [`inverse`]@(ref), [`inverse!`](@ref)
-- [`inverse_eltype!`].
+- [`inverse_eltype`](@ref).
 """
 abstract type AbstractTransform end
 
@@ -184,9 +165,9 @@ See `methods(as)` for a list.
 # Examples
 
 ```julia
-as(Real, -∞, 1)     # transform a real number to (-∞, 1)
-as(Array, 10, 2)    # reshape 20 real numbers to a 10x2 matrix
-as((a = ℝ₊, b = 𝕀)) # transform 2 real numbers a NamedTuple, with a > 0, 0 < b < 1
+as(Real, -∞, 1)          # transform a real number to (-∞, 1)
+as(Array, 10, 2)         # reshape 20 real numbers to a 10x2 matrix
+as((a = asℝ₊, b = as𝕀)) # transform 2 real numbers a NamedTuple, with a > 0, 0 < b < 1
 ```
 """
 function as end
@@ -208,7 +189,7 @@ Transformation that transforms `<: RealVector`s to other values.
 
 # Implementation
 
-Implements [`transform`](@ref) and [`transform_logjac`](@ref) via
+Implements [`transform`](@ref) and [`transform_and_logjac`](@ref) via
 [`transform_with`](@ref), and [`inverse`](@ref) via [`inverse!`](@ref).
 """
 abstract type VectorTransform <: AbstractTransform end

@@ -3,6 +3,11 @@ export to_array, to_tuple
 
 # arrays
 
+"""
+$(TYPEDEF)
+
+Apply `transformation` repeatedly to create an array with given `dims`.
+"""
 @calltrans struct ArrayTransform{T <: AbstractTransform,M} <: VectorTransform
     transformation::T
     dims::NTuple{M, Int}
@@ -75,6 +80,11 @@ end
 
 const NTransforms{N} = Tuple{Vararg{AbstractTransform,N}}
 
+"""
+$(TYPEDEF)
+
+Transform consecutive groups of real numbers to a tuple, using the given transformations.
+"""
 @calltrans struct TransformTuple{K, T <: NTransforms{K}} <: VectorTransform
     transformations::T
     dimension::Int
@@ -146,6 +156,12 @@ function inverse!(x::RealVector, tt::TransformTuple{K},
     _inverse!_tuple(x, tt.transformations, y)
 end
 
+"""
+$(TYPEDEF)
+
+Transform consecutive groups of real numbers to a named tuple, using the given
+transformations.
+"""
 @calltrans struct TransformNamedTuple{names, T <: NTransforms} <: VectorTransform
     transformations::T
     dimension::Int

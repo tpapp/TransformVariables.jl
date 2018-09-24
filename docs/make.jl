@@ -1,10 +1,16 @@
 using Documenter, TransformVariables
 
-makedocs(;
-         sitename = "TransformVariables.jl",
-         modules = [TransformVariables],
-         format = :html,
-         clean = true,
-         checkdocs = :exports,
-         pages = Any["Manual" => "index.md"]
+makedocs(
+    modules = [TransformVariables],
+    format = :html,
+    sitename = "$TransformVariables.jl",
+    pages = Any["index.md"]
+)
+
+deploydocs(
+    repo = "github.com/tpapp/TransformVariables.jl.git",
+    target = "build",
+    julia = "1.0",
+    deps = nothing,
+    make = nothing,
 )
