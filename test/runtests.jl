@@ -4,7 +4,7 @@ using TransformVariables:
     unit_triangular_dimension, logistic, logistic_logjac, logit
 
 import ForwardDiff
-using DocStringExtensions, Test, Random, LinearAlgebra
+using DocStringExtensions, Test, Random, LinearAlgebra, OffsetArrays
 
 include("test_utilities.jl")
 
@@ -200,4 +200,13 @@ end
     C5 = to_covariance(5)
     test_transformation(C5, A -> all(diag(cholesky(A).U) .> 0);
                         vec_y = C5.flatten, test_inverse = false)
+end
+
+@testset "offset arrays" begin
+    t = as((λ = asℝ₊, a = CorrCholeskyFactor(4),
+            θ = as((as(Array, as𝕀, 2, 3), UnitVector(4)))))
+    x = randn(dimension(t))
+    xo = OffsetVector(x, axes(x, 1) .- 7)
+    @test transform(t, x) == transform(t, xo)
+    @test transform_and_logjac(t, x) == transform_and_logjac(t, xo)
 end

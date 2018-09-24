@@ -11,25 +11,6 @@ export dimension, transform, transform_and_logjac, transform_logdensity, inverse
     inverse_eltype, as
 
 
-# utilities
-
-"""
-$(SIGNATURES)
-
-Test if the argument vector has 1-based indexing.
-"""
-@inline isoneindexed(v::AbstractVector) = axes(v, 1) isa Base.OneTo
-
-"""
-$(SIGNATURES)
-
-If the argument vector does not have 1-based indexing, convert it to `Vector`,
-otherwise return as is.
-"""
-@inline ensureoneindexed(v::AbstractVector) =
-    isoneindexed(v) ? v : convert(Vector, v)
-
-
 # log absolute Jacobian determinant
 
 """
