@@ -189,7 +189,7 @@ Transformation that transforms `<: RealVector`s to other values.
 
 # Implementation
 
-Implements [`transform`](@ref) and [`transform_logjac`](@ref) via
+Implements [`transform`](@ref) and [`transform_and_logjac`](@ref) via
 [`transform_with`](@ref), and [`inverse`](@ref) via [`inverse!`](@ref).
 """
 abstract type VectorTransform <: AbstractTransform end

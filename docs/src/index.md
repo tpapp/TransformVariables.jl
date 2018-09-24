@@ -76,8 +76,8 @@ TransformVariables.ShiftedExp
 
 ```@docs
 TransformVariables.ArrayTransform
-TransformVariables.TupleTransform
-TransformVariables.NamedTupleTransform
+TransformVariables.TransformTuple
+TransformVariables.TransformNamedTuple
 ```
 
 ### Wrapper for inverse
