@@ -37,6 +37,8 @@ keys(y)
 y.θs
 ```
 
+Further worked examples of using this package can be found in the [DynamicHMCExamples.jl](https://github.com/tpapp/DynamicHMCExamples.jl/) repository. It is recommended that the user reads those first, and treats this documentation as a reference.
+
 # General interface
 
 ```@docs
