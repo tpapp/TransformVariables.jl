@@ -201,6 +201,3 @@ end
     test_transformation(C5, A -> all(diag(cholesky(A).U) .> 0);
                         vec_y = C5.flatten, test_inverse = false)
 end
-
-# also generate documentation
-include("../docs/make.jl")
