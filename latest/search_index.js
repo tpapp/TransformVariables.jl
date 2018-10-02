@@ -413,7 +413,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables.IndexInto",
     "category": "type",
-    "text": "Implement a view into a vector starting at a given element. Uses generalized indexing.\n\nnote: Note\nBounds are not (yet) checked, may be implemented later.\n\n\n\n\n\n"
+    "text": "Implement a view into a vector starting at a given element. Uses generalized indexing.\n\nnote: Note\nBounds are not (yet) checked, may be implemented later.This is an internal implementation detail, not meant to be exposed by the API.Use the index_into constructor internally.\n\n\n\n\n\n"
 },
 
 {
