@@ -30,11 +30,15 @@ indexing.
 !!! note
 
     Bounds are not (yet) checked, may be implemented later.
+
+    This is an internal implementation detail, not meant to be exposed by the API.
+
+    Use the `index_into` constructor internally.
 """
 struct IndexInto{T, S <: AbstractVector{T}} <: AbstractVector{T}
+    parent::S
     i::Int
     len::Int
-    parent::S
 end
 
 """
@@ -42,9 +46,9 @@ $SIGNATURES
 
 A wrapper functionally equivalent to `@view v[i:end]`, no bounds checking.
 """
-index_into(v::AbstractVector, i, len) = IndexInto(i, len, v)
+index_into(v::AbstractVector, i, len) = IndexInto(v, i, len)
 
-index_into(v::IndexInto, i, len) = IndexInto(i, len, v.parent)
+index_into(v::IndexInto, i, len) = IndexInto(v.parent, i, len)
 
 Base.axes(I::IndexInto) = (firstindex(I):lastindex(I), )
 
@@ -58,9 +62,9 @@ Base.firstindex(I::IndexInto) = I.i
 
 Base.lastindex(I::IndexInto) = I.i + I.len - 1
 
-Base.getindex(I::IndexInto, i::Int) = I.parent[i]
+Base.getindex(I::IndexInto, i) = I.parent[i] # NO CHECKING
 
-Base.setindex!(I::IndexInto, value, i::Int) = setindex!(I.parent, value, i)
+Base.setindex!(I::IndexInto, value, i) = setindex!(I.parent, value, i) # NO CHECkiNG
 
 Base.first(I::IndexInto) = I.parent[I.i]
 
@@ -72,7 +76,7 @@ function Base.copy(I::IndexInto)
 end
 
 
-# macrotools
+# macros
 
 """
 $(SIGNATURES)

@@ -55,8 +55,12 @@ function transform_with(flag::LogJacFlag, t::ArrayTransform, x::RealVector)
     first.(yℓ), sum(last, yℓ)
 end
 
-transform_with(flag::LogJacFlag, t::ArrayTransform{Identity}, x::RealVector) =
-    reshape(copy(x), t.dims), logjac_zero(flag, eltype(x))
+function transform_with(flag::LogJacFlag, t::ArrayTransform{Identity}, x::RealVector)
+    # TODO use version below when https://github.com/FluxML/Flux.jl/issues/416 is fixed
+    # y = reshape(copy(x), t.dims)
+    y = reshape(map(identity, x), t.dims)
+    y, logjac_zero(flag, eltype(x))
+end
 
 inverse_eltype(t::ArrayTransform, x::AbstractArray) =
     inverse_eltype(t.transformation, first(x)) # FIXME shortcut

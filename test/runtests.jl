@@ -1,7 +1,7 @@
 using TransformVariables
 using TransformVariables:
-    AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
-    unit_triangular_dimension, logistic, logistic_logjac, logit
+    index_into, IndexInto, AbstractTransform, ScalarTransform, VectorTransform,
+    ArrayTransform, unit_triangular_dimension, logistic, logistic_logjac, logit
 
 import ForwardDiff
 using DocStringExtensions, Test, Random, LinearAlgebra, OffsetArrays
@@ -11,6 +11,20 @@ include("test_utilities.jl")
 Random.seed!(1)
 
 const CIENV = get(ENV, "TRAVIS", "") == "true"  || get(ENV, "CI", "") == "true"
+
+@testset "indexing utilities (internal)" begin
+    v = Float64.(6:15)
+    w = index_into(v, 3, 5)
+    @test firstindex(w) ≡ 3
+    @test lastindex(w) ≡ 7
+    @test first(w) ≡ 8.0
+    @test axes(w, 1) == 3:7
+    cw = copy(w)
+    @test cw isa Vector{Float64}
+    @test all(cw .≡ Float64.(8:12))
+    ww = index_into(w, firstindex(w) + 1, 3)
+    @test copy(ww) == 9:11
+end
 
 @testset "misc utilities" begin
     @test unit_triangular_dimension(1) == 0
