@@ -1,3 +1,5 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-TransformVariables = "84d833dd-6860-57f9-a1a7-6da5db126cff"
+
+[compat]
+Documenter = "~0.19"
