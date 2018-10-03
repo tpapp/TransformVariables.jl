@@ -1,5 +1,5 @@
 name = "TransformVariables"
-uuid = "eb4f743c-8036-11e8-1c4c-19fb1cbfc623"
+uuid = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
 version = "0.1.0"
 

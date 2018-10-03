@@ -177,7 +177,7 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 [[TransformVariables]]
 deps = ["ArgCheck", "DocStringExtensions", "ForwardDiff", "LinearAlgebra", "MacroTools", "Parameters"]
 path = ".."
-uuid = "eb4f743c-8036-11e8-1c4c-19fb1cbfc623"
+uuid = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 version = "0.1.0"
 
 [[URIParser]]
