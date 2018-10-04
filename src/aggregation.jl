@@ -47,7 +47,7 @@ function transform_with(flag::LogJacFlag, t::ArrayTransform, x::RealVector)
     @unpack transformation, dims = t
     d = dimension(transformation)
     index = firstindex(x)
-    yℓ = reshape([(y = transform_with(flag, transformation, index_into(x, index, d));
+    yℓ = reshape([(y = transform_with(flag, transformation, view_into(x, index, d));
                    index += d;
                    y)
                   for _ in Base.OneTo(prod(dims))],
@@ -73,7 +73,7 @@ function inverse!(x::RealVector,
     index = firstindex(x)
     d = dimension(transformation)
     for elt in vec(y)
-        inverse!(index_into(x, index, d), transformation, elt)
+        inverse!(view_into(x, index, d), transformation, elt)
         index += d;
     end
     x
@@ -116,7 +116,7 @@ function _transform_tuple(flag::LogJacFlag, tt::NTransforms, x::RealVector)
     index = firstindex(x)
     yℓ = map(t -> begin
              d = dimension(t)
-             result = transform_with(flag, t, index_into(x, index, d))
+             result = transform_with(flag, t, view_into(x, index, d))
              index += d
              result
              end, tt)
@@ -142,7 +142,7 @@ function _inverse!_tuple(x::RealVector, ts::NTransforms{K},
     index = firstindex(x)
     for (t, y) in zip(ts, ys)
         d = dimension(t)
-        inverse!(index_into(x, index, d), t, y)
+        inverse!(view_into(x, index, d), t, y)
         index += d
     end
     x
