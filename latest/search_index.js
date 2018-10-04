@@ -401,22 +401,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.index_into",
-    "page": "Introduction",
-    "title": "TransformVariables.index_into",
-    "category": "function",
-    "text": "index_into(v, i, len)\n\n\nA wrapper functionally equivalent to @view v[i:end], no bounds checking.\n\n\n\n\n\n"
-},
-
-{
-    "location": "index.html#TransformVariables.IndexInto",
-    "page": "Introduction",
-    "title": "TransformVariables.IndexInto",
-    "category": "type",
-    "text": "Implement a view into a vector starting at a given element. Uses generalized indexing.\n\nnote: Note\nBounds are not (yet) checked, may be implemented later.This is an internal implementation detail, not meant to be exposed by the API.Use the index_into constructor internally.\n\n\n\n\n\n"
-},
-
-{
     "location": "index.html#Fast-vector-views-1",
     "page": "Introduction",
     "title": "Fast vector views",
