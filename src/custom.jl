@@ -9,8 +9,14 @@ Calculate the log Jacobian determinant of `f` at `x` using `ForwardDiff.
 
 `f` should be a bijection, mapping from vectors of real numbers to vectors of
 equal length.
+
+When `handleNaN = true` (the default), NaN log Jacobians are converted to -Inf.
 """
-logjac_forwarddiff(f, x) = first(logabsdet(ForwardDiff.jacobian(f, x)))
+function logjac_forwarddiff(f, x; handleNaN = true)
+    lj = first(logabsdet(ForwardDiff.jacobian(f, x)))
+    isnan(lj) && handleNaN && return oftype(lj, -Inf)
+    lj
+end
 
 """
 $(SIGNATURES)
@@ -18,8 +24,8 @@ $(SIGNATURES)
 Calculate the value and the log Jacobian determinant of `f` at `x`. `flatten` is
 used to get a vector out of the result that makes `f` a bijection.
 """
-value_and_logjac_forwarddiff(f, x, flatten = identity) =
-    f(x), logjac_forwarddiff(flatten ∘ f, x)
+value_and_logjac_forwarddiff(f, x; flatten = identity, handleNaN = true) =
+    f(x), logjac_forwarddiff(flatten ∘ f, x; handleNaN = handleNaN)
 
 """
     CustomTransform(g, f, flatten)
@@ -54,5 +60,5 @@ function transform_with(flag::LogJac, t::CustomTransform, x::RealVector)
     @unpack g, f, flatten = t
     index = firstindex(x)
     xv = @view x[index:(index + dimension(g) - 1)]
-    value_and_logjac_forwarddiff(x -> f(transform(g, x)), xv, flatten)
+    value_and_logjac_forwarddiff(x -> f(transform(g, x)), xv; flatten = flatten)
 end
