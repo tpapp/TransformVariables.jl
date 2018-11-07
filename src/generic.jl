@@ -208,6 +208,8 @@ $(SIGNATURES)
 
 A random argument for a transformation.
 
+# Keyword arguments
+
 $(_RANDOM_REALS_KWARGS_DOC)
 """
 random_arg(x::VectorTransform; kwargs...) = random_reals(dimension(x); kwargs...)
@@ -216,6 +218,8 @@ random_arg(x::VectorTransform; kwargs...) = random_reals(dimension(x); kwargs...
 $(SIGNATURES)
 
 Random value from a transformation.
+
+# Keyword arguments
 
 $(_RANDOM_REALS_KWARGS_DOC)
 """
