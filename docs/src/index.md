@@ -152,13 +152,6 @@ TransformVariables.logjac_zero
 TransformVariables.@calltrans
 ```
 
-## Fast vector views
-
-```@docs
-TransformVariables.index_into
-TransformVariables.IndexInto
-```
-
 ## Helper functions
 
 ```@docs
