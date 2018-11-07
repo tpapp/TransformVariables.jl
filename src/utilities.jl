@@ -62,7 +62,7 @@ A standard multivaritate normal or Cauchy is used, depending on `cauchy`, then s
 """
 
 _random_reals_scale(rng::AbstractRNG, scale::Real, cauchy::Bool) =
-    cauchy ? scale * 1.0 : scale / abs2(randn(rng))
+    cauchy ? scale / abs2(randn(rng)) : scale * 1.0
 
 """
 $(SIGNATURES)

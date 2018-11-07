@@ -220,3 +220,10 @@ end
     @test size(y.b) == (7, 7)
     @test size(y.c) == (3, )
 end
+
+@testset "random arg" begin
+    t = as(Array, 5)
+    for _ in 1:1000
+        @test sum(abs2, random_arg(t; cauchy = false, scale = 1.0)) ≤ 100
+    end
+end
