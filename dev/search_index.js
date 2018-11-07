@@ -85,7 +85,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables.random_arg",
     "category": "function",
-    "text": "random_arg(x; kwargs...)\n\n\nA random argument for a transformation.\n\nA standard multivaritate normal or Cauchy is used, depending on cauchy, then scaled with scale. rng is the random number generator used.\n\n\n\n\n\n"
+    "text": "random_arg(x; kwargs...)\n\n\nA random argument for a transformation.\n\nKeyword arguments\n\nA standard multivaritate normal or Cauchy is used, depending on cauchy, then scaled with scale. rng is the random number generator used.\n\n\n\n\n\n"
 },
 
 {
@@ -93,7 +93,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables.random_value",
     "category": "function",
-    "text": "random_value(t; kwargs...)\n\n\nRandom value from a transformation.\n\nA standard multivaritate normal or Cauchy is used, depending on cauchy, then scaled with scale. rng is the random number generator used.\n\n\n\n\n\n"
+    "text": "random_value(t; kwargs...)\n\n\nRandom value from a transformation.\n\nKeyword arguments\n\nA standard multivaritate normal or Cauchy is used, depending on cauchy, then scaled with scale. rng is the random number generator used.\n\n\n\n\n\n"
 },
 
 {
