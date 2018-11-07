@@ -1,7 +1,7 @@
 var documenterSearchIndex = {"docs": [
 
 {
-    "location": "index.html#",
+    "location": "#",
     "page": "Introduction",
     "title": "Introduction",
     "category": "page",
@@ -9,7 +9,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Introduction-1",
+    "location": "#Introduction-1",
     "page": "Introduction",
     "title": "Introduction",
     "category": "section",
@@ -17,7 +17,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.as",
+    "location": "#TransformVariables.as",
     "page": "Introduction",
     "title": "TransformVariables.as",
     "category": "function",
@@ -25,7 +25,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.dimension",
+    "location": "#TransformVariables.dimension",
     "page": "Introduction",
     "title": "TransformVariables.dimension",
     "category": "function",
@@ -33,7 +33,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.transform",
+    "location": "#TransformVariables.transform",
     "page": "Introduction",
     "title": "TransformVariables.transform",
     "category": "function",
@@ -41,7 +41,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.transform_and_logjac",
+    "location": "#TransformVariables.transform_and_logjac",
     "page": "Introduction",
     "title": "TransformVariables.transform_and_logjac",
     "category": "function",
@@ -49,7 +49,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.inverse",
+    "location": "#TransformVariables.inverse",
     "page": "Introduction",
     "title": "TransformVariables.inverse",
     "category": "function",
@@ -57,7 +57,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.inverse!",
+    "location": "#TransformVariables.inverse!",
     "page": "Introduction",
     "title": "TransformVariables.inverse!",
     "category": "function",
@@ -65,7 +65,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.inverse_eltype",
+    "location": "#TransformVariables.inverse_eltype",
     "page": "Introduction",
     "title": "TransformVariables.inverse_eltype",
     "category": "function",
@@ -73,7 +73,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.transform_logdensity",
+    "location": "#TransformVariables.transform_logdensity",
     "page": "Introduction",
     "title": "TransformVariables.transform_logdensity",
     "category": "function",
@@ -81,15 +81,31 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#General-interface-1",
+    "location": "#TransformVariables.random_arg",
     "page": "Introduction",
-    "title": "General interface",
-    "category": "section",
-    "text": "asdimension\ntransform\ntransform_and_logjacinverse\ninverse!\ninverse_eltypetransform_logdensity"
+    "title": "TransformVariables.random_arg",
+    "category": "function",
+    "text": "random_arg(x; kwargs...)\n\n\nA random argument for a transformation.\n\nA standard multivaritate normal or Cauchy is used, depending on cauchy, then scaled with scale. rng is the random number generator used.\n\n\n\n\n\n"
 },
 
 {
-    "location": "index.html#Specific-transformations-1",
+    "location": "#TransformVariables.random_value",
+    "page": "Introduction",
+    "title": "TransformVariables.random_value",
+    "category": "function",
+    "text": "random_value(t; kwargs...)\n\n\nRandom value from a transformation.\n\nA standard multivaritate normal or Cauchy is used, depending on cauchy, then scaled with scale. rng is the random number generator used.\n\n\n\n\n\n"
+},
+
+{
+    "location": "#General-interface-1",
+    "page": "Introduction",
+    "title": "General interface",
+    "category": "section",
+    "text": "asdimension\ntransform\ntransform_and_logjacinverse\ninverse!\ninverse_eltypetransform_logdensityrandom_arg\nrandom_value"
+},
+
+{
+    "location": "#Specific-transformations-1",
     "page": "Introduction",
     "title": "Specific transformations",
     "category": "section",
@@ -97,7 +113,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.∞",
+    "location": "#TransformVariables.∞",
     "page": "Introduction",
     "title": "TransformVariables.∞",
     "category": "constant",
@@ -105,7 +121,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.asℝ",
+    "location": "#TransformVariables.asℝ",
     "page": "Introduction",
     "title": "TransformVariables.asℝ",
     "category": "constant",
@@ -113,7 +129,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.asℝ₊",
+    "location": "#TransformVariables.asℝ₊",
     "page": "Introduction",
     "title": "TransformVariables.asℝ₊",
     "category": "constant",
@@ -121,7 +137,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.asℝ₋",
+    "location": "#TransformVariables.asℝ₋",
     "page": "Introduction",
     "title": "TransformVariables.asℝ₋",
     "category": "constant",
@@ -129,7 +145,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.as𝕀",
+    "location": "#TransformVariables.as𝕀",
     "page": "Introduction",
     "title": "TransformVariables.as𝕀",
     "category": "constant",
@@ -137,7 +153,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Scalar-transforms-1",
+    "location": "#Scalar-transforms-1",
     "page": "Introduction",
     "title": "Scalar transforms",
     "category": "section",
@@ -145,7 +161,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.UnitVector",
+    "location": "#TransformVariables.UnitVector",
     "page": "Introduction",
     "title": "TransformVariables.UnitVector",
     "category": "type",
@@ -153,7 +169,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.CorrCholeskyFactor",
+    "location": "#TransformVariables.CorrCholeskyFactor",
     "page": "Introduction",
     "title": "TransformVariables.CorrCholeskyFactor",
     "category": "type",
@@ -161,7 +177,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Special-arrays-1",
+    "location": "#Special-arrays-1",
     "page": "Introduction",
     "title": "Special arrays",
     "category": "section",
@@ -169,7 +185,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Aggregation-of-transformations-1",
+    "location": "#Aggregation-of-transformations-1",
     "page": "Introduction",
     "title": "Aggregation of transformations",
     "category": "section",
@@ -177,7 +193,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.logjac_forwarddiff",
+    "location": "#TransformVariables.logjac_forwarddiff",
     "page": "Introduction",
     "title": "TransformVariables.logjac_forwarddiff",
     "category": "function",
@@ -185,7 +201,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.value_and_logjac_forwarddiff",
+    "location": "#TransformVariables.value_and_logjac_forwarddiff",
     "page": "Introduction",
     "title": "TransformVariables.value_and_logjac_forwarddiff",
     "category": "function",
@@ -193,7 +209,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.CustomTransform",
+    "location": "#TransformVariables.CustomTransform",
     "page": "Introduction",
     "title": "TransformVariables.CustomTransform",
     "category": "type",
@@ -201,7 +217,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Defining-custom-transformations-1",
+    "location": "#Defining-custom-transformations-1",
     "page": "Introduction",
     "title": "Defining custom transformations",
     "category": "section",
@@ -209,7 +225,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Internals-1",
+    "location": "#Internals-1",
     "page": "Introduction",
     "title": "Internals",
     "category": "section",
@@ -217,7 +233,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Types-for-various-transformations-1",
+    "location": "#Types-for-various-transformations-1",
     "page": "Introduction",
     "title": "Types for various transformations",
     "category": "section",
@@ -225,7 +241,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.Identity",
+    "location": "#TransformVariables.Identity",
     "page": "Introduction",
     "title": "TransformVariables.Identity",
     "category": "type",
@@ -233,7 +249,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.ScaledShiftedLogistic",
+    "location": "#TransformVariables.ScaledShiftedLogistic",
     "page": "Introduction",
     "title": "TransformVariables.ScaledShiftedLogistic",
     "category": "type",
@@ -241,7 +257,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.ShiftedExp",
+    "location": "#TransformVariables.ShiftedExp",
     "page": "Introduction",
     "title": "TransformVariables.ShiftedExp",
     "category": "type",
@@ -249,7 +265,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Scalar-transformations-1",
+    "location": "#Scalar-transformations-1",
     "page": "Introduction",
     "title": "Scalar transformations",
     "category": "section",
@@ -257,7 +273,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.ArrayTransform",
+    "location": "#TransformVariables.ArrayTransform",
     "page": "Introduction",
     "title": "TransformVariables.ArrayTransform",
     "category": "type",
@@ -265,7 +281,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.TransformTuple",
+    "location": "#TransformVariables.TransformTuple",
     "page": "Introduction",
     "title": "TransformVariables.TransformTuple",
     "category": "type",
@@ -273,7 +289,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.TransformNamedTuple",
+    "location": "#TransformVariables.TransformNamedTuple",
     "page": "Introduction",
     "title": "TransformVariables.TransformNamedTuple",
     "category": "type",
@@ -281,7 +297,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Aggregating-transformations-1",
+    "location": "#Aggregating-transformations-1",
     "page": "Introduction",
     "title": "Aggregating transformations",
     "category": "section",
@@ -289,7 +305,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.InverseTransform",
+    "location": "#TransformVariables.InverseTransform",
     "page": "Introduction",
     "title": "TransformVariables.InverseTransform",
     "category": "type",
@@ -297,7 +313,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Wrapper-for-inverse-1",
+    "location": "#Wrapper-for-inverse-1",
     "page": "Introduction",
     "title": "Wrapper for inverse",
     "category": "section",
@@ -305,7 +321,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.RealVector",
+    "location": "#TransformVariables.RealVector",
     "page": "Introduction",
     "title": "TransformVariables.RealVector",
     "category": "type",
@@ -313,7 +329,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.AbstractTransform",
+    "location": "#TransformVariables.AbstractTransform",
     "page": "Introduction",
     "title": "TransformVariables.AbstractTransform",
     "category": "type",
@@ -321,7 +337,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.ScalarTransform",
+    "location": "#TransformVariables.ScalarTransform",
     "page": "Introduction",
     "title": "TransformVariables.ScalarTransform",
     "category": "type",
@@ -329,7 +345,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.VectorTransform",
+    "location": "#TransformVariables.VectorTransform",
     "page": "Introduction",
     "title": "TransformVariables.VectorTransform",
     "category": "type",
@@ -337,7 +353,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Types-and-type-aliases-1",
+    "location": "#Types-and-type-aliases-1",
     "page": "Introduction",
     "title": "Types and type aliases",
     "category": "section",
@@ -345,7 +361,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.LogJacFlag",
+    "location": "#TransformVariables.LogJacFlag",
     "page": "Introduction",
     "title": "TransformVariables.LogJacFlag",
     "category": "type",
@@ -353,7 +369,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.LogJac",
+    "location": "#TransformVariables.LogJac",
     "page": "Introduction",
     "title": "TransformVariables.LogJac",
     "category": "type",
@@ -361,7 +377,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.NoLogJac",
+    "location": "#TransformVariables.NoLogJac",
     "page": "Introduction",
     "title": "TransformVariables.NoLogJac",
     "category": "type",
@@ -369,7 +385,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.logjac_zero",
+    "location": "#TransformVariables.logjac_zero",
     "page": "Introduction",
     "title": "TransformVariables.logjac_zero",
     "category": "function",
@@ -377,7 +393,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Conditional-calculation-of-log-Jacobian-determinant-1",
+    "location": "#Conditional-calculation-of-log-Jacobian-determinant-1",
     "page": "Introduction",
     "title": "Conditional calculation of log Jacobian determinant",
     "category": "section",
@@ -385,7 +401,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.@calltrans",
+    "location": "#TransformVariables.@calltrans",
     "page": "Introduction",
     "title": "TransformVariables.@calltrans",
     "category": "macro",
@@ -393,7 +409,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Macros-1",
+    "location": "#Macros-1",
     "page": "Introduction",
     "title": "Macros",
     "category": "section",
@@ -401,15 +417,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Fast-vector-views-1",
-    "page": "Introduction",
-    "title": "Fast vector views",
-    "category": "section",
-    "text": "TransformVariables.index_into\nTransformVariables.IndexInto"
-},
-
-{
-    "location": "index.html#TransformVariables.transform_with",
+    "location": "#TransformVariables.transform_with",
     "page": "Introduction",
     "title": "TransformVariables.transform_with",
     "category": "function",
@@ -417,7 +425,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables._transform_tuple",
+    "location": "#TransformVariables._transform_tuple",
     "page": "Introduction",
     "title": "TransformVariables._transform_tuple",
     "category": "function",
@@ -425,7 +433,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables._inverse!_tuple",
+    "location": "#TransformVariables._inverse!_tuple",
     "page": "Introduction",
     "title": "TransformVariables._inverse!_tuple",
     "category": "function",
@@ -433,7 +441,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables._inverse_eltype_tuple",
+    "location": "#TransformVariables._inverse_eltype_tuple",
     "page": "Introduction",
     "title": "TransformVariables._inverse_eltype_tuple",
     "category": "function",
@@ -441,7 +449,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.unit_triangular_dimension",
+    "location": "#TransformVariables.unit_triangular_dimension",
     "page": "Introduction",
     "title": "TransformVariables.unit_triangular_dimension",
     "category": "function",
@@ -449,7 +457,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Helper-functions-1",
+    "location": "#Helper-functions-1",
     "page": "Introduction",
     "title": "Helper functions",
     "category": "section",
@@ -457,7 +465,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.l2_remainder_transform",
+    "location": "#TransformVariables.l2_remainder_transform",
     "page": "Introduction",
     "title": "TransformVariables.l2_remainder_transform",
     "category": "function",
@@ -465,7 +473,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#TransformVariables.l2_remainder_inverse",
+    "location": "#TransformVariables.l2_remainder_inverse",
     "page": "Introduction",
     "title": "TransformVariables.l2_remainder_inverse",
     "category": "function",
@@ -473,7 +481,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Building-blocks-for-transformations-1",
+    "location": "#Building-blocks-for-transformations-1",
     "page": "Introduction",
     "title": "Building blocks for transformations",
     "category": "section",
