@@ -54,3 +54,33 @@ macro calltrans(ex)
         throw(ArgumentError("can't find anything to make callable in $(ex)"))
     end
 end
+
+"Shared part of docstrings for keyword arguments of or passed to [`random_reals`](@ref)."
+const _RANDOM_REALS_KWARGS_DOC = """
+A standard multivaritate normal or Cauchy is used, depending on `cauchy`, then scaled with
+`scale`. `rng` is the random number generator used.
+"""
+
+_random_reals_scale(rng::AbstractRNG, scale::Real, cauchy::Bool) =
+    cauchy ? scale * 1.0 : scale / abs2(randn(rng))
+
+"""
+$(SIGNATURES)
+
+Random real number.
+
+$(_RANDOM_REALS_KWARGS_DOC)
+"""
+random_real(; scale::Real = 1, cauchy::Bool = false, rng::AbstractRNG = GLOBAL_RNG) =
+    randn(rng) * _random_reals_scale(rng, scale, cauchy)
+
+"""
+$(SIGNATURES)
+
+Random vector in ``ℝⁿ``.
+
+$(_RANDOM_REALS_KWARGS_DOC)
+"""
+random_reals(n::Integer; scale::Real = 1, cauchy::Bool = false,
+             rng::AbstractRNG = GLOBAL_RNG) =
+                 randn(rng, n) .* _random_reals_scale(rng, scale, cauchy)

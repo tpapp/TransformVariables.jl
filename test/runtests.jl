@@ -78,7 +78,7 @@ end
     t = as𝕀
     ta = as(Array, t, dims...)
     @test dimension(ta) == prod(dims)
-    x = randn(dimension(ta))
+    x = random_arg(ta)
     y = transform(ta, x)
     @test typeof(y) == Array{Float64, length(dims)}
     @test size(y) == dims
@@ -108,7 +108,7 @@ end
 @testset "as array w/ Identity" begin
     d = (2, 3, 4)
     t = as(Array, d)
-    v = randn(dimension(t))
+    v = random_arg(t)
     y1 = transform(t, v)
     y2, lj = transform_and_logjac(t, v)
     @test y1 == y2 == reshape(v, d)
@@ -121,7 +121,7 @@ end
     t3 = CorrCholeskyFactor(7)
     tt = as((t1, t2, t3))
     @test dimension(tt) == dimension(t1) + dimension(t2) + dimension(t3)
-    x = randn(dimension(tt))
+    x = random_arg(tt)
     y = transform(tt, x)
     @test inverse(tt, y) ≈ x
     TransformVariables.inverse_eltype(tt, y)
@@ -204,8 +204,19 @@ end
 @testset "offset arrays" begin
     t = as((λ = asℝ₊, a = CorrCholeskyFactor(4),
             θ = as((as(Array, as𝕀, 2, 3), UnitVector(4)))))
-    x = randn(dimension(t))
+    x = random_arg(t)
     xo = OffsetVector(x, axes(x, 1) .- 7)
     @test transform(t, x) == transform(t, xo)
     @test transform_and_logjac(t, x) == transform_and_logjac(t, xo)
+end
+
+@testset "random value" begin
+    t1 = asℝ
+    t2 = CorrCholeskyFactor(7)
+    t3 = UnitVector(3)
+    tn = as((a = t1, b = t2, c = t3))
+    y = random_value(tn)
+    @test y isa NamedTuple{(:a, :b, :c), <: Tuple{Float64, AbstractMatrix, Vector}}
+    @test size(y.b) == (7, 7)
+    @test size(y.c) == (3, )
 end
