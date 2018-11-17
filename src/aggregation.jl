@@ -46,12 +46,8 @@ end
 function transform_with(flag::LogJacFlag, t::ArrayTransform, x::RealVector)
     @unpack transformation, dims = t
     d = dimension(transformation)
-    index = firstindex(x)
-    yℓ = reshape([(y = transform_with(flag, transformation, view_into(x, index, d));
-                   index += d;
-                   y)
-                  for _ in Base.OneTo(prod(dims))],
-                 dims)
+    I = reshape(range(firstindex(x); length = prod(dims), step = d), dims)
+    yℓ = map(i -> transform_with(flag, transformation, view_into(x, i, d)), I)
     first.(yℓ), sum(last, yℓ)
 end
 

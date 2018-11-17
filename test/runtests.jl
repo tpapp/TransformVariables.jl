@@ -79,13 +79,13 @@ end
     ta = as(Array, t, dims...)
     @test dimension(ta) == prod(dims)
     x = random_arg(ta)
-    y = transform(ta, x)
+    y = @inferred transform(ta, x)
     @test typeof(y) == Array{Float64, length(dims)}
     @test size(y) == dims
     @test inverse(ta, y) ≈ x
     ℓacc = 0.0
     for i in 1:length(x)
-        yi, ℓi = transform_and_logjac(t, x[i])
+        yi, ℓi = @inferred transform_and_logjac(t, x[i])
         @test yi == y[i]
         ℓacc += ℓi
     end
