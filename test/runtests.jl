@@ -122,7 +122,7 @@ end
     tt = as((t1, t2, t3))
     @test dimension(tt) == dimension(t1) + dimension(t2) + dimension(t3)
     x = random_arg(tt)
-    y = transform(tt, x)
+    y = @inferred transform(tt, x)
     @test inverse(tt, y) ≈ x
     TransformVariables.inverse_eltype(tt, y)
     index = 0
@@ -148,7 +148,7 @@ end
     tn = as((a = t1, b = t2, c = t3))
     @test dimension(tn) == dimension(t1) + dimension(t2) + dimension(t3)
     x = randn(dimension(tn))
-    y = transform(tn, x)
+    y = @inferred transform(tn, x)
     @test y isa NamedTuple{(:a,:b,:c)}
     @test inverse(tn, y) ≈ x
     index = 0

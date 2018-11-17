@@ -110,18 +110,25 @@ as(transformations::NTransforms) = TransformTuple(transformations)
 """
 $(SIGNATURES)
 
-Helper function for transforming tuples. Used internally.
+Helper function for transforming tuples. Used internally, to help type inference. Use via
+`transfom_tuple` only.
 """
-function _transform_tuple(flag::LogJacFlag, tt::NTransforms, x::RealVector)
-    index = firstindex(x)
-    yℓ = map(t -> begin
-             d = dimension(t)
-             result = transform_with(flag, t, view_into(x, index, d))
-             index += d
-             result
-             end, tt)
-    first.(yℓ), sum(last, yℓ)
+_transform_tuple(flag::LogJacFlag, x::RealVector, index) = (), logjac_zero(flag, eltype(x))
+
+function _transform_tuple(flag::LogJacFlag, x::RealVector, index, tfirst, trest...)
+    d = dimension(tfirst)
+    yfirst, ℓfirst = transform_with(flag, tfirst, view_into(x, index, d))
+    yrest, ℓrest = _transform_tuple(flag, x, index + d, trest...)
+    (yfirst, yrest...), ℓfirst + ℓrest
 end
+
+"""
+$(SIGNATURES)
+
+Helper function for tuple transformations.
+"""
+transform_tuple(flag::LogJacFlag, tt::NTransforms, x::RealVector) =
+    _transform_tuple(flag, x, firstindex(x), tt...)
 
 """
 $(SIGNATURES)
@@ -149,7 +156,7 @@ function _inverse!_tuple(x::RealVector, ts::NTransforms{K},
 end
 
 transform_with(flag::LogJacFlag, tt::TransformTuple, x::RealVector) =
-    _transform_tuple(flag, tt.transformations, x)
+    transform_tuple(flag, tt.transformations, x)
 
 inverse_eltype(tt::TransformTuple{K}, y::NTuple{K,Any}) where K =
     _inverse_eltype_tuple(tt.transformations, y)
@@ -185,7 +192,7 @@ dimension(tn::TransformNamedTuple) = tn.dimension
 
 function transform_with(flag::LogJacFlag, tt::TransformNamedTuple{names},
                       x::RealVector) where {names}
-    y, ℓ = _transform_tuple(flag, tt.transformations, x)
+    y, ℓ = transform_tuple(flag, tt.transformations, x)
     NamedTuple{names}(y), ℓ
 end
 
