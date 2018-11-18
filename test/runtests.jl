@@ -231,7 +231,7 @@ end
 
 @testset "AD tests" begin
     t = as((μ = asℝ, σ = asℝ₊, β = asℝ₋, α = as(Real, 0.0, 1.0),
-            u = UnitVector(3)))
+            u = UnitVector(3), L = CorrCholeskyFactor(4)))
     function f(θ)
         @unpack μ, σ, β, α = θ
         -(abs2(μ) + abs2(σ) + abs2(β) + α)
