@@ -12,8 +12,8 @@ equal length.
 
 When `handleNaN = true` (the default), NaN log Jacobians are converted to -Inf.
 """
-function logjac_forwarddiff(f, x; handleNaN = true)
-    lj = first(logabsdet(ForwardDiff.jacobian(f, x)))
+function logjac_forwarddiff(f, x; handleNaN = true, cfg = ForwardDiff.JacobianConfig(f, x))
+    lj = first(logabsdet(ForwardDiff.jacobian(f, x, cfg)))
     isnan(lj) && handleNaN && return oftype(lj, -Inf)
     lj
 end
@@ -24,8 +24,10 @@ $(SIGNATURES)
 Calculate the value and the log Jacobian determinant of `f` at `x`. `flatten` is
 used to get a vector out of the result that makes `f` a bijection.
 """
-value_and_logjac_forwarddiff(f, x; flatten = identity, handleNaN = true) =
-    f(x), logjac_forwarddiff(flatten ∘ f, x; handleNaN = handleNaN)
+function value_and_logjac_forwarddiff(f, x; flatten = identity, handleNaN = true,
+                                      cfg = ForwardDiff.JacobianConfig(flatten ∘ f, x))
+    f(x), logjac_forwarddiff(flatten ∘ f, x; handleNaN = handleNaN, cfg = cfg)
+end
 
 """
     CustomTransform(g, f, flatten)
@@ -40,14 +42,24 @@ identity transformation with that dimension.
 redundant elements, so that ``x ↦ y`` is a bijection. For example, for a
 covariance matrix the elements below the diagonal should be removed.
 """
-@calltrans struct CustomTransform{G <: AbstractTransform, F, H} <: VectorTransform
+@calltrans struct CustomTransform{G <: AbstractTransform, F, H, C} <: VectorTransform
     g::G
     f::F
     flatten::H
+    cfg::C
 end
 
-CustomTransform(n::Integer, f, flatten) =
-    CustomTransform(as(Array, n), f, flatten)
+_custom_f(g, f) = x -> f(transform(g, x))
+
+_custom_cfg(g, f, flatten) = ForwardDiff.JacobianConfig(flatten ∘ _custom_f(g, f), zeros(dimension(g)))
+
+function CustomTransform(g::AbstractTransform, f, flatten;
+                         cfg = _custom_cfg(g, f, flatten))
+    CustomTransform(g, f, flatten, cfg)
+end
+
+CustomTransform(n::Integer, f, flatten; kwargs...) =
+    CustomTransform(as(Array, n), f, flatten; kwargs...)
 
 dimension(t::CustomTransform) = dimension(t.g)
 
@@ -57,8 +69,8 @@ function transform_with(flag::NoLogJac, t::CustomTransform, x::RealVector)
 end
 
 function transform_with(flag::LogJac, t::CustomTransform, x::RealVector)
-    @unpack g, f, flatten = t
+    @unpack g, f, flatten, cfg = t
     index = firstindex(x)
     xv = @view x[index:(index + dimension(g) - 1)]
-    value_and_logjac_forwarddiff(x -> f(transform(g, x)), xv; flatten = flatten)
+    value_and_logjac_forwarddiff(_custom_f(g, f), xv; flatten = flatten, cfg = cfg)
 end
