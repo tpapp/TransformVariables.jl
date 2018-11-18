@@ -197,7 +197,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables.logjac_forwarddiff",
     "category": "function",
-    "text": "logjac_forwarddiff(f, x; handleNaN)\n\n\nCalculate the log Jacobian determinant of f at x using `ForwardDiff.\n\nNote\n\nf should be a bijection, mapping from vectors of real numbers to vectors of equal length.\n\nWhen handleNaN = true (the default), NaN log Jacobians are converted to -Inf.\n\n\n\n\n\n"
+    "text": "logjac_forwarddiff(f, x; handleNaN, cfg)\n\n\nCalculate the log Jacobian determinant of f at x using `ForwardDiff.\n\nNote\n\nf should be a bijection, mapping from vectors of real numbers to vectors of equal length.\n\nWhen handleNaN = true (the default), NaN log Jacobians are converted to -Inf.\n\n\n\n\n\n"
 },
 
 {
@@ -205,7 +205,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables.value_and_logjac_forwarddiff",
     "category": "function",
-    "text": "value_and_logjac_forwarddiff(f, x; flatten, handleNaN)\n\n\nCalculate the value and the log Jacobian determinant of f at x. flatten is used to get a vector out of the result that makes f a bijection.\n\n\n\n\n\n"
+    "text": "value_and_logjac_forwarddiff(f, x; flatten, handleNaN, cfg)\n\n\nCalculate the value and the log Jacobian determinant of f at x. flatten is used to get a vector out of the result that makes f a bijection.\n\n\n\n\n\n"
 },
 
 {
@@ -429,7 +429,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables._transform_tuple",
     "category": "function",
-    "text": "_transform_tuple(flag, tt, x)\n\n\nHelper function for transforming tuples. Used internally.\n\n\n\n\n\n"
+    "text": "_transform_tuple(flag, x, index)\n\n\nHelper function for transforming tuples. Used internally, to help type inference. Use via transfom_tuple only.\n\n\n\n\n\n"
 },
 
 {
