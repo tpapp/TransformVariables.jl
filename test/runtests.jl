@@ -1,10 +1,11 @@
-using TransformVariables
+using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, Parameters,
+    Random, Test, TransformVariables
+import Flux
+import ForwardDiff
+using LogDensityProblems: Value, ValueGradient
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
     unit_triangular_dimension, logistic, logistic_logjac, logit
-
-import ForwardDiff
-using DocStringExtensions, Test, Random, LinearAlgebra, OffsetArrays
 
 include("test_utilities.jl")
 
@@ -226,4 +227,23 @@ end
     for _ in 1:1000
         @test sum(abs2, random_arg(t; cauchy = false, scale = 1.0)) ≤ 100
     end
+end
+
+@testset "AD tests" begin
+    t = as((μ = asℝ, σ = asℝ₊))
+    function f(θ)
+        @unpack μ, σ = θ
+        -(abs2(μ) + abs2(σ))
+    end
+    P = TransformedLogDensity(t, f)
+    x = zeros(dimension(t))
+    v = logdensity(Value, P, x)
+    P1 = ADgradient(:ForwardDiff, P)
+    P2 = ADgradient(:Flux, P)
+    @test v == logdensity(Value, P1, x)
+    g1 = @inferred logdensity(ValueGradient, P1, x)
+    @test g1.value == v.value
+    g2 = logdensity(ValueGradient, P2, x) # NOTE @inferred removed as it currently fails
+    @test g2.value == v.value
+    @test g2.gradient ≈ g1.gradient
 end
