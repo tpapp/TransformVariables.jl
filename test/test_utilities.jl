@@ -27,10 +27,10 @@ function test_transformation(t::AbstractTransform, is_valid_y;
             @test y isa Vector{Float64} && length(y) == dimension(t)
         end
         x isa ScalarTransform && @test dimension(x) == 1
-        y = transform(t, x)
+        y = @inferred transform(t, x)
         @test is_valid_y(y)
         @test t(x) == y         # callable
-        y2, lj = transform_and_logjac(t, x)
+        y2, lj = @inferred transform_and_logjac(t, x)
         @test y2 == y
         if t isa ScalarTransform
             @test lj ≈ AD_logjac(t, x)
