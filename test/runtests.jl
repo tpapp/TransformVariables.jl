@@ -1,7 +1,6 @@
 using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, Parameters,
     Random, Test, TransformVariables
-import Flux
-import ForwardDiff
+import Flux, ForwardDiff, ReverseDiff
 using LogDensityProblems: Value, ValueGradient
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
@@ -238,12 +237,23 @@ end
     P = TransformedLogDensity(t, f)
     x = zeros(dimension(t))
     v = logdensity(Value, P, x)
+
+    # ForwardDiff
     P1 = ADgradient(:ForwardDiff, P)
-    P2 = ADgradient(:Flux, P)
     @test v == logdensity(Value, P1, x)
     g1 = @inferred logdensity(ValueGradient, P1, x)
     @test g1.value == v.value
-    g2 = logdensity(ValueGradient, P2, x) # NOTE @inferred removed as it currently fails
+
+    # Flux # NOTE @inferred removed as it currently fails, cf
+    # https://github.com/FluxML/Flux.jl/issues/497
+    P2 = ADgradient(:Flux, P)
+    g2 = logdensity(ValueGradient, P2, x) #
     @test g2.value == v.value
     @test g2.gradient ≈ g1.gradient
+
+    # ReverseDiff
+    P3 = ADgradient(:ReverseDiff, P)
+    g3 = @inferred logdensity(ValueGradient, P3, x)
+    @test g3.value == v.value
+    @test g3.gradient ≈ g1.gradient
 end

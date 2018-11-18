@@ -18,7 +18,8 @@ Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 LogDensityProblems = "6fdf6af0-433a-55f7-b3ed-c6c6e0b8df7c"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Flux", "LogDensityProblems", "OffsetArrays", "Random", "Test"]
+test = ["Flux", "LogDensityProblems", "OffsetArrays", "Random", "ReverseDiff", "Test"]
