@@ -100,14 +100,16 @@ ScaledShiftedLogistic(scale::T, shift::T) where {T <: Real} =
 ScaledShiftedLogistic(scale::Real, shift::Real) =
     ScaledShiftedLogistic(promote(scale, shift)...)
 
-transform(t::ScaledShiftedLogistic, x::Real) =
-    fma(logistic(x), t.scale, t.shift)
+transform(t::ScaledShiftedLogistic, x::Real) = logistic(x) * t.scale + t.shift
+
+# NOTE: would prefer fma(logistic(x), t.scale, t.shift) for all types, but cf
+# https://github.com/JuliaDiff/DiffRules.jl/issues/28
+transform(t::ScaledShiftedLogistic, x::AbstractFloat) = fma(logistic(x), t.scale, t.shift)
 
 transform_and_logjac(t::ScaledShiftedLogistic, x) =
     transform(t, x), log(t.scale) + logistic_logjac(x)
 
-inverse(t::ScaledShiftedLogistic, x) =
-    logit(fma(x, inv(t.scale), - t.shift/ t.scale))
+inverse(t::ScaledShiftedLogistic, x) = logit((x - t.shift)/t.scale)
 
 
 # to_interval interface

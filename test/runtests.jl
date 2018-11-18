@@ -11,6 +11,7 @@ include("test_utilities.jl")
 Random.seed!(1)
 
 const CIENV = get(ENV, "TRAVIS", "") == "true"  || get(ENV, "CI", "") == "true"
+
 @testset "misc utilities" begin
     @test unit_triangular_dimension(1) == 0
     @test unit_triangular_dimension(2) == 1
@@ -229,10 +230,10 @@ end
 end
 
 @testset "AD tests" begin
-    t = as((μ = asℝ, σ = asℝ₊))
+    t = as((μ = asℝ, σ = asℝ₊, β = asℝ₋, α = as(Real, 0.0, 1.0)))
     function f(θ)
-        @unpack μ, σ = θ
-        -(abs2(μ) + abs2(σ))
+        @unpack μ, σ, β, α = θ
+        -(abs2(μ) + abs2(σ) + abs2(β) + α)
     end
     P = TransformedLogDensity(t, f)
     x = zeros(dimension(t))
