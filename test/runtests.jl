@@ -1,16 +1,17 @@
-using TransformVariables
+using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, Parameters,
+    Random, Test, TransformVariables
+import Flux, ForwardDiff, ReverseDiff
+using LogDensityProblems: Value, ValueGradient
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
     unit_triangular_dimension, logistic, logistic_logjac, logit
-
-import ForwardDiff
-using DocStringExtensions, Test, Random, LinearAlgebra, OffsetArrays
 
 include("test_utilities.jl")
 
 Random.seed!(1)
 
 const CIENV = get(ENV, "TRAVIS", "") == "true"  || get(ENV, "CI", "") == "true"
+
 @testset "misc utilities" begin
     @test unit_triangular_dimension(1) == 0
     @test unit_triangular_dimension(2) == 1
@@ -226,4 +227,35 @@ end
     for _ in 1:1000
         @test sum(abs2, random_arg(t; cauchy = false, scale = 1.0)) ≤ 100
     end
+end
+
+@testset "AD tests" begin
+    t = as((μ = asℝ, σ = asℝ₊, β = asℝ₋, α = as(Real, 0.0, 1.0),
+            u = UnitVector(3), L = CorrCholeskyFactor(4)))
+    function f(θ)
+        @unpack μ, σ, β, α = θ
+        -(abs2(μ) + abs2(σ) + abs2(β) + α)
+    end
+    P = TransformedLogDensity(t, f)
+    x = zeros(dimension(t))
+    v = logdensity(Value, P, x)
+
+    # ForwardDiff
+    P1 = ADgradient(:ForwardDiff, P)
+    @test v == logdensity(Value, P1, x)
+    g1 = @inferred logdensity(ValueGradient, P1, x)
+    @test g1.value == v.value
+
+    # Flux # NOTE @inferred removed as it currently fails, cf
+    # https://github.com/FluxML/Flux.jl/issues/497
+    P2 = ADgradient(:Flux, P)
+    g2 = logdensity(ValueGradient, P2, x) #
+    @test g2.value == v.value
+    @test g2.gradient ≈ g1.gradient
+
+    # ReverseDiff
+    P3 = ADgradient(:ReverseDiff, P)
+    g3 = @inferred logdensity(ValueGradient, P3, x)
+    @test g3.value == v.value
+    @test g3.gradient ≈ g1.gradient
 end

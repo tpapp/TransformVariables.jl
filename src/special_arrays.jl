@@ -97,7 +97,7 @@ function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor,
                          x::RealVector{T}) where T
     @unpack n = t
     ℓ = logjac_zero(flag, T)
-    U = zeros(float(T), n, n)
+    U = zeros(typeof(√one(T)), n, n)
     index = firstindex(x)
     @inbounds for col in 1:n
         r = one(T)
