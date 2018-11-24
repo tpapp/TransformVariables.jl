@@ -17,14 +17,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "#TransformVariables.as",
-    "page": "Introduction",
-    "title": "TransformVariables.as",
-    "category": "function",
-    "text": "as(T, args...)\n\nShorthand for constructing transformations with image in T. args determines or modifies behavior, details depend on T.\n\nNot all transformations have an as method, some just have direct constructors. See methods(as) for a list.\n\nExamples\n\nas(Real, -∞, 1)          # transform a real number to (-∞, 1)\nas(Array, 10, 2)         # reshape 20 real numbers to a 10x2 matrix\nas((a = asℝ₊, b = as𝕀)) # transform 2 real numbers a NamedTuple, with a > 0, 0 < b < 1\n\n\n\n\n\n"
-},
-
-{
     "location": "#TransformVariables.dimension",
     "page": "Introduction",
     "title": "TransformVariables.dimension",
@@ -101,15 +93,31 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "General interface",
     "category": "section",
-    "text": "asdimension\ntransform\ntransform_and_logjacinverse\ninverse!\ninverse_eltypetransform_logdensityrandom_arg\nrandom_value"
+    "text": "dimension\ntransform\ntransform_and_logjacinverse\ninverse!\ninverse_eltypetransform_logdensityrandom_arg\nrandom_value"
 },
 
 {
-    "location": "#Specific-transformations-1",
+    "location": "#Defining-transformations-1",
     "page": "Introduction",
-    "title": "Specific transformations",
+    "title": "Defining transformations",
     "category": "section",
     "text": ""
+},
+
+{
+    "location": "#TransformVariables.as",
+    "page": "Introduction",
+    "title": "TransformVariables.as",
+    "category": "function",
+    "text": "as(T, args...)\n\nShorthand for constructing transformations with image in T. args determines or modifies behavior, details depend on T.\n\nNot all transformations have an as method, some just have direct constructors. See methods(as) for a list.\n\nExamples\n\nas(Real, -∞, 1)          # transform a real number to (-∞, 1)\nas(Array, 10, 2)         # reshape 20 real numbers to a 10x2 matrix\nas((a = asℝ₊, b = as𝕀)) # transform 2 real numbers a NamedTuple, with a > 0, 0 < b < 1\n\n\n\n\n\n"
+},
+
+{
+    "location": "#The-as-constructor-and-aggregations-1",
+    "page": "Introduction",
+    "title": "The as constructor and aggregations",
+    "category": "section",
+    "text": "Some transformations, particularly aggregations use the function as as the constructor. Aggregating transformations are built from other transformations to transform consecutive (blocks of) real numbers into the desired domain.It is recommended that you use as(Array, ...) and friends (as(Vector, ...), as(Matrix, ...)) for repeating the same transformation, and named tuples such as as((μ = ..., σ = ...)) for transforming into named parameters. For extracting parameters in log likelihoods, consider Parameters.jl.See methods(as) for all the constructors, ?as for their documentation.as"
 },
 
 {
@@ -157,7 +165,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "Scalar transforms",
     "category": "section",
-    "text": "∞asℝ\nasℝ₊\nasℝ₋\nas𝕀"
+    "text": "The symbol ∞ is a placeholder for infinity. It does not correspond to Inf, but acts as a placeholder for the correct dispatch. -∞ is valid.∞as(Real, a, b) defines transformations to finite and (semi-)infinite subsets of the real line, where a and b can be -∞ and ∞, respectively. The following constants are defined for common cases.asℝ\nasℝ₊\nasℝ₋\nas𝕀"
 },
 
 {
@@ -182,14 +190,6 @@ var documenterSearchIndex = {"docs": [
     "title": "Special arrays",
     "category": "section",
     "text": "UnitVector\nCorrCholeskyFactor"
-},
-
-{
-    "location": "#Aggregation-of-transformations-1",
-    "page": "Introduction",
-    "title": "Aggregation of transformations",
-    "category": "section",
-    "text": "FIXME explain as syntax"
 },
 
 {
