@@ -16,10 +16,20 @@ end
 dimension(t::ArrayTransform) = dimension(t.transformation) * prod(t.dims)
 
 """
-$(SIGNATURES)
+    as(Array, [transformation], dims...)
+    as(Array, [transformation], dims)
 
-Return a transformation that applies `transformation` repeatedly to create an
-array with the given `dims`.
+Return a transformation that applies `transformation` (which defaults to `asℝ`, the identity
+transformation for scalars) repeatedly to create an array with the given `dims`.
+
+`Matrix` or `Vector` can be used in place of `Array`, with conforming dimensions.
+
+# Example
+
+```julia
+as(Array, asℝ₊, 2, 3)           # transform to a 2x3 matrix of positive numbers
+as(Vector, 3)                   # ℝ³ → ℝ³, identity
+```
 """
 as(::Type{Array}, transformation::AbstractTransform, dims::Tuple{Vararg{Int}}) =
     ArrayTransform(transformation, dims)
@@ -96,10 +106,29 @@ end
 dimension(tt::TransformTuple) = tt.dimension
 
 """
-$(SIGNATURES)
+    as(tuple)
+    as(namedtuple)
 
 Return a transformation that transforms consecutive groups of real numbers to a
 (named) tuple, using the given transformations.
+
+```jldoctest
+julia> t = as((asℝ₊, UnitVector(3)));
+
+julia> dimension(t)
+3
+
+julia> transform(t, zeros(dimension(t)))
+(1.0, [0.0, 0.0, 1.0])
+
+julia> t2 = as((σ = asℝ₊, u = UnitVector(3)));
+
+julia> dimension(t2)
+3
+
+julia> transform(t2, zeros(dimension(t2)))
+(σ = 1.0, u = [0.0, 0.0, 1.0])
+```
 """
 as(transformations::NTransforms) = TransformTuple(transformations)
 

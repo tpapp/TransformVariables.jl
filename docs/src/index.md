@@ -42,10 +42,6 @@ Further worked examples of using this package can be found in the [DynamicHMCExa
 # General interface
 
 ```@docs
-as
-```
-
-```@docs
 dimension
 transform
 transform_and_logjac
@@ -66,13 +62,29 @@ random_arg
 random_value
 ```
 
-# Specific transformations
+# Defining transformations
+
+## The `as` constructor and aggregations
+
+Some transformations, particularly *aggregations* use the function `as` as the constructor. Aggregating transformations are built from other transformations to transform consecutive (blocks of) real numbers into the desired domain.
+
+It is recommended that you use `as(Array, ...)` and friends (`as(Vector, ...)`, `as(Matrix, ...)`) for repeating the *same* transformation, and named tuples such as `as((μ = ..., σ = ...))` for transforming into named parameters. For extracting parameters in log likelihoods, consider [Parameters.jl](https://github.com/mauro3/Parameters.jl).
+
+See `methods(as)` for all the constructors, `?as` for their documentation.
+
+```@docs
+as
+```
 
 ## Scalar transforms
+
+The symbol `∞` is a placeholder for infinity. It does not correspond to `Inf`, but acts as a placeholder for the correct dispatch. `-∞` is valid.
 
 ```@docs
 ∞
 ```
+
+`as(Real, a, b)` defines transformations to finite and (semi-)infinite subsets of the real line, where `a` and `b` can be `-∞` and `∞`, respectively. The following constants are defined for common cases.
 
 ```@docs
 asℝ
@@ -87,10 +99,6 @@ as𝕀
 UnitVector
 CorrCholeskyFactor
 ```
-
-## Aggregation of transformations
-
-FIXME explain `as` syntax
 
 # Defining custom transformations
 

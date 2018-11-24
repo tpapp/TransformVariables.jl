@@ -1,7 +1,6 @@
 name = "TransformVariables"
 uuid = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
-version = "0.2.0"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
