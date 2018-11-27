@@ -29,19 +29,6 @@ function value_and_logjac_forwarddiff(f, x; flatten = identity, handleNaN = true
     f(x), logjac_forwarddiff(flatten ∘ f, x; handleNaN = handleNaN, cfg = cfg)
 end
 
-"""
-    CustomTransform(g, f, flatten)
-
-Wrap a custom transform `y = f(transform(g, x))`` in a type that calculates the
-log Jacobian of ``∂y/∂x`` using `ForwardDiff` when necessary.
-
-Usually, `g::TransformReals`, but when an integer is used, it amounts to the
-identity transformation with that dimension.
-
-`flatten` should take the result from `f`, and return a flat vector with no
-redundant elements, so that ``x ↦ y`` is a bijection. For example, for a
-covariance matrix the elements below the diagonal should be removed.
-"""
 @calltrans struct CustomTransform{G <: AbstractTransform, F, H, C} <: VectorTransform
     g::G
     f::F
@@ -51,10 +38,31 @@ end
 
 _custom_f(g, f) = x -> f(transform(g, x))
 
-_custom_cfg(g, f, flatten) = ForwardDiff.JacobianConfig(flatten ∘ _custom_f(g, f), zeros(dimension(g)))
+_custom_chunk(g) = ForwardDiff.Chunk(zeros(dimension(g)))
 
+_custom_cfg(g, f, flatten, chunk = _custom_chunk(g)) =
+    ForwardDiff.JacobianConfig(flatten ∘ _custom_f(g, f), zeros(dimension(g)), chunk)
+
+"""
+$(SIGNATURES)
+
+Wrap a custom transform `y = f(transform(g, x))`` in a type that calculates the log Jacobian
+of ``∂y/∂x`` using `ForwardDiff` when necessary.
+
+Usually, `g::TransformReals`, but when an integer is used, it amounts to the identity
+transformation with that dimension.
+
+`flatten` should take the result from `f`, and return a flat vector with no redundant
+elements, so that ``x ↦ y`` is a bijection. For example, for a covariance matrix the
+elements below the diagonal should be removed.
+
+`chunk` and `cfg` can be used to configure `ForwardDiff.JacobianConfig`. `cfg` is used
+directly, while `chunk = ForwardDiff.Chunk{N}()` can be used to obtain a type-stable
+configuration.
+"""
 function CustomTransform(g::AbstractTransform, f, flatten;
-                         cfg = _custom_cfg(g, f, flatten))
+                         chunk = _custom_chunk(g),
+                         cfg = _custom_cfg(g, f, flatten, chunk))
     CustomTransform(g, f, flatten, cfg)
 end
 

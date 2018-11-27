@@ -183,9 +183,19 @@ end
 
 @testset "custom transformation: triangle below diagonal in [0,1]²" begin
     tfun(y) = y[1], y[1]*y[2]   # triangle below diagonal in unit square
-    t = CustomTransform(as(Array, as𝕀, 2), tfun, collect)
+    t = CustomTransform(as(Array, as𝕀, 2), tfun, collect;)
     test_transformation(t, ((y1, y2),) -> 0 ≤ y2 ≤ y1 ≤ 1;
                         vec_y = collect, test_inverse = false)
+
+    # test inference w/ manually specified chunk
+    function f(x)
+        CustomTransform(as(Array, as𝕀, 2), tfun, collect;
+                            chunk = ForwardDiff.Chunk{2}())
+        transform_and_logjac(t, x)
+    end
+    y, lj = @inferred f(zeros(2))
+    @test y == (0.5, 0.25)
+    @test lj ≈ -3.465735902799726
 end
 
 @testset "custom transformation: covariance matrix" begin
