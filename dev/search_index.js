@@ -213,7 +213,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables.CustomTransform",
     "category": "type",
-    "text": "CustomTransform(g, f, flatten)\n\nWrap a custom transform y = f(transform(g, x))in a type that calculates the log Jacobian of∂y/∂xusingForwardDiff` when necessary.\n\nUsually, g::TransformReals, but when an integer is used, it amounts to the identity transformation with that dimension.\n\nflatten should take the result from f, and return a flat vector with no redundant elements, so that x  y is a bijection. For example, for a covariance matrix the elements below the diagonal should be removed.\n\n\n\n\n\n"
+    "text": "CustomTransform(g, f, flatten; chunk, cfg)\n\n\nWrap a custom transform y = f(transform(g, x))in a type that calculates the log Jacobian of∂y/∂xusingForwardDiff` when necessary.\n\nUsually, g::TransformReals, but when an integer is used, it amounts to the identity transformation with that dimension.\n\nflatten should take the result from f, and return a flat vector with no redundant elements, so that x  y is a bijection. For example, for a covariance matrix the elements below the diagonal should be removed.\n\nchunk and cfg can be used to configure ForwardDiff.JacobianConfig. cfg is used directly, while chunk = ForwardDiff.Chunk{N}() can be used to obtain a type-stable configuration.\n\n\n\n\n\n"
 },
 
 {
