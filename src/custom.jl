@@ -29,7 +29,7 @@ used to get a vector out of the result that makes `f` a bijection.
 function value_and_logjac_forwarddiff(f, x; flatten = identity, handleNaN = true,
                                       chunk = ForwardDiff.Chunk(x),
                                       cfg = ForwardDiff.JacobianConfig(flatten ∘ f, x, chunk))
-    f(x), logjac_forwarddiff(flatten ∘ f, x; handleNaN = handleNaN, chunk = chunk, cfg = cfg)
+    f(x), logjac_forwarddiff(flatten ∘ f, x; handleNaN = handleNaN, cfg = cfg)
 end
 
 @calltrans struct CustomTransform{G <: AbstractTransform, F, H, C} <: VectorTransform
