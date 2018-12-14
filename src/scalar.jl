@@ -109,7 +109,15 @@ transform(t::ScaledShiftedLogistic, x::AbstractFloat) = fma(logistic(x), t.scale
 transform_and_logjac(t::ScaledShiftedLogistic, x) =
     transform(t, x), log(t.scale) + logistic_logjac(x)
 
-inverse(t::ScaledShiftedLogistic, x) = logit((x - t.shift)/t.scale)
+function inverse(t::ScaledShiftedLogistic, y)
+    logit((y - t.shift)/t.scale)
+end
+
+# NOTE: inverse_and_logjac interface experimental and sporadically implemented for now
+function inverse_and_logjac(t::ScaledShiftedLogistic, y)
+    z = (y - t.shift) / t.scale
+    logit(z), logit_logjac(z) - log(t.scale)
+end
 
 
 # to_interval interface

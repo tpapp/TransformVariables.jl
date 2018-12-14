@@ -10,6 +10,8 @@ end
 
 logit(x::Real) = log(x / (one(x) - x))
 
+logit_logjac(y) = -log(y) - log1p(-y)
+
 
 # calculations
 

@@ -269,3 +269,16 @@ end
     @test g3.value == v.value
     @test g3.gradient ≈ g1.gradient
 end
+
+@testset "inverse_and_logjac" begin
+    # WIP, test separately until integrated
+    for _ in 1:100
+        x = randn()
+        a = randn()
+        t = as(Real, a, a + abs(randn()) + 0.1)
+        y, lj = transform_and_logjac(t, x)
+        x2, lj2 = TransformVariables.inverse_and_logjac(t, y)
+        @test x2 ≈ x
+        @test lj2 ≈ -lj
+    end
+end
