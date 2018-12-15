@@ -1,7 +1,8 @@
 export to_array, to_tuple
 
-
-# arrays
+####
+#### array aggregator
+####
 
 """
 $(TYPEDEF)
@@ -58,7 +59,7 @@ function transform_with(flag::LogJacFlag, t::ArrayTransform, x::RealVector)
     d = dimension(transformation)
     I = reshape(range(firstindex(x); length = prod(dims), step = d), dims)
     yℓ = map(i -> transform_with(flag, transformation, view_into(x, i, d)), I)
-    first.(yℓ), sum(last, yℓ)
+    first.(yℓ), isempty(yℓ) ? logjac_zero(flag, eltype(x)) : sum(last, yℓ)
 end
 
 function transform_with(flag::LogJacFlag, t::ArrayTransform{Identity}, x::RealVector)
@@ -85,8 +86,16 @@ function inverse!(x::RealVector,
     x
 end
 
-
-# tuples
+####
+#### Tuple and NamedTuple aggregators
+####
+
+"""
+$(SIGNATURES)
+
+Sum of the dimension of `transformations`. Utility function, *internal*.
+"""
+_sum_dimensions(transformations) = mapreduce(dimension, +, transformations; init = 0)
 
 const NTransforms{N} = Tuple{Vararg{AbstractTransform,N}}
 
@@ -99,7 +108,7 @@ Transform consecutive groups of real numbers to a tuple, using the given transfo
     transformations::T
     dimension::Int
     function TransformTuple(transformations::T) where {K, T <: NTransforms{K}}
-        new{K,T}(transformations, sum(dimension, transformations))
+        new{K,T}(transformations, _sum_dimensions(transformations))
     end
 end
 
@@ -203,7 +212,7 @@ transformations.
     dimension::Int
     function TransformNamedTuple(transformations::NamedTuple{names,T}) where
         {names, T <: NTransforms}
-        new{names,T}(values(transformations), sum(dimension, transformations))
+        new{names,T}(values(transformations), _sum_dimensions(transformations))
     end
 end
 
