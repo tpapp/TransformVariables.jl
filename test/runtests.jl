@@ -168,9 +168,10 @@ end
     @test lj2 ≈ ljacc
 end
 
-@testset "empty Tuple and NamedTuple aggregators" begin
+@testset "empty Tuple, NamedTuple aggregators" begin
     zt = as(())
     znt = as(NamedTuple())
+    za = as(Array, asℝ₊, 0)
     @test dimension(zt) == dimension(znt) == 0
     @test transform(zt, Float64[]) == ()
     @test_skip inverse(zt, ()) == []
@@ -178,6 +179,9 @@ end
     @test transform(znt, Float64[]) == NamedTuple()
     @test transform_and_logjac(znt, Float64[]) == (NamedTuple(), 0.0)
     @test_skip inverse(znt, ()) == []
+    @test transform(za, Float64[]) == Float64[]
+    @test transform_and_logjac(za, Float64[]) == (Float64[], 0.0)
+    @test_skip inverse(za, []) == []
 end
 
 @testset "transform logdensity" begin

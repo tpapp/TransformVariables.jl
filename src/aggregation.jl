@@ -59,7 +59,7 @@ function transform_with(flag::LogJacFlag, t::ArrayTransform, x::RealVector)
     d = dimension(transformation)
     I = reshape(range(firstindex(x); length = prod(dims), step = d), dims)
     yℓ = map(i -> transform_with(flag, transformation, view_into(x, i, d)), I)
-    first.(yℓ), sum(last, yℓ)
+    first.(yℓ), isempty(yℓ) ? logjac_zero(flag, eltype(x)) : sum(last, yℓ)
 end
 
 function transform_with(flag::LogJacFlag, t::ArrayTransform{Identity}, x::RealVector)
