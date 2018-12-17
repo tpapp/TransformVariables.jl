@@ -225,7 +225,7 @@ as(transformations::NamedTuple{T,<:NTransforms}) where T =
 dimension(tn::TransformNamedTuple) = tn.dimension
 
 function transform_with(flag::LogJacFlag, tt::TransformNamedTuple{names},
-                      x::RealVector) where {names}
+                        x::RealVector) where {names}
     y, ℓ = transform_tuple(flag, tt.transformations, x)
     NamedTuple{names}(y), ℓ
 end

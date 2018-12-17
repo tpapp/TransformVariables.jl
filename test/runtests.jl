@@ -173,18 +173,18 @@ end
     znt = as(NamedTuple())
     za = as(Array, asℝ₊, 0)
     @test dimension(zt) == dimension(znt) == 0
-    @test transform(zt, Float64[]) == ()
+    @test @inferred(transform(zt, Float64[])) == ()
     @test_skip inverse(zt, ()) == []
-    @test transform_and_logjac(zt, Float64[]) == ((), 0.0)
-    @test transform(znt, Float64[]) == NamedTuple()
-    @test transform_and_logjac(znt, Float64[]) == (NamedTuple(), 0.0)
+    @test @inferred(transform_and_logjac(zt, Float64[])) == ((), 0.0)
+    @test @inferred(transform(znt, Float64[])) == NamedTuple()
+    @test @inferred(transform_and_logjac(znt, Float64[])) == (NamedTuple(), 0.0)
     @test_skip inverse(znt, ()) == []
-    @test transform(za, Float64[]) == Float64[]
-    @test transform_and_logjac(za, Float64[]) == (Float64[], 0.0)
+    @test @inferred(transform(za, Float64[])) == Float64[]
+    @test @inferred(transform_and_logjac(za, Float64[])) == (Float64[], 0.0)
     @test_skip inverse(za, []) == []
 end
 
-@testset "transform logdensity" begin
+@testset "transform logdensity: correctness" begin
     # the density is p(σ) = σ⁻³
     # let z = log(σ), so σ = exp(z)
     # the transformed density is q(z) = -3z + z = -2z
@@ -192,9 +192,18 @@ end
     q(z) = -2*z
     for _ in 1:1000
         z = randn()
-        qz = transform_logdensity(asℝ₊, f, z)
+        qz = @inferred transform_logdensity(asℝ₊, f, z)
         @test q(z) ≈ qz
     end
+end
+
+@testset "transform logdensity: type inference" begin
+    t = as((a = asℝ₋, b = as𝕀, c = as((d = UnitVector(7), e = CorrCholeskyFactor(3))),
+            f = as(Array, 9)))
+    z = zeros(dimension(t))
+    f(θ) = θ.a + θ.b + sum(abs2, θ.c.d) + sum(abs2, θ.c.e)
+    @test (@inferred f(t(z))) isa Float64
+    @test (@inferred transform_logdensity(t, f, z)) isa Float64
 end
 
 @testset "custom transformation: triangle below diagonal in [0,1]²" begin
