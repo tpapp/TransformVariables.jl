@@ -59,7 +59,8 @@ function transform_with(flag::LogJacFlag, t::ArrayTransform, x::RealVector)
     d = dimension(transformation)
     I = reshape(range(firstindex(x); length = prod(dims), step = d), dims)
     yℓ = map(i -> transform_with(flag, transformation, view_into(x, i, d)), I)
-    first.(yℓ), isempty(yℓ) ? logjac_zero(flag, eltype(x)) : sum(last, yℓ)
+    ℓz = logjac_zero(flag, eltype(x))
+    first.(yℓ), isempty(yℓ) ? ℓz : ℓz + sum(last, yℓ)
 end
 
 function transform_with(flag::LogJacFlag, t::ArrayTransform{Identity}, x::RealVector)
@@ -151,12 +152,13 @@ $(SIGNATURES)
 Helper function for transforming tuples. Used internally, to help type inference. Use via
 `transfom_tuple`.
 """
-_transform_tuple(flag::LogJacFlag, x::RealVector, index) = (), logjac_zero(flag, eltype(x))
+_transform_tuple(flag::LogJacFlag, x::RealVector, index, ::Tuple{}) = (), logjac_zero(flag, eltype(x))
 
-function _transform_tuple(flag::LogJacFlag, x::RealVector, index, tfirst, trest...)
+function _transform_tuple(flag::LogJacFlag, x::RealVector, index, ts)
+    tfirst = first(ts)
     d = dimension(tfirst)
     yfirst, ℓfirst = transform_with(flag, tfirst, view_into(x, index, d))
-    yrest, ℓrest = _transform_tuple(flag, x, index + d, trest...)
+    yrest, ℓrest = _transform_tuple(flag, x, index + d, Base.tail(ts))
     (yfirst, yrest...), ℓfirst + ℓrest
 end
 
@@ -166,7 +168,7 @@ $(SIGNATURES)
 Helper function for tuple transformations.
 """
 transform_tuple(flag::LogJacFlag, tt::NTransforms, x::RealVector) =
-    _transform_tuple(flag, x, firstindex(x), tt...)
+    _transform_tuple(flag, x, firstindex(x), tt)
 
 """
 $(SIGNATURES)

@@ -307,3 +307,28 @@ end
         @test lj2 ≈ -lj
     end
 end
+
+@testset "inference of nested tuples" begin
+    # An MWE adapted from a real-life problem
+    ABOVE1 = as(Real, 1, ∞)   # transformation for μ ≥ 1
+
+    trans_β̃s = as((asℝ, asℝ))     # a tuple of 2 elements, otherwise identity
+
+    PARAMS_TRANSFORMATIONS =
+        (EE = as((β̃s = trans_β̃s, μs = as((as𝕀, as𝕀)))),
+         EN = as((w̃₂ = asℝ, β̃s = trans_β̃s, μs = as((as𝕀, ABOVE1)))),
+         NE = as((w̃₁ = asℝ, β̃s = trans_β̃s, μs = as((ABOVE1, as𝕀)))),
+         NN = as((w̃s = as((asℝ, asℝ)), β̃s = trans_β̃s, μs = as((ABOVE1, ABOVE1)))))
+
+    function make_transformation(ls)
+        as((hyper_parameters = as((μ = as(Array, 6),
+                                   σ = as(Array, asℝ₊, 6),
+                                   LΩ = CorrCholeskyFactor(6))),
+            couple_parameters = as(map((t, l) -> as(Array, t, l),
+                                       PARAMS_TRANSFORMATIONS, ls))))
+    end
+    t = make_transformation((EE = 1, EN = 2 , NE = 3, NN = 4,))
+    x = zeros(dimension(t))
+    @test_nowarn @inferred transform(t, x)
+    @test_nowarn @inferred transform_and_logjac(t, x)
+end
