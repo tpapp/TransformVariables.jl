@@ -173,18 +173,18 @@ end
     znt = as(NamedTuple())
     za = as(Array, asℝ₊, 0)
     @test dimension(zt) == dimension(znt) == 0
-    @test transform(zt, Float64[]) == ()
+    @test @inferred(transform(zt, Float64[])) == ()
     @test_skip inverse(zt, ()) == []
-    @test transform_and_logjac(zt, Float64[]) == ((), 0.0)
-    @test transform(znt, Float64[]) == NamedTuple()
-    @test transform_and_logjac(znt, Float64[]) == (NamedTuple(), 0.0)
+    @test @inferred(transform_and_logjac(zt, Float64[])) == ((), 0.0)
+    @test @inferred(transform(znt, Float64[])) == NamedTuple()
+    @test @inferred(transform_and_logjac(znt, Float64[])) == (NamedTuple(), 0.0)
     @test_skip inverse(znt, ()) == []
-    @test transform(za, Float64[]) == Float64[]
-    @test transform_and_logjac(za, Float64[]) == (Float64[], 0.0)
+    @test @inferred(transform(za, Float64[])) == Float64[]
+    @test @inferred(transform_and_logjac(za, Float64[])) == (Float64[], 0.0)
     @test_skip inverse(za, []) == []
 end
 
-@testset "transform logdensity" begin
+@testset "transform logdensity: correctness" begin
     # the density is p(σ) = σ⁻³
     # let z = log(σ), so σ = exp(z)
     # the transformed density is q(z) = -3z + z = -2z
@@ -192,9 +192,18 @@ end
     q(z) = -2*z
     for _ in 1:1000
         z = randn()
-        qz = transform_logdensity(asℝ₊, f, z)
+        qz = @inferred transform_logdensity(asℝ₊, f, z)
         @test q(z) ≈ qz
     end
+end
+
+@testset "transform logdensity: type inference" begin
+    t = as((a = asℝ₋, b = as𝕀, c = as((d = UnitVector(7), e = CorrCholeskyFactor(3))),
+            f = as(Array, 9)))
+    z = zeros(dimension(t))
+    f(θ) = θ.a + θ.b + sum(abs2, θ.c.d) + sum(abs2, θ.c.e)
+    @test (@inferred f(t(z))) isa Float64
+    @test (@inferred transform_logdensity(t, f, z)) isa Float64
 end
 
 @testset "custom transformation: triangle below diagonal in [0,1]²" begin
@@ -297,4 +306,29 @@ end
         @test x2 ≈ x
         @test lj2 ≈ -lj
     end
+end
+
+@testset "inference of nested tuples" begin
+    # An MWE adapted from a real-life problem
+    ABOVE1 = as(Real, 1, ∞)   # transformation for μ ≥ 1
+
+    trans_β̃s = as((asℝ, asℝ))     # a tuple of 2 elements, otherwise identity
+
+    PARAMS_TRANSFORMATIONS =
+        (EE = as((β̃s = trans_β̃s, μs = as((as𝕀, as𝕀)))),
+         EN = as((w̃₂ = asℝ, β̃s = trans_β̃s, μs = as((as𝕀, ABOVE1)))),
+         NE = as((w̃₁ = asℝ, β̃s = trans_β̃s, μs = as((ABOVE1, as𝕀)))),
+         NN = as((w̃s = as((asℝ, asℝ)), β̃s = trans_β̃s, μs = as((ABOVE1, ABOVE1)))))
+
+    function make_transformation(ls)
+        as((hyper_parameters = as((μ = as(Array, 6),
+                                   σ = as(Array, asℝ₊, 6),
+                                   LΩ = CorrCholeskyFactor(6))),
+            couple_parameters = as(map((t, l) -> as(Array, t, l),
+                                       PARAMS_TRANSFORMATIONS, ls))))
+    end
+    t = make_transformation((EE = 1, EN = 2 , NE = 3, NN = 4,))
+    x = zeros(dimension(t))
+    @test_nowarn @inferred transform(t, x)
+    @test_nowarn @inferred transform_and_logjac(t, x)
 end

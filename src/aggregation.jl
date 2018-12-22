@@ -59,7 +59,8 @@ function transform_with(flag::LogJacFlag, t::ArrayTransform, x::RealVector)
     d = dimension(transformation)
     I = reshape(range(firstindex(x); length = prod(dims), step = d), dims)
     yℓ = map(i -> transform_with(flag, transformation, view_into(x, i, d)), I)
-    first.(yℓ), isempty(yℓ) ? logjac_zero(flag, eltype(x)) : sum(last, yℓ)
+    ℓz = logjac_zero(flag, eltype(x))
+    first.(yℓ), isempty(yℓ) ? ℓz : ℓz + sum(last, yℓ)
 end
 
 function transform_with(flag::LogJacFlag, t::ArrayTransform{Identity}, x::RealVector)
@@ -104,11 +105,15 @@ $(TYPEDEF)
 
 Transform consecutive groups of real numbers to a tuple, using the given transformations.
 """
-@calltrans struct TransformTuple{K, T <: NTransforms{K}} <: VectorTransform
+@calltrans struct TransformTuple{T} <: VectorTransform
     transformations::T
     dimension::Int
-    function TransformTuple(transformations::T) where {K, T <: NTransforms{K}}
-        new{K,T}(transformations, _sum_dimensions(transformations))
+    function TransformTuple(transformations::T) where {T <: NTransforms}
+        new{T}(transformations, _sum_dimensions(transformations))
+    end
+    function TransformTuple(transformations::T
+                            ) where {N, S <: NTransforms, T <: NamedTuple{N, S}}
+        new{T}(transformations, _sum_dimensions(transformations))
     end
 end
 
@@ -145,14 +150,15 @@ as(transformations::NTransforms) = TransformTuple(transformations)
 $(SIGNATURES)
 
 Helper function for transforming tuples. Used internally, to help type inference. Use via
-`transfom_tuple` only.
+`transfom_tuple`.
 """
-_transform_tuple(flag::LogJacFlag, x::RealVector, index) = (), logjac_zero(flag, eltype(x))
+_transform_tuple(flag::LogJacFlag, x::RealVector, index, ::Tuple{}) = (), logjac_zero(flag, eltype(x))
 
-function _transform_tuple(flag::LogJacFlag, x::RealVector, index, tfirst, trest...)
+function _transform_tuple(flag::LogJacFlag, x::RealVector, index, ts)
+    tfirst = first(ts)
     d = dimension(tfirst)
     yfirst, ℓfirst = transform_with(flag, tfirst, view_into(x, index, d))
-    yrest, ℓrest = _transform_tuple(flag, x, index + d, trest...)
+    yrest, ℓrest = _transform_tuple(flag, x, index + d, Base.tail(ts))
     (yfirst, yrest...), ℓfirst + ℓrest
 end
 
@@ -162,24 +168,27 @@ $(SIGNATURES)
 Helper function for tuple transformations.
 """
 transform_tuple(flag::LogJacFlag, tt::NTransforms, x::RealVector) =
-    _transform_tuple(flag, x, firstindex(x), tt...)
+    _transform_tuple(flag, x, firstindex(x), tt)
 
 """
 $(SIGNATURES)
 
 Helper function determining element type of inverses from tuples. Used
 internally.
+
+*Performs no argument validation, caller should do this.*
 """
-_inverse_eltype_tuple(ts::NTransforms{K}, ys::NTuple{K,Any}) where K =
+_inverse_eltype_tuple(ts::NTransforms, ys::Tuple) =
     mapreduce(((t, y),) -> inverse_eltype(t, y), promote_type, zip(ts, ys))
 
 """
 $(SIGNATURES)
 
 Helper function for inverting tuples of transformations. Used internally.
+
+*Performs no argument validation, caller should do this.*
 """
-function _inverse!_tuple(x::RealVector, ts::NTransforms{K},
-                         ys::NTuple{K,Any}) where K
+function _inverse!_tuple(x::RealVector, ts::NTransforms, ys::Tuple)
     index = firstindex(x)
     for (t, y) in zip(ts, ys)
         d = dimension(t)
@@ -189,53 +198,40 @@ function _inverse!_tuple(x::RealVector, ts::NTransforms{K},
     x
 end
 
-transform_with(flag::LogJacFlag, tt::TransformTuple, x::RealVector) =
+transform_with(flag::LogJacFlag, tt::TransformTuple{<:Tuple}, x::RealVector) =
     transform_tuple(flag, tt.transformations, x)
 
-inverse_eltype(tt::TransformTuple{K}, y::NTuple{K,Any}) where K =
-    _inverse_eltype_tuple(tt.transformations, y)
+function inverse_eltype(tt::TransformTuple{<:Tuple}, y::Tuple)
+    @unpack transformations = tt
+    @argcheck length(transformations) == length(y)
+    _inverse_eltype_tuple(transformations, y)
+end
 
-function inverse!(x::RealVector, tt::TransformTuple{K},
-                  y::NTuple{K,Any}) where K
+function inverse!(x::RealVector, tt::TransformTuple{<:Tuple}, y::Tuple)
+    @unpack transformations = tt
+    @argcheck length(transformations) == length(y)
     @argcheck length(x) == dimension(tt)
     _inverse!_tuple(x, tt.transformations, y)
 end
 
-"""
-$(TYPEDEF)
+as(transformations::NamedTuple{N,<:NTransforms}) where N =
+    TransformTuple(transformations)
 
-Transform consecutive groups of real numbers to a named tuple, using the given
-transformations.
-"""
-@calltrans struct TransformNamedTuple{names, T <: NTransforms} <: VectorTransform
-    transformations::T
-    dimension::Int
-    function TransformNamedTuple(transformations::NamedTuple{names,T}) where
-        {names, T <: NTransforms}
-        new{names,T}(values(transformations), _sum_dimensions(transformations))
-    end
+function transform_with(flag::LogJacFlag, tt::TransformTuple{<:NamedTuple}, x::RealVector)
+    @unpack transformations = tt
+    y, ℓ = transform_tuple(flag, values(transformations), x)
+    NamedTuple{keys(transformations)}(y), ℓ
 end
 
-"""
-$(SIGNATURES)
-"""
-as(transformations::NamedTuple{T,<:NTransforms}) where T =
-    TransformNamedTuple(transformations)
-
-dimension(tn::TransformNamedTuple) = tn.dimension
-
-function transform_with(flag::LogJacFlag, tt::TransformNamedTuple{names},
-                      x::RealVector) where {names}
-    y, ℓ = transform_tuple(flag, tt.transformations, x)
-    NamedTuple{names}(y), ℓ
+function inverse_eltype(tt::TransformTuple{<:NamedTuple}, y::NamedTuple)
+    @unpack transformations = tt
+    @argcheck keys(transformations) == keys(y)
+    _inverse_eltype_tuple(values(transformations), values(y))
 end
 
-inverse_eltype(tt::TransformNamedTuple{names},
-               y::NamedTuple{names}) where names =
-    _inverse_eltype_tuple(tt.transformations, values(y))
-
-function inverse!(x::RealVector, tt::TransformNamedTuple{names},
-                  y::NamedTuple{names}) where names
+function inverse!(x::RealVector, tt::TransformTuple{<:NamedTuple}, y::NamedTuple)
+    @unpack transformations = tt
+    @argcheck keys(transformations) == keys(y)
     @argcheck length(x) == dimension(tt)
-    _inverse!_tuple(x, tt.transformations, values(y))
+    _inverse!_tuple(x, values(transformations), values(y))
 end
