@@ -273,30 +273,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "#TransformVariables.ArrayTransform",
-    "page": "Introduction",
-    "title": "TransformVariables.ArrayTransform",
-    "category": "type",
-    "text": "struct ArrayTransform{T<:TransformVariables.AbstractTransform, M} <: TransformVariables.VectorTransform\n\nApply transformation repeatedly to create an array with given dims.\n\n\n\n\n\n"
-},
-
-{
-    "location": "#TransformVariables.TransformTuple",
-    "page": "Introduction",
-    "title": "TransformVariables.TransformTuple",
-    "category": "type",
-    "text": "struct TransformTuple{K, T<:Tuple{Vararg{TransformVariables.AbstractTransform,K}}} <: TransformVariables.VectorTransform\n\nTransform consecutive groups of real numbers to a tuple, using the given transformations.\n\n\n\n\n\n"
-},
-
-{
-    "location": "#TransformVariables.TransformNamedTuple",
-    "page": "Introduction",
-    "title": "TransformVariables.TransformNamedTuple",
-    "category": "type",
-    "text": "struct TransformNamedTuple{names, T<:(Tuple{Vararg{TransformVariables.AbstractTransform,N}} where N)} <: TransformVariables.VectorTransform\n\nTransform consecutive groups of real numbers to a named tuple, using the given transformations.\n\n\n\n\n\n"
-},
-
-{
     "location": "#Aggregating-transformations-1",
     "page": "Introduction",
     "title": "Aggregating transformations",
@@ -429,7 +405,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables._transform_tuple",
     "category": "function",
-    "text": "_transform_tuple(flag, x, index)\n\n\nHelper function for transforming tuples. Used internally, to help type inference. Use via transfom_tuple only.\n\n\n\n\n\n"
+    "text": "_transform_tuple(flag, x, index, ?)\n\n\nHelper function for transforming tuples. Used internally, to help type inference. Use via transfom_tuple.\n\n\n\n\n\n"
 },
 
 {
@@ -437,7 +413,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables._inverse!_tuple",
     "category": "function",
-    "text": "_inverse!_tuple(x, ts, ys)\n\n\nHelper function for inverting tuples of transformations. Used internally.\n\n\n\n\n\n"
+    "text": "_inverse!_tuple(x, ts, ys)\n\n\nHelper function for inverting tuples of transformations. Used internally.\n\nPerforms no argument validation, caller should do this.\n\n\n\n\n\n"
 },
 
 {
@@ -445,7 +421,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables._inverse_eltype_tuple",
     "category": "function",
-    "text": "_inverse_eltype_tuple(ts, ys)\n\n\nHelper function determining element type of inverses from tuples. Used internally.\n\n\n\n\n\n"
+    "text": "_inverse_eltype_tuple(ts, ys)\n\n\nHelper function determining element type of inverses from tuples. Used internally.\n\nPerforms no argument validation, caller should do this.\n\n\n\n\n\n"
 },
 
 {
