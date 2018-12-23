@@ -1,5 +1,6 @@
-
-# logistic and logit
+###
+### logistic and logit
+###
 
 logistic(x::Real) = inv(one(x) + exp(-x))
 
@@ -12,8 +13,9 @@ logit(x::Real) = log(x / (one(x) - x))
 
 logit_logjac(y) = -log(y) - log1p(-y)
 
-
-# calculations
+###
+### calculations
+###
 
 """
     $SIGNATURES
@@ -22,8 +24,27 @@ Number of elements (strictly) above the diagonal in an ``n×n`` matrix.
 """
 unit_triangular_dimension(n::Int) = n * (n-1) ÷ 2
 
-
-# view management
+###
+### type calculations
+###
+
+"""
+    $(SIGNATURES)
+
+Extend element type of argument so that it is closed under the algebra used by this package.
+
+Pessimistic default for non-real types.
+"""
+function extended_eltype(::Type{S}) where S
+    T = eltype(S)
+    T <: Real ? typeof(√(one(T))) : Any
+end
+
+extended_eltype(x::T) where T = extended_eltype(T)
+
+###
+### view management
+###
 
 """
 $SIGNATURES
@@ -32,8 +53,9 @@ A view of `v` starting from `i` for `len` elements, no bounds checking.
 """
 view_into(v::AbstractVector, i, len) = @inbounds view(v, i:(i+len-1))
 
-
-# macros
+###
+### macros
+###
 
 """
 $(SIGNATURES)
@@ -56,6 +78,10 @@ macro calltrans(ex)
         throw(ArgumentError("can't find anything to make callable in $(ex)"))
     end
 end
+
+####
+#### random values
+####
 
 "Shared part of docstrings for keyword arguments of or passed to [`random_reals`](@ref)."
 const _RANDOM_REALS_KWARGS_DOC = """

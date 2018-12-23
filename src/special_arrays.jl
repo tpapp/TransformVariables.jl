@@ -41,8 +41,9 @@ end
 
 dimension(t::UnitVector) = t.n - 1
 
-function transform_with(flag::LogJacFlag, t::UnitVector, x::RealVector{T}) where T
+function transform_with(flag::LogJacFlag, t::UnitVector, x::RealVector)
     @unpack n = t
+    T = extended_eltype(x)
     r = one(T)
     y = Vector{T}(undef, n)
     ℓ = logjac_zero(flag, T)
@@ -57,7 +58,7 @@ function transform_with(flag::LogJacFlag, t::UnitVector, x::RealVector{T}) where
     y, ℓ
 end
 
-inverse_eltype(t::UnitVector, y::RealVector) = float(eltype(y))
+inverse_eltype(t::UnitVector, y::RealVector) = extended_eltype(y)
 
 function inverse!(x::RealVector, t::UnitVector, y::RealVector)
     @unpack n = t
@@ -93,11 +94,11 @@ end
 
 dimension(t::CorrCholeskyFactor) = unit_triangular_dimension(t.n)
 
-function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor,
-                         x::RealVector{T}) where T
+function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor, x::RealVector)
     @unpack n = t
+    T = extended_eltype(x)
     ℓ = logjac_zero(flag, T)
-    U = zeros(typeof(√one(T)), n, n)
+    U = Matrix{T}(undef, n, n)
     index = firstindex(x)
     @inbounds for col in 1:n
         r = one(T)
@@ -112,7 +113,7 @@ function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor,
     UpperTriangular(U), ℓ
 end
 
-inverse_eltype(t::CorrCholeskyFactor, U::UpperTriangular) = float(eltype(U))
+inverse_eltype(t::CorrCholeskyFactor, U::UpperTriangular) = extended_eltype(U)
 
 function inverse!(x::RealVector, t::CorrCholeskyFactor, U::UpperTriangular)
     @unpack n = t
