@@ -288,6 +288,13 @@ end
     @test g2.value == v.value
     @test g2.gradient ≈ g1.gradient
 
+    # test element type calculations for Flux
+    t2 = CorrCholeskyFactor(4)
+    @test t2(Flux.param(ones(dimension(t2)))) isa UpperTriangular
+
+    t3 = UnitVector(3)
+    @test sum(abs2, t3(Flux.param(ones(dimension(t3))))) ≈ Flux.param(1.0)
+
     # ReverseDiff
     P3 = ADgradient(:ReverseDiff, P)
     g3 = @inferred logdensity(ValueGradient, P3, x)

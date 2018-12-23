@@ -59,7 +59,7 @@ function transform_with(flag::LogJacFlag, t::ArrayTransform, x::RealVector)
     d = dimension(transformation)
     I = reshape(range(firstindex(x); length = prod(dims), step = d), dims)
     yℓ = map(i -> transform_with(flag, transformation, view_into(x, i, d)), I)
-    ℓz = logjac_zero(flag, eltype(x))
+    ℓz = logjac_zero(flag, extended_eltype(x))
     first.(yℓ), isempty(yℓ) ? ℓz : ℓz + sum(last, yℓ)
 end
 
@@ -67,7 +67,7 @@ function transform_with(flag::LogJacFlag, t::ArrayTransform{Identity}, x::RealVe
     # TODO use version below when https://github.com/FluxML/Flux.jl/issues/416 is fixed
     # y = reshape(copy(x), t.dims)
     y = reshape(map(identity, x), t.dims)
-    y, logjac_zero(flag, eltype(x))
+    y, logjac_zero(flag, extended_eltype(x))
 end
 
 inverse_eltype(t::ArrayTransform, x::AbstractArray) =
@@ -152,7 +152,8 @@ $(SIGNATURES)
 Helper function for transforming tuples. Used internally, to help type inference. Use via
 `transfom_tuple`.
 """
-_transform_tuple(flag::LogJacFlag, x::RealVector, index, ::Tuple{}) = (), logjac_zero(flag, eltype(x))
+_transform_tuple(flag::LogJacFlag, x::RealVector, index, ::Tuple{}) =
+    (), logjac_zero(flag, extended_eltype(x))
 
 function _transform_tuple(flag::LogJacFlag, x::RealVector, index, ts)
     tfirst = first(ts)
