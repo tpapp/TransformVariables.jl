@@ -4,7 +4,7 @@ import Flux, ForwardDiff, ReverseDiff
 using LogDensityProblems: Value, ValueGradient
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
-    unit_triangular_dimension, logistic, logistic_logjac, l<:ogit
+    unit_triangular_dimension, logistic, logistic_logjac, logit
 
 include("test_utilities.jl")
 
