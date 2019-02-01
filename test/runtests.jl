@@ -339,3 +339,14 @@ end
     @test_nowarn @inferred transform(t, x)
     @test_nowarn @inferred transform_and_logjac(t, x)
 end
+
+@testset "positive definite cholesky factor" begin
+    t = PosDefCholeskyFactor(4)
+    d = dimension(t)
+
+    v = randn(d)
+    U = transform(t, v)
+    @test U <: UpperTriangular
+    @test size(U) = (4,4)
+    @test inverse(t,U) ≈ v
+end

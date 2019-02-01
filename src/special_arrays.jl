@@ -1,4 +1,4 @@
-export UnitVector, CorrCholeskyFactor
+export UnitVector, CorrCholeskyFactor, PosDefCholeskyFactor
 
 """
     (y, r, ℓ) = $SIGNATURES
@@ -126,6 +126,66 @@ function inverse!(x::RealVector, t::CorrCholeskyFactor, U::UpperTriangular)
             x[index], r = l2_remainder_inverse(U[row, col], r)
             index += 1
         end
+    end
+    x
+end
+
+
+
+"""
+    PosDefCholeskyFactor(n)
+
+Cholesky factor of a symmetric positive-definite matrix of size `n`.
+
+Transforms ``n×(n+1)/2`` real numbers to an ``n×n`` upper-triangular matrix `Ω`, such that
+`Ω'*Ω` is a positive definite matrix.
+"""
+@calltrans struct PosDefCholeskyFactor <: VectorTransform
+    n::Int
+    function PosDefCholeskyFactor(n)
+        @argcheck n ≥ 1 "Dimension should be positive."
+        new(n)
+    end
+end
+
+dimension(t::PosDefCholeskyFactor) = (t.n*(t.n+1)) ÷ 2
+
+function transform_with(flag::LogJacFlag, t::PosDefCholeskyFactor, x::RealVector)
+    @unpack n = t
+    T = extended_eltype(x)
+    ℓ = logjac_zero(flag, T)
+    U = Matrix{T}(undef, n, n)
+    index = firstindex(x)
+    @inbounds for col in 1:n
+        for row in 1:(col-1)
+            U[row, col] = x[index]
+            index += 1
+        end
+        if flag isa NoLogJac
+            U[col, col] = transform(asℝ₊, x[index])
+        else
+            U[col, col], ℓi = transform_and_logjac(asℝ₊, x[index])
+            ℓ += ℓi
+        end
+        index += 1
+    end
+    UpperTriangular(U), ℓ
+end
+
+inverse_eltype(t::PosDefCholeskyFactor, U::UpperTriangular) = extended_eltype(U)
+
+function inverse!(x::RealVector, t::PosDefCholeskyFactor, U::UpperTriangular)
+    @unpack n = t
+    @argcheck size(U, 1) == n
+    @argcheck length(x) == dimension(t)
+    index = firstindex(x)
+    @inbounds for col in 1:n
+        for row in 1:(col-1)
+            x[index] = U[row,col]
+            index += 1            
+        end
+        x[index] = inverse(asℝ₊, U[col, col])
+        index += 1
     end
     x
 end

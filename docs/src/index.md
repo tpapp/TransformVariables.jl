@@ -98,6 +98,7 @@ as𝕀
 ```@docs
 UnitVector
 CorrCholeskyFactor
+PosDefCholeskyFactor
 ```
 
 # Defining custom transformations
