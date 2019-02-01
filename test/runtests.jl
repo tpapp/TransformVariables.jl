@@ -4,7 +4,7 @@ import Flux, ForwardDiff, ReverseDiff
 using LogDensityProblems: Value, ValueGradient
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
-    unit_triangular_dimension, logistic, logistic_logjac, logit
+    unit_triangular_dimension, logistic, logistic_logjac, l<:ogit
 
 include("test_utilities.jl")
 
@@ -346,7 +346,7 @@ end
 
     v = randn(d)
     U = transform(t, v)
-    @test U <: UpperTriangular
+    @test U isa UpperTriangular
     @test size(U) = (4,4)
     @test inverse(t,U) ≈ v
 end
