@@ -110,11 +110,15 @@ transform_and_logjac(t::ScaledShiftedLogistic, x) =
     transform(t, x), log(t.scale) + logistic_logjac(x)
 
 function inverse(t::ScaledShiftedLogistic, y)
+    @argcheck y > t.shift           DomainError
+    @argcheck y < t.scale + t.shift DomainError
     logit((y - t.shift)/t.scale)
 end
 
 # NOTE: inverse_and_logjac interface experimental and sporadically implemented for now
 function inverse_and_logjac(t::ScaledShiftedLogistic, y)
+    @argcheck y > t.shift           DomainError
+    @argcheck y < t.scale + t.shift DomainError
     z = (y - t.shift) / t.scale
     logit(z), logit_logjac(z) - log(t.scale)
 end

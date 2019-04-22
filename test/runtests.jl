@@ -4,7 +4,7 @@ import Flux, ForwardDiff, ReverseDiff
 using LogDensityProblems: Value, ValueGradient
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
-    unit_triangular_dimension, logistic, logistic_logjac, logit
+    unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac
 
 include("test_utilities.jl")
 
@@ -49,6 +49,18 @@ end
     @test_throws ArgumentError as(Real, "a fish", 9)
     @test as(Real, 1, 4.0) == as(Real, 1.0, 4.0)
     @test_throws ArgumentError as(Real, 3.0, -4.0)
+
+    t = as(Real, 1.0, ∞)
+    @test_throws DomainError inverse(t, 0.5)
+
+    t = as(Real, -∞, 10.0)
+    @test_throws DomainError inverse(t, 11.0)
+
+    t = as(Real, 1.0, 10.0)
+    @test_throws DomainError inverse(t, 0.5)
+    @test_throws DomainError inverse(t, 11.0)
+    @test_throws DomainError inverse_and_logjac(t, 0.5)
+    @test_throws DomainError inverse_and_logjac(t, 11.0)
 end
 
 @testset "to unit vector" begin
