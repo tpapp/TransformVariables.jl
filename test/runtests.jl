@@ -64,6 +64,12 @@ end
 end
 
 @testset "to unit vector" begin
+    U = UnitVector(3)
+    x = zeros(3)               # incorrect
+    @test_throws ArgumentError U(x)
+    @test_throws ArgumentError transform(U, x)
+    @test_throws ArgumentError transform_and_logjac(U, x)
+
     for K in 1:10
         t = UnitVector(K)
         @test dimension(t) == K - 1

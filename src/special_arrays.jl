@@ -43,6 +43,7 @@ dimension(t::UnitVector) = t.n - 1
 
 function transform_with(flag::LogJacFlag, t::UnitVector, x::RealVector)
     @unpack n = t
+    @argcheck n - 1 == length(x)
     T = extended_eltype(x)
     r = one(T)
     y = Vector{T}(undef, n)
