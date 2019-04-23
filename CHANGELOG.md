@@ -1,3 +1,7 @@
+# 0.3.1
+
+- Catch wrong size UnitVector inputs (thanks @cscherrer)
+
 # 0.3.0
 
 - Type stability and inference fixes
