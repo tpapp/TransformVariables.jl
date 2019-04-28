@@ -90,8 +90,21 @@ end
 
 Cholesky factor of a correlation matrix of size `n`.
 
-Transforms ``n×(n-1)/2`` real numbers to an ``n×n`` upper-triangular matrix `Ω`, such that
-`Ω'*Ω` is a correlation matrix (positive definite, with unit diagonal).
+Transforms ``n×(n-1)/2`` real numbers to an ``n×n`` upper-triangular matrix `U`, such that
+`U'*U` is a correlation matrix (positive definite, with unit diagonal).
+
+# Notes
+
+If
+
+- `z` is a vector of `n` IID standard normal variates,
+
+- `σ` is an `n`-element vector of standard deviations,
+
+- `U` is obtained from `CorrCholeskyFactor(n)`,
+
+then `U' * Diagonal(σ) * z` will be a multivariate normal with the given variances and
+correlation matrix `U' * U`.
 """
 @calltrans struct CorrCholeskyFactor <: VectorTransform
     n::Int
