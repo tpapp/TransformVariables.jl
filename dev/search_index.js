@@ -181,7 +181,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables.CorrCholeskyFactor",
     "category": "type",
-    "text": "CorrCholeskyFactor(n)\n\nCholesky factor of a correlation matrix of size n.\n\nTransforms n(n-1)2 real numbers to an nn upper-triangular matrix Ω, such that Ω\'*Ω is a correlation matrix (positive definite, with unit diagonal).\n\n\n\n\n\n"
+    "text": "CorrCholeskyFactor(n)\n\nCholesky factor of a correlation matrix of size n.\n\nTransforms n(n-1)2 real numbers to an nn upper-triangular matrix U, such that U\'*U is a correlation matrix (positive definite, with unit diagonal).\n\nNotes\n\nIf\n\nz is a vector of n IID standard normal variates,\nσ is an n-element vector of standard deviations,\nU is obtained from CorrCholeskyFactor(n),\n\nthen U\' * Diagonal(σ) * z will be a multivariate normal with the given variances and correlation matrix U\' * U.\n\n\n\n\n\n"
 },
 
 {
