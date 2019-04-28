@@ -1,4 +1,4 @@
-# Unreleased
+# 0.3.2
 
 - Check length of inputs for CorrCholeskyFactor
 
