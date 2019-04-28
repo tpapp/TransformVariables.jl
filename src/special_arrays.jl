@@ -103,7 +103,7 @@ If
 
 - `U` is obtained from `CorrCholeskyFactor(n)`,
 
-then `U' * Diagonal(σ) * z` will be a multivariate normal with the given variances and
+then `Diagonal(σ) * U' * z` will be a multivariate normal with the given variances and
 correlation matrix `U' * U`.
 """
 @calltrans struct CorrCholeskyFactor <: VectorTransform
