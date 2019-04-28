@@ -1,3 +1,7 @@
+# Unreleased
+
+- Check length of inputs for CorrCholeskyFactor
+
 # 0.3.1
 
 - Catch wrong size UnitVector inputs (thanks @cscherrer)
