@@ -97,6 +97,7 @@ dimension(t::CorrCholeskyFactor) = unit_triangular_dimension(t.n)
 
 function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor, x::RealVector)
     @unpack n = t
+    @argcheck length(x) == dimension(t)
     T = extended_eltype(x)
     ℓ = logjac_zero(flag, T)
     U = Matrix{T}(undef, n, n)

@@ -81,13 +81,24 @@ end
 end
 
 @testset "to correlation cholesky factor" begin
-    for K in 1:8
-        t = CorrCholeskyFactor(K)
-        @test dimension(t) == (K - 1)*K/2
-        CIENV && @info "testing correlation cholesky K = $(K)"
-        if K > 1
-            test_transformation(t, is_valid_corr_cholesky;
-                                vec_y = vec_above_diagonal, N = 100)
+    @testset "dimension checks" begin
+        C = CorrCholeskyFactor(3)
+        wrong_x = zeros(dimension(C) + 1)
+
+        @test_throws ArgumentError C(wrong_x)
+        @test_throws ArgumentError transform(C, wrong_x)
+        @test_throws ArgumentError transform_and_logjac(C, wrong_x)
+    end
+
+    @testset "consistency checks" begin
+        for K in 1:8
+            t = CorrCholeskyFactor(K)
+            @test dimension(t) == (K - 1)*K/2
+            CIENV && @info "testing correlation cholesky K = $(K)"
+            if K > 1
+                test_transformation(t, is_valid_corr_cholesky;
+                                    vec_y = vec_above_diagonal, N = 100)
+            end
         end
     end
 end
