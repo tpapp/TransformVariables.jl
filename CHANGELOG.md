@@ -1,10 +1,9 @@
 # Unreleased
 
-- minor doc updates for CorrCholeskyFactor
-
 # 0.3.2
 
 - Check length of inputs for CorrCholeskyFactor
+- minor doc updates for CorrCholeskyFactor
 
 # 0.3.1
 
