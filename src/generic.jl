@@ -1,8 +1,9 @@
 export dimension, transform, transform_and_logjac, transform_logdensity, inverse, inverse!,
     inverse_eltype, as, random_arg, random_value
 
-
-# log absolute Jacobian determinant
+####
+#### log absolute Jacobian determinant
+####
 
 """
 $(TYPEDEF)
@@ -47,8 +48,9 @@ logjac_zero(::LogJac, T::Type{<:Real}) = log(one(T))
 
 logjac_zero(::NoLogJac, _) = NOLOGJAC
 
-
-# general
+####
+#### general
+####
 
 """
 $(TYPEDEF)
@@ -163,8 +165,9 @@ as((a = asℝ₊, b = as𝕀)) # transform 2 real numbers a NamedTuple, with a >
 """
 function as end
 
-
-# vector transformations
+####
+#### vector transformations
+####
 
 """
 An `AbstractVector` of `<:Real` elements.

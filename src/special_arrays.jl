@@ -1,5 +1,9 @@
 export UnitVector, CorrCholeskyFactor
 
+####
+#### building blocks
+####
+
 """
     (y, r, ℓ) = $SIGNATURES
 
@@ -24,7 +28,10 @@ Inverse of [`l2_remainder_transform`](@ref) in `x` and `y`.
 """
 @inline l2_remainder_inverse(y, r) = logit((y/√r+1)/2), r-abs2(y)
 
-
+####
+#### UnitVector
+####
+
 """
     UnitVector(n)
 
@@ -74,8 +81,9 @@ function inverse!(x::RealVector, t::UnitVector, y::RealVector)
     x
 end
 
-
-# correlation cholesky factor
+####
+#### correlation cholesky factor
+####
 
 """
     CorrCholeskyFactor(n)
