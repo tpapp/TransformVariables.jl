@@ -63,6 +63,13 @@ end
     @test_throws DomainError inverse_and_logjac(t, 11.0)
 end
 
+@testset "scalar alternatives" begin
+    @test as_real ≡ asℝ
+    @test as_positive_real ≡ asℝ₊
+    @test as_negative_real ≡ asℝ₋
+    @test as_unit_interval ≡ as𝕀
+end
+
 @testset "to unit vector" begin
     @testset "dimension checks" begin
         U = UnitVector(3)

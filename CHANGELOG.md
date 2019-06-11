@@ -1,5 +1,9 @@
 # Unreleased
 
+# 0.3.3
+
+- Add ASCII aliases for common scalar transforms
+
 # 0.3.2
 
 - Check length of inputs for CorrCholeskyFactor
