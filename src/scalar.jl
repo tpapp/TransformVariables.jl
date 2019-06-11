@@ -1,4 +1,5 @@
-export ∞, asℝ, asℝ₊, asℝ₋, as𝕀
+export ∞, asℝ, asℝ₊, asℝ₋, as𝕀, as_real, as_positive_real, as_negative_real,
+    as_unit_interval
 
 """
 $(TYPEDEF)
@@ -170,14 +171,38 @@ function as(::Type{Real}, left::Real, right::Real)
     ScaledShiftedLogistic(right - left, left)
 end
 
-"Transform to a non-negative real number."
+"""
+Transform to a positive real number.
+
+`asℝ₊` and `as_positive_real` are equivalent alternatives.
+"""
 const asℝ₊ = as(Real, 0.0, ∞)
 
-"Transform to a non-positive real number."
+const as_positive_real = asℝ₊
+
+"""
+Transform to a negative real number.
+
+`asℝ₋` and `as_negative_real` are equivalent alternatives.
+"""
 const asℝ₋ = as(Real, -∞, 0.0)
 
-"Transform to the unit interval `(0, 1)`."
+const as_negative_real = asℝ₋
+
+"""
+Transform to the unit interval `(0, 1)`.
+
+`as𝕀` and `as_unit_interval` are equivalent alternatives.
+"""
 const as𝕀 = as(Real, 0.0, 1.0)
 
-"Transform to the real line (identity)."
+const as_unit_interval = as𝕀
+
+"""
+Transform to the real line (identity).
+
+`asℝ` and `as_real` are equivalent alternatives.
+"""
 const asℝ = as(Real, -∞, ∞)
+
+const as_real = asℝ
