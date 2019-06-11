@@ -133,7 +133,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables.asℝ",
     "category": "constant",
-    "text": "Transform to the real line (identity).\n\n\n\n\n\n"
+    "text": "Transform to the real line (identity).\n\nasℝ and as_real are equivalent alternatives.\n\n\n\n\n\n"
 },
 
 {
@@ -141,7 +141,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables.asℝ₊",
     "category": "constant",
-    "text": "Transform to a non-negative real number.\n\n\n\n\n\n"
+    "text": "Transform to a positive real number.\n\nasℝ₊ and as_positive_real are equivalent alternatives.\n\n\n\n\n\n"
 },
 
 {
@@ -149,7 +149,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables.asℝ₋",
     "category": "constant",
-    "text": "Transform to a non-positive real number.\n\n\n\n\n\n"
+    "text": "Transform to a negative real number.\n\nasℝ₋ and as_negative_real are equivalent alternatives.\n\n\n\n\n\n"
 },
 
 {
@@ -157,7 +157,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables.as𝕀",
     "category": "constant",
-    "text": "Transform to the unit interval (0, 1).\n\n\n\n\n\n"
+    "text": "Transform to the unit interval (0, 1).\n\nas𝕀 and as_unit_interval are equivalent alternatives.\n\n\n\n\n\n"
 },
 
 {
