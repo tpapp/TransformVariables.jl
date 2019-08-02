@@ -1,5 +1,5 @@
 using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, Parameters,
-    Random, Test, TransformVariables
+    Random, Test, TransformVariables, StaticArrays
 import Flux, ForwardDiff, ReverseDiff
 using LogDensityProblems: Value, ValueGradient
 using TransformVariables:
@@ -378,4 +378,9 @@ end
     x = zeros(dimension(t))
     @test_nowarn @inferred transform(t, x)
     @test_nowarn @inferred transform_and_logjac(t, x)
+end
+
+@testset "support abstract array inverses in ArrayTransform" begin
+    t = as(Array, 2, 3)
+    @test inverse(t, ones(SMatrix{2,3})) == ones(6)
 end
