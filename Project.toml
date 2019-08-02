@@ -1,7 +1,7 @@
 name = "TransformVariables"
 uuid = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
-version = "0.3.3"
+version = "0.3.4"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
@@ -14,6 +14,7 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
 julia = "^1"
+LogDensityProblems = "^0.8.3"
 
 [extras]
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
@@ -21,7 +22,8 @@ LogDensityProblems = "6fdf6af0-433a-55f7-b3ed-c6c6e0b8df7c"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Flux", "LogDensityProblems", "OffsetArrays", "Random", "ReverseDiff", "Test"]
+test = ["Flux", "LogDensityProblems", "OffsetArrays", "Random", "ReverseDiff", "StaticArrays", "Test"]

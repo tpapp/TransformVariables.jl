@@ -75,7 +75,7 @@ inverse_eltype(t::ArrayTransform, x::AbstractArray) =
 
 function inverse!(x::RealVector,
                   transformation_array::ArrayTransform,
-                  y::Array)
+                  y::AbstractArray)
     @unpack transformation, dims = transformation_array
     @argcheck size(y) == dims
     index = firstindex(x)

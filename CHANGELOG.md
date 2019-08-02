@@ -1,5 +1,9 @@
 # Unreleased
 
+# 0.3.4
+
+- make `inverse(::ArrayTransform)` accept `AbstractArray`
+
 # 0.3.3
 
 - Add ASCII aliases for common scalar transforms
