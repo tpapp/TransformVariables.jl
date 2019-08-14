@@ -1,5 +1,7 @@
 # Unreleased
 
+- use new LogDensityProblems interface
+
 # 0.3.4
 
 - make `inverse(::ArrayTransform)` accept `AbstractArray`
