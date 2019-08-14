@@ -1,16 +1,20 @@
 using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, Parameters,
     Random, Test, TransformVariables, StaticArrays
 import Flux, ForwardDiff, ReverseDiff
-using LogDensityProblems: Value, ValueGradient
+using LogDensityProblems: logdensity, logdensity_and_gradient
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
     unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac
 
-include("test_utilities.jl")
+include("utilities.jl")
 
 Random.seed!(1)
 
 const CIENV = get(ENV, "TRAVIS", "") == "true"  || get(ENV, "CI", "") == "true"
+
+####
+#### utilities
+####
 
 @testset "misc utilities" begin
     @test unit_triangular_dimension(1) == 0
@@ -33,6 +37,10 @@ end
         @test logistic(logit(y)) ≈ y
     end
 end
+
+####
+#### scalar transformations correctness checks
+####
 
 @testset "scalar transformations consistency" begin
     for _ in 1:100
@@ -69,6 +77,10 @@ end
     @test as_negative_real ≡ asℝ₋
     @test as_unit_interval ≡ as𝕀
 end
+
+####
+#### special array transformation correctness checks
+####
 
 @testset "to unit vector" begin
     @testset "dimension checks" begin
@@ -114,6 +126,14 @@ end
     end
 end
 
+####
+#### aggregation
+####
+
+###
+### array correctness checks
+###
+
 @testset "to array scalar" begin
     dims = (3, 4, 5)
     t = as𝕀
@@ -156,6 +176,10 @@ end
     @test lj == 0
 end
 
+###
+### tuple correctness checks
+###
+
 @testset "to tuple" begin
     t1 = asℝ
     t2 = as𝕀
@@ -181,6 +205,10 @@ end
     @test y == y2
     @test lj2 ≈ ljacc
 end
+
+###
+### named tuple correctness checks
+###
 
 @testset "to named tuple" begin
     t1 = asℝ
@@ -224,6 +252,10 @@ end
     @test_skip inverse(za, []) == []
 end
 
+####
+#### log density correctness checks
+####
+
 @testset "transform logdensity: correctness" begin
     # the density is p(σ) = σ⁻³
     # let z = log(σ), so σ = exp(z)
@@ -245,6 +277,10 @@ end
     @test (@inferred f(t(z))) isa Float64
     @test (@inferred transform_logdensity(t, f, z)) isa Float64
 end
+
+####
+#### custom transformations
+####
 
 @testset "custom transformation: triangle below diagonal in [0,1]²" begin
     tfun(y) = y[1], y[1]*y[2]   # triangle below diagonal in unit square
@@ -304,6 +340,10 @@ end
     end
 end
 
+####
+#### AD compatibility tests
+####
+
 @testset "AD tests" begin
     t = as((μ = asℝ, σ = asℝ₊, β = asℝ₋, α = as(Real, 0.0, 1.0),
             u = UnitVector(3), L = CorrCholeskyFactor(4)))
@@ -313,33 +353,28 @@ end
     end
     P = TransformedLogDensity(t, f)
     x = zeros(dimension(t))
-    v = logdensity(Value, P, x)
+    v = logdensity(P, x)
+    g = ForwardDiff.gradient(x -> logdensity(P, x), x)
 
     # ForwardDiff
     P1 = ADgradient(:ForwardDiff, P)
-    @test v == logdensity(Value, P1, x)
-    g1 = @inferred logdensity(ValueGradient, P1, x)
-    @test g1.value == v.value
+    @test v == logdensity(P1, x)
+    v1, g1 = @inferred logdensity_and_gradient(P1, x)
+    @test v1 == v
+    @test g1 ≈ g
 
     # Flux # NOTE @inferred removed as it currently fails, cf
     # https://github.com/FluxML/Flux.jl/issues/497
     P2 = ADgradient(:Flux, P)
-    g2 = logdensity(ValueGradient, P2, x) #
-    @test g2.value == v.value
-    @test g2.gradient ≈ g1.gradient
-
-    # test element type calculations for Flux
-    t2 = CorrCholeskyFactor(4)
-    @test t2(Flux.param(ones(dimension(t2)))) isa UpperTriangular
-
-    t3 = UnitVector(3)
-    @test sum(abs2, t3(Flux.param(ones(dimension(t3))))) ≈ Flux.param(1.0)
+    v2, g2 = logdensity_and_gradient(P2, x)
+    @test v2 == v
+    @test g2 ≈ g
 
     # ReverseDiff
     P3 = ADgradient(:ReverseDiff, P)
-    g3 = @inferred logdensity(ValueGradient, P3, x)
-    @test g3.value == v.value
-    @test g3.gradient ≈ g1.gradient
+    v3, g3 = @inferred logdensity_and_gradient(P3, x)
+    @test v3 == v
+    @test g3 ≈ g
 end
 
 @testset "inverse_and_logjac" begin
