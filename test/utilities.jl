@@ -1,3 +1,8 @@
+"""
+$(SIGNATURES)
+
+Log jacobian abs determinant via automatic differentiation. For testing.
+"""
 AD_logjac(t::VectorTransform, x, vec_y) =
     logabsdet(ForwardDiff.jacobian(x -> vec_y(transform(t, x)), x))[1]
 
