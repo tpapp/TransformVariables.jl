@@ -1,3 +1,11 @@
+const CIENV = get(ENV, "TRAVIS", "") == "true"  || get(ENV, "CI", "") == "true"
+
+if CIENV
+    @info "installing Zygote#master"
+    import Pkg
+    Pkg.API.add(Pkg.PackageSpec(; name = "Zygote", rev = "master"))
+end
+
 using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, Parameters,
     Random, Test, TransformVariables, StaticArrays
 import Flux, ForwardDiff, ReverseDiff, Zygote
@@ -9,8 +17,6 @@ using TransformVariables:
 include("utilities.jl")
 
 Random.seed!(1)
-
-const CIENV = get(ENV, "TRAVIS", "") == "true"  || get(ENV, "CI", "") == "true"
 
 ####
 #### utilities
