@@ -1,9 +1,9 @@
 export dimension, transform, transform_and_logjac, transform_logdensity, inverse, inverse!,
     inverse_eltype, as, random_arg, random_value
 
-####
-#### log absolute Jacobian determinant
-####
+###
+### log absolute Jacobian determinant
+###
 
 """
 $(TYPEDEF)
@@ -48,8 +48,47 @@ logjac_zero(::LogJac, T::Type{<:Real}) = log(one(T))
 
 logjac_zero(::NoLogJac, _) = NOLOGJAC
 
+###
+### internal methods that implement transformations
+###
+
+"""
+    transform_with(flag::LogJacFlag, transformation, x::AbstractVector, index)
+
+Transform elements of `x` from `index`, using `transformation`.
+
+Return `(y, logjac), index′`, where
+
+- `y` is the result of the transformation,
+
+- `logjac` is the the log Jacobian determinant or a placeholder, depending on `flag`,
+
+- `index′` is the next index in `x` after the elements used for the transformation
+
+**Internal function**. Implementations
+
+1. can assume that `x` has enough elements for `transformation` (ie `@inbounds` can be
+used),
+
+2. should work with generalized indexing on `x`.
+"""
+function transform_with end
+
+"""
+    inverse_at!(x, index, transformation, y)
+
+Invert transformation at `y` and put the result in `x` starting at `index`.
+
+**Internal function**. Implementations
+
+1. can assume that `x` has enough elements for the result (ie `@inbounds` can be used),
+
+2. should work with generalized indexing on `x`.
+"""
+function inverse_at! end
+
 ####
-#### general
+#### API
 ####
 
 """
@@ -68,22 +107,6 @@ The user interface consists of
 - [`inverse_eltype`](@ref).
 """
 abstract type AbstractTransform end
-
-"""
-    transform_with(flag::LogJacFlag, t::AbstractTransform, x::RealVector)
-
-Transform elements of `x`, starting using `transformation`.
-
-The first value returned is the transformed value, the second the log Jacobian
-determinant or a placeholder, depending on `flag`.
-
-In contrast to [`transform`] and [`transform_and_logjac`], this method always
-assumes that `x` is a `RealVector`, for efficient traversal. Some types
-implement the latter two via this method.
-
-Implementations should assume generalized indexing on `x`.
-"""
-function transform_with end
 
 """
 $(TYPEDEF)
@@ -116,7 +139,7 @@ The element type for vector `x` so that `inverse!(x, t, y)` works.
 function inverse_eltype end
 
 """
-    inverse!(x, t::AbstractTransform, y)
+$(SIGNATURES)
 
 Put `inverse(t, y)` into a preallocated vector `x`, returning `x`.
 
@@ -124,7 +147,11 @@ Generalized indexing should be assumed on `x`.
 
 See [`inverse_eltype`](@ref) for determining the type of `x`.
 """
-function inverse! end
+function inverse!(x::AbstractVector, transformation::AbstractTransform, y)
+    @argcheck dimension(transformation) == length(x)
+    inverse_at!(x, firstindex(x), transformation, y)
+    x
+end
 
 """
 $(SIGNATURES)
@@ -170,16 +197,9 @@ function as end
 ####
 
 """
-An `AbstractVector` of `<:Real` elements.
-
-Used internally as a type for transformations from vectors.
-"""
-const RealVector{T <: Real} = AbstractVector{T}
-
-"""
 $(TYPEDEF)
 
-Transformation that transforms `<: RealVector`s to other values.
+Transformation that transforms `<: AbstractVector`s to other values.
 
 # Implementation
 
@@ -193,7 +213,10 @@ $(SIGNATURES)
 
 Transform `x` using `t`.
 """
-transform(t::VectorTransform, x::RealVector) = first(transform_with(NOLOGJAC, t, x))
+function transform(t::VectorTransform, x::AbstractVector)
+    @argcheck dimension(t) == length(x)
+    first(transform_with(NOLOGJAC, t, x, firstindex(x)))
+end
 
 """
 $(SIGNATURES)
@@ -201,10 +224,15 @@ $(SIGNATURES)
 Transform `x` using `t`; calculating the log Jacobian determinant, returned as
 the second value.
 """
-transform_and_logjac(t::VectorTransform, x::RealVector) = transform_with(LOGJAC, t, x)
+function transform_and_logjac(t::VectorTransform, x::AbstractVector)
+    @argcheck dimension(t) == length(x)
+    y, ℓ, _ = transform_with(LOGJAC, t, x, firstindex(x))
+    y, ℓ
+end
 
-inverse(t::VectorTransform, y) =
+function inverse(t::VectorTransform, y)
     inverse!(Vector{inverse_eltype(t, y)}(undef, dimension(t)), t, y)
+end
 
 """
 $(SIGNATURES)

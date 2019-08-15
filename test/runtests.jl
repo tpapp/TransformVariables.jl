@@ -1,6 +1,6 @@
 using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, Parameters,
     Random, Test, TransformVariables, StaticArrays
-import Flux, ForwardDiff, ReverseDiff
+import Flux, ForwardDiff, ReverseDiff, Zygote
 using LogDensityProblems: logdensity, logdensity_and_gradient
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
@@ -345,8 +345,8 @@ end
 ####
 
 @testset "AD tests" begin
-    t = as((μ = asℝ, σ = asℝ₊, β = asℝ₋, α = as(Real, 0.0, 1.0),
-            u = UnitVector(3), L = CorrCholeskyFactor(4)))
+    t = as((μ = asℝ, σ = asℝ₊, β = asℝ₋, α = as(Real, 0.0, 1.0) #=,
+            u = UnitVector(3), L = CorrCholeskyFactor(4) =#))
     function f(θ)
         @unpack μ, σ, β, α = θ
         -(abs2(μ) + abs2(σ) + abs2(β) + α)
@@ -363,7 +363,8 @@ end
     @test v1 == v
     @test g1 ≈ g
 
-    # Flux # NOTE @inferred removed as it currently fails, cf
+    # Flux
+    # NOTE @inferred removed as it currently fails, cf
     # https://github.com/FluxML/Flux.jl/issues/497
     P2 = ADgradient(:Flux, P)
     v2, g2 = logdensity_and_gradient(P2, x)
@@ -375,6 +376,13 @@ end
     v3, g3 = @inferred logdensity_and_gradient(P3, x)
     @test v3 == v
     @test g3 ≈ g
+
+    # Zygote
+    # NOTE @inferred removed as it currently fails
+    P4 = ADgradient(:Zygote, P)
+    v4, g4 = logdensity_and_gradient(P4, x)
+    @test v4 == v
+    @test g4 ≈ g
 end
 
 @testset "inverse_and_logjac" begin

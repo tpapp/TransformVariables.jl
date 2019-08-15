@@ -48,14 +48,12 @@ end
 
 dimension(t::UnitVector) = t.n - 1
 
-function transform_with(flag::LogJacFlag, t::UnitVector, x::RealVector)
+function transform_with(flag::LogJacFlag, t::UnitVector, x::AbstractVector, index)
     @unpack n = t
-    @argcheck n - 1 == length(x)
     T = extended_eltype(x)
     r = one(T)
     y = Vector{T}(undef, n)
     ℓ = logjac_zero(flag, T)
-    index = firstindex(x)
     @inbounds for i in 1:(n - 1)
         xi = x[index]
         index += 1
@@ -63,22 +61,20 @@ function transform_with(flag::LogJacFlag, t::UnitVector, x::RealVector)
         ℓ += ℓi
     end
     y[end] = √r
-    y, ℓ
+    y, ℓ, index
 end
 
-inverse_eltype(t::UnitVector, y::RealVector) = extended_eltype(y)
+inverse_eltype(t::UnitVector, y::AbstractVector) = extended_eltype(y)
 
-function inverse!(x::RealVector, t::UnitVector, y::RealVector)
+function inverse_at!(x::AbstractVector, index, t::UnitVector, y::AbstractVector)
     @unpack n = t
     @argcheck length(y) == n
-    @argcheck length(x) == n - 1
     r = one(eltype(y))
-    xi = firstindex(x)
     @inbounds for yi in axes(y, 1)[1:(end-1)]
-        x[xi], r = l2_remainder_inverse(y[yi], r)
-        xi += 1
+        x[index], r = l2_remainder_inverse(y[yi], r)
+        index += 1
     end
-    x
+    index
 end
 
 ####
@@ -116,13 +112,11 @@ end
 
 dimension(t::CorrCholeskyFactor) = unit_triangular_dimension(t.n)
 
-function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor, x::RealVector)
+function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor, x::AbstractVector, index)
     @unpack n = t
-    @argcheck length(x) == dimension(t)
     T = extended_eltype(x)
     ℓ = logjac_zero(flag, T)
     U = Matrix{T}(undef, n, n)
-    index = firstindex(x)
     @inbounds for col in 1:n
         r = one(T)
         for row in 1:(col-1)
@@ -133,16 +127,14 @@ function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor, x::RealVector)
         end
         U[col, col] = √r
     end
-    UpperTriangular(U), ℓ
+    UpperTriangular(U), ℓ, index
 end
 
 inverse_eltype(t::CorrCholeskyFactor, U::UpperTriangular) = extended_eltype(U)
 
-function inverse!(x::RealVector, t::CorrCholeskyFactor, U::UpperTriangular)
+function inverse_at!(x::AbstractVector, index, t::CorrCholeskyFactor, U::UpperTriangular)
     @unpack n = t
     @argcheck size(U, 1) == n
-    @argcheck length(x) == dimension(t)
-    index = firstindex(x)
     @inbounds for col in 1:n
         r = one(eltype(U))
         for row in 1:(col-1)
@@ -150,5 +142,5 @@ function inverse!(x::RealVector, t::CorrCholeskyFactor, U::UpperTriangular)
             index += 1
         end
     end
-    x
+    index
 end
