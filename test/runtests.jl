@@ -373,7 +373,7 @@ end
     # NOTE @inferred removed as it currently fails, cf
     # https://github.com/FluxML/Flux.jl/issues/497
     P2 = ADgradient(:Flux, P)
-    v2, g2 = logdensity_and_gradient(P2, x)
+    v2, g2 = @inferred logdensity_and_gradient(P2, x)
     @test v2 == v
     @test g2 ≈ g
 
