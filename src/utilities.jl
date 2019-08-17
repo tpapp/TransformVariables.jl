@@ -43,17 +43,6 @@ end
 extended_eltype(x::T) where T = extended_eltype(T)
 
 ###
-### view management
-###
-
-"""
-$SIGNATURES
-
-A view of `v` starting from `i` for `len` elements, no bounds checking.
-"""
-view_into(v::AbstractVector, i, len) = @inbounds view(v, i:(i+len-1))
-
-###
 ### macros
 ###
 

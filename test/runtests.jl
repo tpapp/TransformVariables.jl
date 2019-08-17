@@ -1,3 +1,5 @@
+const CIENV = get(ENV, "TRAVIS", "") == "true"  || get(ENV, "CI", "") == "true"
+
 using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, Parameters,
     Random, Test, TransformVariables, StaticArrays
 import Flux, ForwardDiff, ReverseDiff
@@ -9,8 +11,6 @@ using TransformVariables:
 include("utilities.jl")
 
 Random.seed!(1)
-
-const CIENV = get(ENV, "TRAVIS", "") == "true"  || get(ENV, "CI", "") == "true"
 
 ####
 #### utilities
@@ -346,10 +346,11 @@ end
 
 @testset "AD tests" begin
     t = as((μ = asℝ, σ = asℝ₊, β = asℝ₋, α = as(Real, 0.0, 1.0),
-            u = UnitVector(3), L = CorrCholeskyFactor(4)))
+            u = UnitVector(3), L = CorrCholeskyFactor(4),
+            δ = as((asℝ₋, as𝕀))))
     function f(θ)
-        @unpack μ, σ, β, α = θ
-        -(abs2(μ) + abs2(σ) + abs2(β) + α)
+        @unpack μ, σ, β, α, δ = θ
+        -(abs2(μ) + abs2(σ) + abs2(β) + α + δ[1] + δ[2])
     end
     P = TransformedLogDensity(t, f)
     x = zeros(dimension(t))
@@ -363,10 +364,9 @@ end
     @test v1 == v
     @test g1 ≈ g
 
-    # Flux # NOTE @inferred removed as it currently fails, cf
-    # https://github.com/FluxML/Flux.jl/issues/497
+    # Flux
     P2 = ADgradient(:Flux, P)
-    v2, g2 = logdensity_and_gradient(P2, x)
+    v2, g2 = @inferred logdensity_and_gradient(P2, x)
     @test v2 == v
     @test g2 ≈ g
 
@@ -375,6 +375,36 @@ end
     v3, g3 = @inferred logdensity_and_gradient(P3, x)
     @test v3 == v
     @test g3 ≈ g
+
+end
+
+if VERSION ≥ v"1.1"
+    if CIENV
+        @info "installing Zygote#master"
+        import Pkg
+        Pkg.API.add(Pkg.PackageSpec(; name = "Zygote", rev = "master"))
+    end
+
+    import Zygote
+
+    @testset "Zygote AD" begin
+        # Zygote
+        # NOTE @inferred removed as it currently fails
+        # NOTE tests simplified disabled as they currently fail
+        t = as((μ = asℝ, ))
+        function f(θ)
+            @unpack μ = θ
+            -(abs2(μ))
+        end
+        P = TransformedLogDensity(t, f)
+        x = zeros(dimension(t))
+        PF = ADgradient(:ForwardDiff, P)
+        PZ = ADgradient(:Zygote, P)
+        @test @inferred(logdensity(PZ, x)) == logdensity(P, x)
+        vZ, gZ = logdensity_and_gradient(PZ, x)
+        @test vZ == logdensity(P, x)
+        @test gZ ≈ last(logdensity_and_gradient(PF, x))
+    end
 end
 
 @testset "inverse_and_logjac" begin

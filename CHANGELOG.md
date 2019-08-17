@@ -2,6 +2,8 @@
 
 - use new LogDensityProblems interface
 
+- rewrite internals to work better with AD (especially Zygote)
+
 # 0.3.4
 
 - make `inverse(::ArrayTransform)` accept `AbstractArray`
