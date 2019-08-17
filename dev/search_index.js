@@ -53,7 +53,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables.inverse!",
     "category": "function",
-    "text": "inverse!(x, t::AbstractTransform, y)\n\nPut inverse(t, y) into a preallocated vector x, returning x.\n\nGeneralized indexing should be assumed on x.\n\nSee inverse_eltype for determining the type of x.\n\n\n\n\n\n"
+    "text": "inverse!(x, transformation, y)\n\n\nPut inverse(t, y) into a preallocated vector x, returning x.\n\nGeneralized indexing should be assumed on x.\n\nSee inverse_eltype for determining the type of x.\n\n\n\n\n\n"
 },
 
 {
@@ -297,38 +297,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "#TransformVariables.RealVector",
-    "page": "Introduction",
-    "title": "TransformVariables.RealVector",
-    "category": "type",
-    "text": "An AbstractVector of <:Real elements.\n\nUsed internally as a type for transformations from vectors.\n\n\n\n\n\n"
-},
-
-{
-    "location": "#TransformVariables.AbstractTransform",
-    "page": "Introduction",
-    "title": "TransformVariables.AbstractTransform",
-    "category": "type",
-    "text": "abstract type AbstractTransform\n\nSupertype for all transformations in this package.\n\nInterface\n\nThe user interface consists of\n\ndimension\ntransform\ntransform_and_logjac\n[inverse]@(ref), inverse!\ninverse_eltype.\n\n\n\n\n\n"
-},
-
-{
-    "location": "#TransformVariables.ScalarTransform",
-    "page": "Introduction",
-    "title": "TransformVariables.ScalarTransform",
-    "category": "type",
-    "text": "abstract type ScalarTransform <: TransformVariables.AbstractTransform\n\nTransform a scalar (real number) to another scalar.\n\nSubtypes mustdefine transform, transform_and_logjac, and inverse; other methods of of the interface should have the right defaults.\n\n\n\n\n\n"
-},
-
-{
-    "location": "#TransformVariables.VectorTransform",
-    "page": "Introduction",
-    "title": "TransformVariables.VectorTransform",
-    "category": "type",
-    "text": "abstract type VectorTransform <: TransformVariables.AbstractTransform\n\nTransformation that transforms <: RealVectors to other values.\n\nImplementation\n\nImplements transform and transform_and_logjac via transform_with, and inverse via inverse!.\n\n\n\n\n\n"
-},
-
-{
     "location": "#Types-and-type-aliases-1",
     "page": "Introduction",
     "title": "Types and type aliases",
@@ -397,7 +365,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables.transform_with",
     "category": "function",
-    "text": "transform_with(flag::LogJacFlag, t::AbstractTransform, x::RealVector)\n\nTransform elements of x, starting using transformation.\n\nThe first value returned is the transformed value, the second the log Jacobian determinant or a placeholder, depending on flag.\n\nIn contrast to [transform] and [transform_and_logjac], this method always assumes that x is a RealVector, for efficient traversal. Some types implement the latter two via this method.\n\nImplementations should assume generalized indexing on x.\n\n\n\n\n\n"
+    "text": "transform_with(flag::LogJacFlag, transformation, x::AbstractVector, index)\n\nTransform elements of x from index, using transformation.\n\nReturn (y, logjac), index′, where\n\ny is the result of the transformation,\nlogjac is the the log Jacobian determinant or a placeholder, depending on flag,\nindex′ is the next index in x after the elements used for the transformation\n\nInternal function. Implementations\n\ncan assume that x has enough elements for transformation (ie @inbounds can be\n\nused),\n\nshould work with generalized indexing on x.\n\n\n\n\n\n"
 },
 
 {
@@ -413,7 +381,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "TransformVariables._inverse!_tuple",
     "category": "function",
-    "text": "_inverse!_tuple(x, ts, ys)\n\n\nHelper function for inverting tuples of transformations. Used internally.\n\nPerforms no argument validation, caller should do this.\n\n\n\n\n\n"
+    "text": "_inverse!_tuple(x, index, ts, ys)\n\n\nHelper function for inverting tuples of transformations. Used internally.\n\nPerforms no argument validation, caller should do this.\n\n\n\n\n\n"
 },
 
 {
