@@ -385,10 +385,19 @@ end
     # Zygote
     # NOTE @inferred removed as it currently fails
     # NOTE tests disabled as they currently fail
-    # P4 = ADgradient(:Zygote, P)
-    # v4, g4 = logdensity_and_gradient(P4, x)
-    # @test v4 == v
-    # @test g4 ≈ g
+    t = as((μ = asℝ, ))
+    function f(θ)
+        @unpack μ = θ
+        -(abs2(μ))
+    end
+    P = TransformedLogDensity(t, f)
+    x = zeros(dimension(t))
+    PF = ADgradient(:ForwardDiff, P)
+    PZ = ADgradient(:Zygote, P)
+    @test @inferred(logdensity(PZ, x)) == logdensity(P, x)
+    vZ, gZ = logdensity_and_gradient(PZ, x)
+    @test vZ == logdensity(P, x)
+    @test gZ ≈ last(logdensity_and_gradient(PF, x))
 end
 
 @testset "inverse_and_logjac" begin
