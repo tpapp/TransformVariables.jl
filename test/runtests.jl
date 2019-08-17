@@ -1,14 +1,8 @@
 const CIENV = get(ENV, "TRAVIS", "") == "true"  || get(ENV, "CI", "") == "true"
 
-if CIENV
-    @info "installing Zygote#master"
-    import Pkg
-    Pkg.API.add(Pkg.PackageSpec(; name = "Zygote", rev = "master"))
-end
-
 using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, Parameters,
     Random, Test, TransformVariables, StaticArrays
-import Flux, ForwardDiff, ReverseDiff, Zygote
+import Flux, ForwardDiff, ReverseDiff
 using LogDensityProblems: logdensity, logdensity_and_gradient
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
@@ -382,22 +376,35 @@ end
     @test v3 == v
     @test g3 ≈ g
 
-    # Zygote
-    # NOTE @inferred removed as it currently fails
-    # NOTE tests disabled as they currently fail
-    t = as((μ = asℝ, ))
-    function f(θ)
-        @unpack μ = θ
-        -(abs2(μ))
+end
+
+if VERSION ≥ v"1.1"
+    if CIENV
+        @info "installing Zygote#master"
+        import Pkg
+        Pkg.API.add(Pkg.PackageSpec(; name = "Zygote", rev = "master"))
     end
-    P = TransformedLogDensity(t, f)
-    x = zeros(dimension(t))
-    PF = ADgradient(:ForwardDiff, P)
-    PZ = ADgradient(:Zygote, P)
-    @test @inferred(logdensity(PZ, x)) == logdensity(P, x)
-    vZ, gZ = logdensity_and_gradient(PZ, x)
-    @test vZ == logdensity(P, x)
-    @test gZ ≈ last(logdensity_and_gradient(PF, x))
+
+    import Zygote
+
+    @testset "Zygote AD" begin
+        # Zygote
+        # NOTE @inferred removed as it currently fails
+        # NOTE tests simplified disabled as they currently fail
+        t = as((μ = asℝ, ))
+        function f(θ)
+            @unpack μ = θ
+            -(abs2(μ))
+        end
+        P = TransformedLogDensity(t, f)
+        x = zeros(dimension(t))
+        PF = ADgradient(:ForwardDiff, P)
+        PZ = ADgradient(:Zygote, P)
+        @test @inferred(logdensity(PZ, x)) == logdensity(P, x)
+        vZ, gZ = logdensity_and_gradient(PZ, x)
+        @test vZ == logdensity(P, x)
+        @test gZ ≈ last(logdensity_and_gradient(PF, x))
+    end
 end
 
 @testset "inverse_and_logjac" begin
