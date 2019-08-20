@@ -378,34 +378,34 @@ end
 
 end
 
-if VERSION ≥ v"1.1"
-    if CIENV
-        @info "installing Zygote#master"
-        import Pkg
-        Pkg.API.add(Pkg.PackageSpec(; name = "Zygote", rev = "master"))
-    end
+# if VERSION ≥ v"1.1"
+#     if CIENV
+#         @info "installing Zygote"
+#         import Pkg
+#         Pkg.API.add(Pkg.PackageSpec(; name = "Zygote"))
+#     end
 
-    import Zygote
+#     import Zygote
 
-    @testset "Zygote AD" begin
-        # Zygote
-        # NOTE @inferred removed as it currently fails
-        # NOTE tests simplified disabled as they currently fail
-        t = as((μ = asℝ, ))
-        function f(θ)
-            @unpack μ = θ
-            -(abs2(μ))
-        end
-        P = TransformedLogDensity(t, f)
-        x = zeros(dimension(t))
-        PF = ADgradient(:ForwardDiff, P)
-        PZ = ADgradient(:Zygote, P)
-        @test @inferred(logdensity(PZ, x)) == logdensity(P, x)
-        vZ, gZ = logdensity_and_gradient(PZ, x)
-        @test vZ == logdensity(P, x)
-        @test gZ ≈ last(logdensity_and_gradient(PF, x))
-    end
-end
+#     @testset "Zygote AD" begin
+#         # Zygote
+#         # NOTE @inferred removed as it currently fails
+#         # NOTE tests simplified disabled as they currently fail
+#         t = as((μ = asℝ, ))
+#         function f(θ)
+#             @unpack μ = θ
+#             -(abs2(μ))
+#         end
+#         P = TransformedLogDensity(t, f)
+#         x = zeros(dimension(t))
+#         PF = ADgradient(:ForwardDiff, P)
+#         PZ = ADgradient(:Zygote, P)
+#         @test @inferred(logdensity(PZ, x)) == logdensity(P, x)
+#         vZ, gZ = logdensity_and_gradient(PZ, x)
+#         @test vZ == logdensity(P, x)
+#         @test gZ ≈ last(logdensity_and_gradient(PF, x))
+#     end
+# end
 
 @testset "inverse_and_logjac" begin
     # WIP, test separately until integrated
@@ -448,4 +448,17 @@ end
 @testset "support abstract array inverses in ArrayTransform" begin
     t = as(Array, 2, 3)
     @test inverse(t, ones(SMatrix{2,3})) == ones(6)
+end
+
+####
+#### broadcasting
+####
+
+@testset "broadcasting" begin
+    @test as𝕀.([0, 0]) == [0.5, 0.5]
+
+    t = UnitVector(3)
+    d = dimension(t)
+    x = [zeros(d), zeros(d)]
+    @test t.(x) == map(t, x)
 end

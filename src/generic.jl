@@ -108,6 +108,8 @@ The user interface consists of
 """
 abstract type AbstractTransform end
 
+Base.broadcastable(t::AbstractTransform) = Ref(t)
+
 """
 $(TYPEDEF)
 
