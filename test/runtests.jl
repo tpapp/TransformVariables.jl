@@ -449,3 +449,16 @@ end
     t = as(Array, 2, 3)
     @test inverse(t, ones(SMatrix{2,3})) == ones(6)
 end
+
+####
+#### broadcasting
+####
+
+@testset "broadcasting" begin
+    @test as𝕀.([0, 0]) == [0.5, 0.5]
+
+    t = UnitVector(3)
+    d = dimension(t)
+    x = [zeros(d), zeros(d)]
+    @test t.(x) == map(t, x)
+end
