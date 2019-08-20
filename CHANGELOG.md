@@ -1,5 +1,7 @@
 # Unreleased
 
+# 0.3.5
+
 - use new LogDensityProblems interface
 
 - rewrite internals to work better with AD (especially Zygote)
