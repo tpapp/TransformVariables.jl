@@ -209,3 +209,23 @@ Transform to the real line (identity).
 const asℝ = as(Real, -∞, ∞)
 
 const as_real = asℝ
+
+Base.show(io::IO, t::ShiftedExp) =
+    if t === asℝ₊
+        print(io, "asℝ₊")
+    elseif t === asℝ₋
+        print(io, "asℝ₋")
+    elseif t isa ShiftedExp{true}
+        print(io, "as(Real, ", t.shift, ", ∞)")
+    else
+        print(io, "as(Real, -∞, ", t.shift, ")")
+    end
+
+Base.show(io::IO, t::ScaledShiftedLogistic) =
+    if t === as𝕀
+        print(io, "as𝕀")
+    else
+        print(io, "as(Real, ", t.shift, ", ", t.shift + t.scale, ")")
+    end
+
+Base.show(io::IO, t::Identity) = print(io, "asℝ")
