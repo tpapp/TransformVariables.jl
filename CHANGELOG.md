@@ -1,5 +1,9 @@
 # Unreleased
 
+# 0.3.6
+
+- Pretty print scalar transforms (#54, thanks @tkf)
+
 # 0.3.5
 
 - use new LogDensityProblems interface
