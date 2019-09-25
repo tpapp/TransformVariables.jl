@@ -462,3 +462,17 @@ end
     x = [zeros(d), zeros(d)]
     @test t.(x) == map(t, x)
 end
+
+####
+#### show
+####
+
+@testset "scalar show" begin
+    @test string(asℝ) == "asℝ"
+    @test string(asℝ₊) == "asℝ₊"
+    @test string(asℝ₋) == "asℝ₋"
+    @test string(as𝕀) == "as𝕀"
+    @test string(as(Real, 0.0, 2.0)) == "as(Real, 0.0, 2.0)"
+    @test string(as(Real, 1.0, ∞)) == "as(Real, 1.0, ∞)"
+    @test string(as(Real, -∞, 1.0)) == "as(Real, -∞, 1.0)"
+end
