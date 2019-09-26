@@ -1,8 +1,10 @@
 # Unreleased
 
+- fix some tuple index bugs (cf [#58])
+
 # 0.3.6
 
-- Pretty print scalar transforms (#54, thanks @tkf)
+- Pretty print scalar transforms ([#54], thanks @tkf)
 
 # 0.3.5
 
