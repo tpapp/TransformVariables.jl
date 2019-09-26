@@ -57,11 +57,13 @@ end
 function transform_with(flag::LogJacFlag, t::ArrayTransform, x, index::T) where {T}
     @unpack transformation, dims = t
     # NOTE not using index increments as that somehow breaks type inference
-    d = dimension(transformation)
-    𝐼 = reshape(range(index; length = prod(dims), step = d), dims)
+    d = dimension(transformation) # length of an element transformation
+    len = prod(dims)              # number of elements
+    𝐼 = reshape(range(index; length = len, step = d), dims)
     yℓ = map(index -> ((y, ℓ, _) = transform_with(flag, transformation, x, index); (y, ℓ)), 𝐼)
     ℓz = logjac_zero(flag, extended_eltype(x))
-    first.(yℓ), isempty(yℓ) ? ℓz : ℓz + sum(last, yℓ), index
+    index′ = index + d * len
+    first.(yℓ), isempty(yℓ) ? ℓz : ℓz + sum(last, yℓ), index′
 end
 
 function transform_with(flag::LogJacFlag, t::ArrayTransform{Identity}, x, index)
@@ -208,7 +210,6 @@ end
 function inverse_at!(x::AbstractVector, index, tt::TransformTuple{<:Tuple}, y::Tuple)
     @unpack transformations = tt
     @argcheck length(transformations) == length(y)
-    @argcheck length(x) == dimension(tt)
     _inverse!_tuple(x, index, tt.transformations, y)
 end
 
