@@ -252,6 +252,19 @@ end
     @test_skip inverse(za, []) == []
 end
 
+@testset "nested combinations" begin
+    # for https://github.com/tpapp/TransformVariables.jl/issues/57
+    for _ in 1:10
+        N = rand(3:7)
+        tt = as((a = as(Tuple(as(Vector, asℝ₊, 2) for _ in 1:N)),
+                 b = as(Tuple(UnitVector(n) for n in 1:N))))
+        x = randn(dimension(tt))
+        y = tt(x)
+        x′ = inverse(tt, y)
+        @test x ≈ x′
+    end
+end
+
 ####
 #### log density correctness checks
 ####
