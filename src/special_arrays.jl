@@ -111,7 +111,7 @@ function transform_with(flag::LogJacFlag, t::UnitSimplex, x::AbstractVector, ind
         y[i] = z * stick
 
         if !(flag isa NoLogJac)
-            ℓ += log(z) + log(1-z) + log(stick)
+            ℓ += log(stick) - logit_logjac(z)
         end
 
         stick -= y[i]
