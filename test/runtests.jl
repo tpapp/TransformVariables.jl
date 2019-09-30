@@ -103,6 +103,29 @@ end
     end
 end
 
+@testset "to unit simplex" begin
+    @testset "dimension checks" begin
+        S = UnitSimplex(3)
+        x = zeros(3)               # incorrect
+        @test_throws ArgumentError S(x)
+        @test_throws ArgumentError transform(S, x)
+        @test_throws ArgumentError transform_and_logjac(S, x)
+    end
+
+    @testset "consistency checks" begin
+        for K in 1:10
+            t = UnitSimplex(K)
+            @test dimension(t) == K - 1
+            if K > 1
+                test_transformation(t, y -> (sum(y) ≈ 1) & (all(y.>=0)),
+                                    vec_y = y -> y[1:(end-1)])
+            end
+            x = zeros(dimension(t))
+            @test transform(t, x) ≈ 1 ./ fill(K, K)
+        end
+    end
+end
+
 @testset "to correlation cholesky factor" begin
     @testset "dimension checks" begin
         C = CorrCholeskyFactor(3)

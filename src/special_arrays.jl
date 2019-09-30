@@ -1,4 +1,4 @@
-export UnitVector, CorrCholeskyFactor
+export UnitVector, UnitSimplex, CorrCholeskyFactor
 
 ####
 #### building blocks
@@ -72,6 +72,67 @@ function inverse_at!(x::AbstractVector, index, t::UnitVector, y::AbstractVector)
     r = one(eltype(y))
     @inbounds for yi in axes(y, 1)[1:(end-1)]
         x[index], r = l2_remainder_inverse(y[yi], r)
+        index += 1
+    end
+    index
+end
+
+
+####
+#### UnitSimplex
+####
+
+"""
+    UnitSimplex(n)
+
+Transform `n-1` real numbers to a vector of length `n` whose elements are non-negative and sum to one.
+"""
+@calltrans struct UnitSimplex <: VectorTransform
+    n::Int
+    function UnitSimplex(n::Int)
+        @argcheck n ≥ 1 "Dimension should be positive."
+        new(n)
+    end
+end
+
+dimension(t::UnitSimplex) = t.n - 1
+
+function transform_with(flag::LogJacFlag, t::UnitSimplex, x::AbstractVector, index)
+    @unpack n = t
+    T = extended_eltype(x)
+
+    ℓ = logjac_zero(flag, T)
+    stick = one(T)
+    y = Vector{T}(undef, n)
+    @inbounds for i in 1:n-1
+        xi = x[index]
+        index += 1
+        z = logistic(xi - log(n-i))
+        y[i] = z * stick
+
+        if !(flag isa NoLogJac)
+            ℓ += log(stick) - logit_logjac(z)
+        end
+
+        stick *= 1 - z
+    end
+
+    y[end] = stick
+
+    y, ℓ, index
+end
+
+inverse_eltype(t::UnitSimplex, y::AbstractVector) = extended_eltype(y)
+
+function inverse_at!(x::AbstractVector, index, t::UnitSimplex, y::AbstractVector)
+    @unpack n = t
+    @argcheck length(y) == n
+
+    stick = one(eltype(y))
+    @inbounds for i in axes(y, 1)[1:end-1]
+        z = y[i]/stick
+        x[index] = logit(z) + log(n-i)
+        stick -= y[i]
         index += 1
     end
     index
