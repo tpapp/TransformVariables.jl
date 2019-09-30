@@ -114,7 +114,7 @@ function transform_with(flag::LogJacFlag, t::UnitSimplex, x::AbstractVector, ind
             ℓ += log(stick) - logit_logjac(z)
         end
 
-        stick -= y[i]
+        stick *= 1 - z
     end
 
     y[end] = stick
