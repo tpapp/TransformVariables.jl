@@ -120,6 +120,8 @@ end
                 test_transformation(t, y -> (sum(y) ≈ 1) & (all(y.>=0)),
                                     vec_y = y -> y[1:(end-1)])
             end
+            x = zeros(dimension(t))
+            @test transform(t, x) ≈ 1 ./ fill(K, K)
         end
     end
 end
