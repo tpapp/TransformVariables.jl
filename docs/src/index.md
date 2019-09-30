@@ -97,6 +97,7 @@ as𝕀
 
 ```@docs
 UnitVector
+UnitSimplex
 CorrCholeskyFactor
 ```
 
