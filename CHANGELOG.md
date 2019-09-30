@@ -1,5 +1,9 @@
 # Unreleased
 
+# 0.3.8
+
+- add UnitSimplex ([#56], thanks @scheidan)
+
 # 0.3.7
 
 - fix some tuple index bugs (cf [#58])
