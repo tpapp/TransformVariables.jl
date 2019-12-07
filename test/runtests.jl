@@ -85,7 +85,7 @@ end
 @testset "to unit vector" begin
     @testset "dimension checks" begin
         U = UnitVector(3)
-        x = zeros(3)               # incorrect
+        x = zeros(2)               # incorrect
         @test_throws ArgumentError U(x)
         @test_throws ArgumentError transform(U, x)
         @test_throws ArgumentError transform_and_logjac(U, x)
@@ -94,10 +94,10 @@ end
     @testset "consistency checks" begin
         for K in 1:10
             t = UnitVector(K)
-            @test dimension(t) == K - 1
+            @test dimension(t) == K
             if K > 1
-                test_transformation(t, y -> sum(abs2, y) ≈ 1,
-                                    vec_y = y -> y[1:(end-1)])
+                test_transformation(t, y -> sum(abs2, y) ≈ 1;
+                                    test_inverse = false, test_logjac = false)
             end
         end
     end
