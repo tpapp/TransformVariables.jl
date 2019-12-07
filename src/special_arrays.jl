@@ -35,7 +35,7 @@ Inverse of [`l2_remainder_transform`](@ref) in `x` and `y`.
 """
     UnitVector(n)
 
-Transform `n-1` real numbers to a unit vector of length `n`, under the
+Transform `n` real numbers to a unit vector of length `n`, under the
 Euclidean norm.
 """
 @calltrans struct UnitVector <: VectorTransform
@@ -46,22 +46,20 @@ Euclidean norm.
     end
 end
 
-dimension(t::UnitVector) = t.n - 1
+dimension(t::UnitVector) = t.n
 
 function transform_with(flag::LogJacFlag, t::UnitVector, x::AbstractVector, index)
     @unpack n = t
     T = extended_eltype(x)
-    r = one(T)
-    y = Vector{T}(undef, n)
+    index′ = index + n
+    vx = view(x, index:(index′ - 1))
+    nx² = sum(abs2, vx)
+    y = vx ./ √nx²
     ℓ = logjac_zero(flag, T)
-    @inbounds for i in 1:(n - 1)
-        xi = x[index]
-        index += 1
-        y[i], r, ℓi = l2_remainder_transform(flag, xi, r)
-        ℓ += ℓi
+    if !(flag isa NoLogJac)
+        ℓ -= nx² / 2
     end
-    y[end] = √r
-    y, ℓ, index
+    y, ℓ, index′
 end
 
 inverse_eltype(t::UnitVector, y::AbstractVector) = extended_eltype(y)
@@ -69,12 +67,9 @@ inverse_eltype(t::UnitVector, y::AbstractVector) = extended_eltype(y)
 function inverse_at!(x::AbstractVector, index, t::UnitVector, y::AbstractVector)
     @unpack n = t
     @argcheck length(y) == n
-    r = one(eltype(y))
-    @inbounds for yi in axes(y, 1)[1:(end-1)]
-        x[index], r = l2_remainder_inverse(y[yi], r)
-        index += 1
-    end
-    index
+    index′ = index + n
+    setindex!(x, y, index:(index′ - 1))
+    index′
 end
 
 
