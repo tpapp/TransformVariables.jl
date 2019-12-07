@@ -249,7 +249,8 @@ end
     x = randn(dimension(tn))
     y = @inferred transform(tn, x)
     @test y isa NamedTuple{(:a,:b,:c)}
-    @test inverse(tn, y) ≈ x
+    x2 = inverse(tn, y)
+    @test inverse(tn, transform(tn, x2)) ≈ x2
     index = 0
     ljacc = 0.0
     for (i, t) in enumerate((t1, t2, t3))
@@ -291,7 +292,7 @@ end
         x = randn(dimension(tt))
         y = tt(x)
         x′ = inverse(tt, y)
-        @test x ≈ x′
+        @test inverse(tt, transform(tt, x′)) ≈ x′
     end
 end
 
