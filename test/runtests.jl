@@ -98,6 +98,13 @@ end
             if K > 1
                 test_transformation(t, y -> sum(abs2, y) ≈ 1;
                                     test_inverse = false, test_logjac = false)
+                x = randn(K)
+                y = transform(t, x)
+                x2 = @inferred inverse(t, y)
+                @test x2 ≈ y
+                ι = inverse(t)
+                @test y ≈ ι(y)
+                @test transform_and_logjac(t, x)[2] ≈ -sum(abs2, x) ./ 2
             end
         end
     end
