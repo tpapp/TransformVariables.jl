@@ -134,7 +134,7 @@ julia> dimension(t)
 4
 
 julia> transform(t, zeros(dimension(t)))
-(1.0, [0.0, 0.0, 1.0])
+(1.0, [1.0, 0.0, 0.0])
 
 julia> t2 = as((σ = asℝ₊, u = UnitVector(3)));
 
@@ -142,7 +142,7 @@ julia> dimension(t2)
 4
 
 julia> transform(t2, zeros(dimension(t2)))
-(σ = 1.0, u = [0.0, 0.0, 1.0])
+(σ = 1.0, u = [1.0, 0.0, 0.0])
 ```
 """
 as(transformations::NTransforms) = TransformTuple(transformations)
