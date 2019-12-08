@@ -105,6 +105,7 @@ end
                 ι = inverse(t)
                 @test y ≈ ι(y)
                 @test transform_and_logjac(t, x)[2] ≈ -sum(abs2, x) ./ 2
+                @test transform(t, zeros(K)) ≈ [zeros(K-1); 1]
             end
         end
     end

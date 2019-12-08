@@ -54,7 +54,7 @@ function transform_with(flag::LogJacFlag, t::UnitVector, x::AbstractVector, inde
     index′ = index + n
     vx = view(x, index:(index′ - 1))
     nx² = sum(abs2, vx)
-    y = vx ./ √nx²
+    y = nx² > 0 ? vx ./ √nx² : [zeros(T, n - 1); one(T)]
     ℓ = logjac_zero(flag, T)
     if !(flag isa NoLogJac)
         ℓ -= nx² / 2
