@@ -394,11 +394,11 @@ end
             u = UnitVector(3), L = CorrCholeskyFactor(4),
             δ = as((asℝ₋, as𝕀))))
     function f(θ)
-        @unpack μ, σ, β, α, δ = θ
-        -(abs2(μ) + abs2(σ) + abs2(β) + α + δ[1] + δ[2])
+        @unpack μ, σ, β, α, u, δ = θ
+        -(abs2(μ) + abs2(σ) + abs2(β) + α + sum(u) + δ[1] + δ[2])
     end
     P = TransformedLogDensity(t, f)
-    x = zeros(dimension(t))
+    x = randn(dimension(t)) .* 1e-5
     v = logdensity(P, x)
     g = ForwardDiff.gradient(x -> logdensity(P, x), x)
 
