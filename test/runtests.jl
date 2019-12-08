@@ -504,7 +504,7 @@ end
 
     t = UnitVector(3)
     d = dimension(t)
-    x = [randn(d), randn(d)]
+    x = [zeros(d), zeros(d)]
     @test t.(x) == map(t, x)
 end
 
