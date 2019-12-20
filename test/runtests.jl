@@ -2,7 +2,7 @@ const CIENV = get(ENV, "TRAVIS", "") == "true"  || get(ENV, "CI", "") == "true"
 
 using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, Parameters,
     Random, Test, TransformVariables, StaticArrays
-import Flux, ForwardDiff, ReverseDiff
+import Tracker, ForwardDiff
 using LogDensityProblems: logdensity, logdensity_and_gradient
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
@@ -400,17 +400,12 @@ end
     @test v1 == v
     @test g1 ≈ g
 
-    # Flux
-    P2 = ADgradient(:Flux, P)
+    # Tracker
+    P2 = ADgradient(:Tracker, P)
     v2, g2 = @inferred logdensity_and_gradient(P2, x)
     @test v2 == v
     @test g2 ≈ g
 
-    # ReverseDiff
-    P3 = ADgradient(:ReverseDiff, P)
-    v3, g3 = @inferred logdensity_and_gradient(P3, x)
-    @test v3 == v
-    @test g3 ≈ g
 
 end
 
