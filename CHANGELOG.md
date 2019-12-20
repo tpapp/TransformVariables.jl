@@ -1,5 +1,9 @@
 # Unreleased
 
+# 0.3.9
+
+- follow up changes in for LogDensityProblems
+
 # 0.3.8
 
 - add UnitSimplex ([#56], thanks @scheidan)
