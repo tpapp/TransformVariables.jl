@@ -1,5 +1,7 @@
 # Unreleased
 
+- remove dependency on MacroTools for abstract dispatch workaround, but require Julia 1.3
+
 # 0.3.9
 
 - follow up changes in for LogDensityProblems

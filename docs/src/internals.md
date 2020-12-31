@@ -42,12 +42,6 @@ TransformVariables.NoLogJac
 TransformVariables.logjac_zero
 ```
 
-## Macros
-
-```@docs
-TransformVariables.@calltrans
-```
-
 ## Helper functions
 
 ```@docs
