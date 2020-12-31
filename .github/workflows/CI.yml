@@ -63,6 +63,7 @@ jobs:
           julia --project=docs -e '
             using Documenter: doctest
             using TransformVariables
+            DocMeta.setdocmeta!(TransformVariables, :DocTestSetup, :(using TransformVariables); recursive=true)
             doctest(TransformVariables)'
       - run: julia --project=docs docs/make.jl
         env:
