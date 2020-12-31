@@ -1,3 +1,5 @@
+# see the docs at https://github.com/JuliaRegistries/CompatHelper.jl
+
 name: CompatHelper
 
 on:

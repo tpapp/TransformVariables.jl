@@ -1,3 +1,5 @@
+# see the docs at https://github.com/JuliaRegistries/TagBot
+
 name: TagBot
 on:
   issue_comment:
