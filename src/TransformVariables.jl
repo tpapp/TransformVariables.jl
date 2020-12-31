@@ -4,7 +4,6 @@ using ArgCheck: @argcheck
 using DocStringExtensions: SIGNATURES, TYPEDEF
 import ForwardDiff
 using LinearAlgebra: UpperTriangular, logabsdet
-using MacroTools: @capture
 using Parameters: @unpack
 using Random: AbstractRNG, GLOBAL_RNG
 

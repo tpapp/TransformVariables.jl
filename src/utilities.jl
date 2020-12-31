@@ -42,32 +42,6 @@ end
 
 extended_eltype(x::T) where T = extended_eltype(T)
 
-###
-### macros
-###
-
-"""
-$(SIGNATURES)
-
-Workaround for https://github.com/JuliaLang/julia/issues/14919 to make
-transformation types callable.
-
-TODO: remove when this issue is closed, also possibly remove MacroTools as a
-dependency if not used elsewhere.
-"""
-macro calltrans(ex)
-    if @capture(ex, struct T1_ fields__ end)
-        @capture T1 (T2_ <: S_|T2_)
-        @capture T2 (T3_{params__}|T3_)
-        quote
-            Base.@__doc__ $(esc(ex))
-            (t::$(esc(T3)))(x) = transform(t, x)
-        end
-    else
-        throw(ArgumentError("can't find anything to make callable in $(ex)"))
-    end
-end
-
 ####
 #### random values
 ####

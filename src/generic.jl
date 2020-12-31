@@ -111,6 +111,15 @@ abstract type AbstractTransform end
 Base.broadcastable(t::AbstractTransform) = Ref(t)
 
 """
+`transform(t, x)`
+
+Transform `x` using `t`. Also available as `t(x)`.
+"""
+function transform end
+
+(t::AbstractTransform)(x) = transform(t, x)
+
+"""
 $(TYPEDEF)
 
 Inverse of the wrapped transform. Use the 1-argument version of
@@ -211,11 +220,6 @@ Implements [`transform`](@ref) and [`transform_and_logjac`](@ref) via
 """
 abstract type VectorTransform <: AbstractTransform end
 
-"""
-$(SIGNATURES)
-
-Transform `x` using `t`.
-"""
 function transform(t::VectorTransform, x::AbstractVector)
     @argcheck dimension(t) == length(x)
     first(transform_with(NOLOGJAC, t, x, firstindex(x)))

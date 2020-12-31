@@ -9,7 +9,7 @@ $(TYPEDEF)
 
 Apply `transformation` repeatedly to create an array with given `dims`.
 """
-@calltrans struct ArrayTransform{T <: AbstractTransform,M} <: VectorTransform
+struct ArrayTransform{T <: AbstractTransform,M} <: VectorTransform
     transformation::T
     dims::NTuple{M, Int}
 end
@@ -106,7 +106,7 @@ $(TYPEDEF)
 
 Transform consecutive groups of real numbers to a tuple, using the given transformations.
 """
-@calltrans struct TransformTuple{T} <: VectorTransform
+struct TransformTuple{T} <: VectorTransform
     transformations::T
     dimension::Int
     function TransformTuple(transformations::T) where {T <: NTransforms}

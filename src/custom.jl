@@ -32,7 +32,7 @@ function value_and_logjac_forwarddiff(f, x; flatten = identity, handleNaN = true
     f(x), logjac_forwarddiff(flatten ∘ f, x; handleNaN = handleNaN, cfg = cfg)
 end
 
-@calltrans struct CustomTransform{G <: AbstractTransform, F, H, C} <: VectorTransform
+struct CustomTransform{G <: AbstractTransform, F, H, C} <: VectorTransform
     g::G
     f::F
     flatten::H

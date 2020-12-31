@@ -38,7 +38,7 @@ Inverse of [`l2_remainder_transform`](@ref) in `x` and `y`.
 Transform `n-1` real numbers to a unit vector of length `n`, under the
 Euclidean norm.
 """
-@calltrans struct UnitVector <: VectorTransform
+struct UnitVector <: VectorTransform
     n::Int
     function UnitVector(n::Int)
         @argcheck n ≥ 1 "Dimension should be positive."
@@ -87,7 +87,7 @@ end
 
 Transform `n-1` real numbers to a vector of length `n` whose elements are non-negative and sum to one.
 """
-@calltrans struct UnitSimplex <: VectorTransform
+struct UnitSimplex <: VectorTransform
     n::Int
     function UnitSimplex(n::Int)
         @argcheck n ≥ 1 "Dimension should be positive."
@@ -163,7 +163,7 @@ If
 then `Diagonal(σ) * U' * z` will be a multivariate normal with the given variances and
 correlation matrix `U' * U`.
 """
-@calltrans struct CorrCholeskyFactor <: VectorTransform
+struct CorrCholeskyFactor <: VectorTransform
     n::Int
     function CorrCholeskyFactor(n)
         @argcheck n ≥ 1 "Dimension should be positive."
