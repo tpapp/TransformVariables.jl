@@ -34,7 +34,7 @@ function test_transformation(t::AbstractTransform, is_valid_y;
         x isa ScalarTransform && @test dimension(x) == 1
         y = @inferred transform(t, x)
         @test is_valid_y(y)
-        @test t(x) == y         # callable
+        @test transform(t, x) == y
         y2, lj = @inferred transform_and_logjac(t, x)
         @test y2 == y
         if t isa ScalarTransform

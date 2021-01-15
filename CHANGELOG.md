@@ -1,6 +1,13 @@
 # Unreleased
 
+# 0.3.11
+
 - remove dependency on MacroTools for abstract dispatch workaround, but require Julia 1.3
+- deprecate t(x) interface
+
+# 0.3.10
+
+- compat bump
 
 # 0.3.9
 
