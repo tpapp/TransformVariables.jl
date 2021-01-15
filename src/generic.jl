@@ -117,7 +117,11 @@ Transform `x` using `t`. Also available as `t(x)`.
 """
 function transform end
 
-(t::AbstractTransform)(x) = transform(t, x)
+function (t::AbstractTransform)(x)
+    Base.depwarn("(t::AbstractTransform)(x) is deprecated, use transform(t, x) instead",
+                 :AbstractTransform) # hack, but works
+    transform(t, x)
+end
 
 """
 $(TYPEDEF)

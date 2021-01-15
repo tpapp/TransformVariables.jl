@@ -1,5 +1,3 @@
-const CIENV = get(ENV, "TRAVIS", "") == "true"  || get(ENV, "CI", "") == "true"
-
 using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, Parameters,
     Random, Test, TransformVariables, StaticArrays
 import Tracker, ForwardDiff
@@ -7,6 +5,8 @@ using LogDensityProblems: logdensity, logdensity_and_gradient
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
     unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac
+
+const CIENV = get(ENV, "CI", "") == "true"
 
 include("utilities.jl")
 
@@ -86,7 +86,6 @@ end
     @testset "dimension checks" begin
         U = UnitVector(3)
         x = zeros(3)               # incorrect
-        @test_throws ArgumentError U(x)
         @test_throws ArgumentError transform(U, x)
         @test_throws ArgumentError transform_and_logjac(U, x)
     end
@@ -107,7 +106,6 @@ end
     @testset "dimension checks" begin
         S = UnitSimplex(3)
         x = zeros(3)               # incorrect
-        @test_throws ArgumentError S(x)
         @test_throws ArgumentError transform(S, x)
         @test_throws ArgumentError transform_and_logjac(S, x)
     end
@@ -131,7 +129,6 @@ end
         C = CorrCholeskyFactor(3)
         wrong_x = zeros(dimension(C) + 1)
 
-        @test_throws ArgumentError C(wrong_x)
         @test_throws ArgumentError transform(C, wrong_x)
         @test_throws ArgumentError transform_and_logjac(C, wrong_x)
     end
@@ -282,7 +279,7 @@ end
         tt = as((a = as(Tuple(as(Vector, asℝ₊, 2) for _ in 1:N)),
                  b = as(Tuple(UnitVector(n) for n in 1:N))))
         x = randn(dimension(tt))
-        y = tt(x)
+        y = transform(tt, x)
         x′ = inverse(tt, y)
         @test x ≈ x′
     end
@@ -310,7 +307,7 @@ end
             f = as(Array, 9)))
     z = zeros(dimension(t))
     f(θ) = θ.a + θ.b + sum(abs2, θ.c.d) + sum(abs2, θ.c.e)
-    @test (@inferred f(t(z))) isa Float64
+    @test (@inferred f(transform(t, z))) isa Float64
     @test (@inferred transform_logdensity(t, f, z)) isa Float64
 end
 
@@ -486,12 +483,12 @@ end
 ####
 
 @testset "broadcasting" begin
-    @test as𝕀.([0, 0]) == [0.5, 0.5]
+    @test transform.(as𝕀, [0, 0]) == [0.5, 0.5]
 
     t = UnitVector(3)
     d = dimension(t)
     x = [zeros(d), zeros(d)]
-    @test t.(x) == map(t, x)
+    @test transform.(t, x) == map(x -> transform(t, x), x)
 end
 
 ####
