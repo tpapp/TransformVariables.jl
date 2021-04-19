@@ -97,7 +97,7 @@ $(SIGNATURES)
 
 Sum of the dimension of `transformations`. Utility function, *internal*.
 """
-_sum_dimensions(transformations) = sum(map(dimension, transformations))
+_sum_dimensions(transformations) = reduce(+, map(dimension, transformations), init = 0)
 
 const NTransforms{N} = Tuple{Vararg{AbstractTransform,N}}
 
