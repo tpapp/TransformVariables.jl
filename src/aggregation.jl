@@ -97,7 +97,7 @@ $(SIGNATURES)
 
 Sum of the dimension of `transformations`. Utility function, *internal*.
 """
-_sum_dimensions(transformations) = mapreduce(dimension, +, transformations; init = 0)
+_sum_dimensions(transformations) = sum(map(dimension, transformations))
 
 const NTransforms{N} = Tuple{Vararg{AbstractTransform,N}}
 
@@ -181,7 +181,7 @@ internally.
 *Performs no argument validation, caller should do this.*
 """
 _inverse_eltype_tuple(ts::NTransforms, ys::Tuple) =
-    mapreduce(((t, y),) -> inverse_eltype(t, y), promote_type, zip(ts, ys))
+    reduce(promote_type, map(((t, y),) -> inverse_eltype(t, y), zip(ts, ys)))
 
 """
 $(SIGNATURES)
