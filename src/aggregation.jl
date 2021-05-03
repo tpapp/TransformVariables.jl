@@ -98,6 +98,10 @@ $(SIGNATURES)
 Sum of the dimension of `transformations`. Utility function, *internal*.
 """
 _sum_dimensions(transformations) = reduce(+, map(dimension, transformations), init = 0)
+# NOTE: See https://github.com/tpapp/TransformVariables.jl/pull/80
+#       `map` and `reduce` both have specializations on `Tuple`s that make them type stable
+#       even when the `Tuple` is heterogenous, but that is not currently the case with
+#       `mapreduce`, therefore separate `reduce` and `map` are preferred as a workaround.
 
 const NTransforms{N} = Tuple{Vararg{AbstractTransform,N}}
 
@@ -182,6 +186,10 @@ internally.
 """
 _inverse_eltype_tuple(ts::NTransforms, ys::Tuple) =
     reduce(promote_type, map(((t, y),) -> inverse_eltype(t, y), zip(ts, ys)))
+# NOTE: See https://github.com/tpapp/TransformVariables.jl/pull/80
+#       `map` and `reduce` both have specializations on `Tuple`s that make them type stable
+#       even when the `Tuple` is heterogenous, but that is not currently the case with
+#       `mapreduce`, therefore separate `reduce` and `map` are preferred as a workaround.
 
 """
 $(SIGNATURES)
