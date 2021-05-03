@@ -504,3 +504,10 @@ end
     @test string(as(Real, 1.0, ∞)) == "as(Real, 1.0, ∞)"
     @test string(as(Real, -∞, 1.0)) == "as(Real, -∞, 1.0)"
 end
+
+@testset "sum dimensions allocations" begin
+    shifted = TransformVariables.ShiftedExp{true,Float64}(0.0)
+    tr = (a = shifted, b = TransformVariables.Identity(), c = shifted, d = shifted, e = shifted, f = shifted)
+    @test iszero(@allocated TransformVariables._sum_dimensions(tr))
+end
+
