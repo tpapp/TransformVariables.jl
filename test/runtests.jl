@@ -510,3 +510,15 @@ end
     tr = (a = shifted, b = TransformVariables.Identity(), c = shifted, d = shifted, e = shifted, f = shifted)
     @test iszero(@allocated TransformVariables._sum_dimensions(tr))
 end
+
+####
+#### partial application
+####
+
+@testset "partial application" begin
+    t = asℝ₊
+    x = 0.7
+    @test transform(t)(x) == transform(t, x)
+    y = transform(t, x)
+    @test inverse(t)(y) == inverse(t, y) == inverse(transform(t))(y) ≈ x
+end
