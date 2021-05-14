@@ -53,7 +53,7 @@ logjac_zero(::NoLogJac, _) = NOLOGJAC
 ###
 
 """
-    transform_with(flag::LogJacFlag, transformation, x::AbstractVector, index)
+`$(FUNCTIONNAME)(flag::LogJacFlag, transformation, x::AbstractVector, index)`
 
 Transform elements of `x` from `index`, using `transformation`.
 
@@ -75,7 +75,7 @@ used),
 function transform_with end
 
 """
-    inverse_at!(x, index, transformation, y)
+`$(FUNCTIONNAME)(x, index, transformation, y)`
 
 Invert transformation at `y` and put the result in `x` starting at `index`.
 
@@ -111,7 +111,7 @@ abstract type AbstractTransform end
 Base.broadcastable(t::AbstractTransform) = Ref(t)
 
 """
-`transform(t, x)`
+`$(FUNCTIONNAME)(t, x)`
 
 Transform `x` using `t`. Also available as `t(x)`.
 """
@@ -134,11 +134,11 @@ struct InverseTransform{T}
 end
 
 """
-    inverse(t::AbstractTransform, y)
+`$(FUNCTIONNAME)(t::AbstractTransform, y)`
 
 Return `x` so that `transform(t, x) ≈ y`.
 
-    $SIGNATURES
+$(SIGNATURES)
 
 Return a callable equivalen to `y -> inverse(t, y)`.
 """
@@ -147,7 +147,7 @@ inverse(t::AbstractTransform) = InverseTransform(t)
 (ι::InverseTransform)(y) = inverse(ι.transform, y)
 
 """
-    inverse_eltype(t::AbstractTransform, y)
+`$(FUNCTIONNAME)(t::AbstractTransform, y)`
 
 The element type for vector `x` so that `inverse!(x, t, y)` works.
 """
@@ -180,7 +180,7 @@ function transform_logdensity(t::AbstractTransform, f, x)
 end
 
 """
-    dimension(t::AbstractTransform)
+`$(FUNCTIONNAME)(t::AbstractTransform)`
 
 The dimension (number of elements) that `t` transforms.
 
@@ -189,7 +189,7 @@ Types should implement this method.
 function dimension end
 
 """
-    as(T, args...)
+`$(FUNCTIONNAME)(T, args...)`
 
 Shorthand for constructing transformations with image in `T`. `args` determines
 or modifies behavior, details depend on `T`.

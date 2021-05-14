@@ -1,4 +1,4 @@
-using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, Parameters,
+using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, UnPack,
     Random, Test, TransformVariables, StaticArrays
 import Tracker, ForwardDiff
 using LogDensityProblems: logdensity, logdensity_and_gradient
@@ -510,4 +510,3 @@ end
     tr = (a = shifted, b = TransformVariables.Identity(), c = shifted, d = shifted, e = shifted, f = shifted)
     @test iszero(@allocated TransformVariables._sum_dimensions(tr))
 end
-

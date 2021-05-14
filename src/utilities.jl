@@ -18,7 +18,7 @@ logit_logjac(y) = -log(y) - log1p(-y)
 ###
 
 """
-    $SIGNATURES
+$(SIGNATURES)
 
 Number of elements (strictly) above the diagonal in an ``n×n`` matrix.
 """
@@ -29,7 +29,7 @@ unit_triangular_dimension(n::Int) = n * (n-1) ÷ 2
 ###
 
 """
-    $(SIGNATURES)
+$(SIGNATURES)
 
 Extend element type of argument so that it is closed under the algebra used by this package.
 
