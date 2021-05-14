@@ -1,10 +1,10 @@
 module TransformVariables
 
 using ArgCheck: @argcheck
-using DocStringExtensions: SIGNATURES, TYPEDEF
+using DocStringExtensions: FUNCTIONNAME, SIGNATURES, TYPEDEF
 import ForwardDiff
 using LinearAlgebra: UpperTriangular, logabsdet
-using Parameters: @unpack
+using UnPack: @unpack
 using Random: AbstractRNG, GLOBAL_RNG
 
 include("utilities.jl")
