@@ -113,38 +113,70 @@ Base.broadcastable(t::AbstractTransform) = Ref(t)
 """
 `$(FUNCTIONNAME)(t, x)`
 
-Transform `x` using `t`. Also available as `t(x)`.
+Transform `x` using `t`.
+
+`$(FUNCTIONNAME)(t)`.
+
+Return a callable equivalent to `x -> transform(t, x)` that transforms its argument:
+
+```julia
+transform(t, x) == transform(t)(x)
+```
 """
 function transform end
-
-function (t::AbstractTransform)(x)
-    Base.depwarn("(t::AbstractTransform)(x) is deprecated, use transform(t, x) instead",
-                 :AbstractTransform) # hack, but works
-    transform(t, x)
-end
 
 """
 $(TYPEDEF)
 
-Inverse of the wrapped transform. Use the 1-argument version of
-[`inverse`](@ref) to construct.
+Partial application of `transform(t, x)`, callable with `x`. Use `transform(t)` to
+construct.
 """
-struct InverseTransform{T}
-    transform::T
+struct CallableTransform{T}
+    t::T
 end
 
+(f::CallableTransform)(x) = transform(f.t, x)
+
+function Base.show(io::IO, f::CallableTransform)
+    print(io, "callable for the transformation $(f.t)")
+end
+
+transform(t) = CallableTransform(t)
+
 """
-`$(FUNCTIONNAME)(t::AbstractTransform, y)`
+$(TYPEDEF)
+
+Partial application of `inverse(t, y)`, callable with `y`. Use `inverse(t)` to
+construct.
+"""
+struct CallableInverse{T}
+    t::T
+end
+
+function Base.show(io::IO, f::CallableInverse)
+    print(io, "callable inverse for the transformation $(f.t)")
+end
+
+inverse(f::CallableInverse) = CallableTransform(f.t)
+
+inverse(f::CallableTransform) = CallableInverse(f.t)
+
+"""
+`$(FUNCTIONNAME)(t, y)`
 
 Return `x` so that `transform(t, x) ≈ y`.
 
-$(SIGNATURES)
+`$(FUNCTIONNAME)(t)`
 
-Return a callable equivalen to `y -> inverse(t, y)`.
+Return a callable equivalent to `y -> inverse(t, y)`. `t` can also be a callable created
+with transform, so the following holds:
+```julia
+inverse(t)(y) == inverse(t, y) == inverse(transform(t))(y)
+```
 """
-inverse(t::AbstractTransform) = InverseTransform(t)
+inverse(t::AbstractTransform) = CallableInverse(t)
 
-(ι::InverseTransform)(y) = inverse(ι.transform, y)
+(f::CallableInverse)(y) = inverse(f.t, y)
 
 """
 `$(FUNCTIONNAME)(t::AbstractTransform, y)`
