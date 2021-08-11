@@ -22,7 +22,7 @@ TransformVariables.TransformTuple
 ### Wrapper for inverse
 
 ```@docs
-TransformVariables.InverseTransform
+TransformVariables.CallableInverse
 ```
 
 ## Types and type aliases

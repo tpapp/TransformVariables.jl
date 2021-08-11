@@ -84,7 +84,13 @@ The symbol `∞` is a placeholder for infinity. It does not correspond to `Inf`,
 ∞
 ```
 
-`as(Real, a, b)` defines transformations to finite and (semi-)infinite subsets of the real line, where `a` and `b` can be `-∞` and `∞`, respectively. The following constants are defined for common cases.
+`as(Real, a, b)` defines transformations to finite and (semi-)infinite subsets of the real line, where `a` and `b` can be `-∞` and `∞`, respectively.
+
+```@docs
+as(::Type{Real}, Any, Any)
+```
+
+The following constants are defined for common cases.
 
 ```@docs
 asℝ

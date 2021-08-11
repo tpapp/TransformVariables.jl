@@ -78,6 +78,14 @@ end
     @test as_unit_interval ≡ as𝕀
 end
 
+@testset "scalar promotion" begin
+    a = 0f0
+    @test transform(asℝ, a) isa Float32
+    @test transform(asℝ₊, a) isa Float32
+    @test transform(asℝ₋, a) isa Float32
+    @test transform(as𝕀, a) isa Float32
+end
+
 ####
 #### special array transformation correctness checks
 ####

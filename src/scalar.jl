@@ -90,7 +90,7 @@ end
 """
 $(TYPEDEF)
 
-Maps to `(scale, shift + scale)` using `x ↦ logistic(x)*scale + shift`.
+Maps to `(scale, shift + scale)` using `logistic(x) * scale + shift`.
 """
 struct ScaledShiftedLogistic{T <: Real} <: ScalarTransform
     scale::T
@@ -157,8 +157,12 @@ interval.
 `left < right` is required, but may be `-∞` or `∞`, respectively, in which case
 the appropriate transformation is selected. See [`∞`](@ref).
 
-Some common transformations are predefined as constants, see [`ℝ`](@ref),
-[`ℝ₋`](@ref), [`ℝ₊`](@ref), [`𝕀`](@ref).
+Some common transformations are predefined as constants, see [`asℝ`](@ref),
+[`asℝ₋`](@ref), [`asℝ₊`](@ref), [`as𝕀`](@ref).
+
+!!! note
+    The finite arguments are promoted to a common type and affect promotion. Eg
+    `transform(as(0, ∞), 0f0) isa Float32`, but `transform(as(0.0, ∞), 0f0) isa Float64`.
 """
 as(::Type{Real}, left, right) =
     throw(ArgumentError("($(left), $(right)) must be an interval"))
@@ -175,34 +179,34 @@ function as(::Type{Real}, left::Real, right::Real)
 end
 
 """
-Transform to a positive real number.
+Transform to a positive real number. See [`as`](@ref).
 
 `asℝ₊` and `as_positive_real` are equivalent alternatives.
 """
-const asℝ₊ = as(Real, 0.0, ∞)
+const asℝ₊ = as(Real, 0, ∞)
 
 const as_positive_real = asℝ₊
 
 """
-Transform to a negative real number.
+Transform to a negative real number. See [`as`](@ref).
 
 `asℝ₋` and `as_negative_real` are equivalent alternatives.
 """
-const asℝ₋ = as(Real, -∞, 0.0)
+const asℝ₋ = as(Real, -∞, 0)
 
 const as_negative_real = asℝ₋
 
 """
-Transform to the unit interval `(0, 1)`.
+Transform to the unit interval `(0, 1)`. See [`as`](@ref).
 
 `as𝕀` and `as_unit_interval` are equivalent alternatives.
 """
-const as𝕀 = as(Real, 0.0, 1.0)
+const as𝕀 = as(Real, 0, 1)
 
 const as_unit_interval = as𝕀
 
 """
-Transform to the real line (identity).
+Transform to the real line (identity). See [`as`](@ref).
 
 `asℝ` and `as_real` are equivalent alternatives.
 """
