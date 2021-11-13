@@ -7,6 +7,9 @@ using LinearAlgebra: UpperTriangular, logabsdet
 using UnPack: @unpack
 using Random: AbstractRNG, GLOBAL_RNG
 
+import ChangesOfVariables
+import InverseFunctions
+
 include("utilities.jl")
 include("generic.jl")
 include("scalar.jl")
