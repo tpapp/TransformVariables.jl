@@ -5,6 +5,7 @@ using LogDensityProblems: logdensity, logdensity_and_gradient
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
     unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac
+import ChangesOfVariables, InverseFunctions
 
 const CIENV = get(ENV, "CI", "") == "true"
 
@@ -529,4 +530,22 @@ end
     @test transform(t)(x) == transform(t, x)
     y = transform(t, x)
     @test inverse(t)(y) == inverse(t, y) == inverse(transform(t))(y) ≈ x
+end
+
+
+@testset "ChangesOfVariables" begin
+    t = as(Real, 1.0, 3.0)
+    f = TransformVariables.CallableTransform(t)
+    inv_f = TransformVariables.CallableInverse(t)
+    ChangesOfVariables.test_with_logabsdet_jacobian(f, -4.2, ForwardDiff.derivative)
+    ChangesOfVariables.test_with_logabsdet_jacobian(inv_f, 1.7, ForwardDiff.derivative)
+end
+
+
+@testset "InverseFunctions" begin
+    t = as(Real, 1.0, 3.0)
+    f = TransformVariables.CallableTransform(t)
+    inv_f = TransformVariables.CallableInverse(t)
+    InverseFunctions.test_inverse(f, -4.2)
+    InverseFunctions.test_inverse(inv_f, 1.7)
 end
