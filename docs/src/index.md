@@ -107,6 +107,12 @@ UnitSimplex
 CorrCholeskyFactor
 ```
 
+## Miscellaneous transformations
+
+```@docs
+Constant
+```
+
 # Defining custom transformations
 
 ```@docs

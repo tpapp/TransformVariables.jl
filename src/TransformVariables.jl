@@ -14,6 +14,7 @@ include("utilities.jl")
 include("generic.jl")
 include("scalar.jl")
 include("special_arrays.jl")
+include("constant.jl")
 include("aggregation.jl")
 include("custom.jl")
 
