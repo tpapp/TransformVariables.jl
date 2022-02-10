@@ -487,6 +487,22 @@ end
     @test inverse(t, ones(SMatrix{2,3})) == ones(6)
 end
 
+@testset "constant transformations" begin
+    c = rand(3, 3)
+    ta = as(Vector, asℝ₊, 3)
+    t = as((a = ta, b = Constant(c)))
+    t0 = as((a = ta,))
+    N = dimension(t)
+    @test N == dimension(t0)
+    x = rand(N)
+    y = @inferred transform(t, x)
+    @test y == merge(transform(t0, x), (b = c,))
+    let (y2, l) = transform_and_logjac(t0, x)
+        @test transform_and_logjac(t, x) == (merge(y2, (b = c,)), l)
+    end
+    @test inverse(t, y) ≈ x
+end
+
 ####
 #### broadcasting
 ####
