@@ -399,20 +399,23 @@ end
     v = logdensity(P, x)
     g = ForwardDiff.gradient(x -> logdensity(P, x), x)
 
-    # ForwardDiff
-    P1 = ADgradient(:ForwardDiff, P)
-    @test v == logdensity(P1, x)
-    v1, g1 = @inferred logdensity_and_gradient(P1, x)
-    @test v1 == v
-    @test g1 ≈ g
+    @testset "ForwardDiff" begin
+        P1 = ADgradient(:ForwardDiff, P)
+        @test v == logdensity(P1, x)
+        v1, g1 = @inferred logdensity_and_gradient(P1, x)
+        @test v1 == v
+        @test g1 ≈ g
 
-    # Tracker
-    P2 = ADgradient(:Tracker, P)
-    v2, g2 = @inferred logdensity_and_gradient(P2, x)
-    @test v2 == v
-    @test g2 ≈ g
+        xd = ForwardDiff.Dual(-800.0, 1.0)
+        @test first(ForwardDiff.partials(transform(as(Real, 0.0, 1.0), xd))) == 0.0
+    end
 
-
+    @testset "Tracker" begin
+        P2 = ADgradient(:Tracker, P)
+        v2, g2 = @inferred logdensity_and_gradient(P2, x)
+        @test v2 == v
+        @test g2 ≈ g
+    end
 end
 
 # if VERSION ≥ v"1.1"
