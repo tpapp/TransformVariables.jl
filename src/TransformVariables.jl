@@ -6,6 +6,7 @@ import ForwardDiff
 using LinearAlgebra: UpperTriangular, logabsdet
 using UnPack: @unpack
 using Random: AbstractRNG, GLOBAL_RNG
+using LogExpFunctions
 
 import ChangesOfVariables
 import InverseFunctions
