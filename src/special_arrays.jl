@@ -52,7 +52,7 @@ function transform_with(flag::LogJacFlag, t::UnitVector, x::AbstractVector, inde
     @unpack n = t
     T = extended_eltype(x)
     r = one(T)
-    y = Vector{T}(undef, n)
+    y = fill(T(NaN), n)
     ℓ = logjac_zero(flag, T)
     @inbounds for i in 1:(n - 1)
         xi = x[index]
@@ -103,7 +103,7 @@ function transform_with(flag::LogJacFlag, t::UnitSimplex, x::AbstractVector, ind
 
     ℓ = logjac_zero(flag, T)
     stick = one(T)
-    y = Vector{T}(undef, n)
+    y = fill(T(NaN), n)
     @inbounds for i in 1:n-1
         xi = x[index]
         index += 1
@@ -177,7 +177,7 @@ function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor, x::AbstractVect
     @unpack n = t
     T = extended_eltype(x)
     ℓ = logjac_zero(flag, T)
-    U = Matrix{T}(undef, n, n)
+    U = fill(T(NaN), n, n)
     @inbounds for col in 1:n
         r = one(T)
         for row in 1:(col-1)
