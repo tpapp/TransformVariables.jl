@@ -539,13 +539,15 @@ end
     @test iszero(@allocated TransformVariables._sum_dimensions(tr))
 end
 
+if VERSION >= v"1.7"
 @testset "inverse_eltype allocations" begin
-  trf = as((x0 = TransformVariables.ShiftedExp{true, Float32}(0f0), x1 = TransformVariables.Identity(), x2 = UnitSimplex(7), x3 = TransformVariables.CorrCholeskyFactor(5), x4 = as(Real, -∞, 1), x5 = as(Array, 10, 2), x6 = as(Array, as𝕀, 10), x7 = as((a = asℝ₊, b = as𝕀)), x8 = TransformVariables.UnitVector(10), x9 = TransformVariables.ShiftedExp{true, Float32}(0f0), x10 = TransformVariables.ShiftedExp{true, Float32}(0f0), x11 = TransformVariables.ShiftedExp{true, Float32}(0f0), x12 = TransformVariables.ShiftedExp{true, Float32}(0f0), x13 = TransformVariables.Identity(), x14 = TransformVariables.ShiftedExp{true, Float32}(0f0), x15 = TransformVariables.ShiftedExp{true, Float32}(0f0), x16 = TransformVariables.ShiftedExp{true, Float32}(0f0), x17 = TransformVariables.ShiftedExp{true, Float64}(0.0)));
+    trf = as((x0 = TransformVariables.ShiftedExp{true, Float32}(0f0), x1 = TransformVariables.Identity(), x2 = UnitSimplex(7), x3 = TransformVariables.CorrCholeskyFactor(5), x4 = as(Real, -∞, 1), x5 = as(Array, 10, 2), x6 = as(Array, as𝕀, 10), x7 = as((a = asℝ₊, b = as𝕀)), x8 = TransformVariables.UnitVector(10), x9 = TransformVariables.ShiftedExp{true, Float32}(0f0), x10 = TransformVariables.ShiftedExp{true, Float32}(0f0), x11 = TransformVariables.ShiftedExp{true, Float32}(0f0), x12 = TransformVariables.ShiftedExp{true, Float32}(0f0), x13 = TransformVariables.Identity(), x14 = TransformVariables.ShiftedExp{true, Float32}(0f0), x15 = TransformVariables.ShiftedExp{true, Float32}(0f0), x16 = TransformVariables.ShiftedExp{true, Float32}(0f0), x17 = TransformVariables.ShiftedExp{true, Float64}(0.0)));
   
-  vx = randn(@inferred(TransformVariables.dimension(trf)));
-  x = TransformVariables.transform(trf, vx);
-  @test @inferred(TransformVariables.inverse_eltype(trf, x)) === Float64
+    vx = randn(@inferred(TransformVariables.dimension(trf)));
+    x = TransformVariables.transform(trf, vx);
+    @test @inferred(TransformVariables.inverse_eltype(trf, x)) === Float64
   
+end
 end
 
 ####
