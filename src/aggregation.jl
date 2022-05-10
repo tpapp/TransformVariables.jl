@@ -176,6 +176,13 @@ function transform_tuple(flag::LogJacFlag, tt::NTransforms, x, index)
     _transform_tuple(flag, x, index, tt)
 end
 
+# _nolimitmap is to avoid the recursion limit at 16 for `map` that caused
+# problems in older Julia versions, e.g. 1.3
+@inline _nolimitmap(f::F, ::Tuple{}, ::Tuple{}) where {F} = ()
+@inline function _nolimitmap(f::F, x::Tuple{T,Vararg}, y::Tuple{S,Vararg}) where {F, T, S}
+  (f(first(x), first(y)), _nolimitmap(f, Base.tail(x), Base.tail(y))...)
+end
+
 """
 $(SIGNATURES)
 
@@ -185,7 +192,7 @@ internally.
 *Performs no argument validation, caller should do this.*
 """
 _inverse_eltype_tuple(ts::NTransforms, ys::Tuple) =
-    reduce(promote_type, map(inverse_eltype, ts, ys))
+    reduce(promote_type, _nolimitmap(inverse_eltype, ts, ys))
 # NOTE: See https://github.com/tpapp/TransformVariables.jl/pull/80
 #       `map` and `reduce` both have specializations on `Tuple`s that make them type stable
 #       even when the `Tuple` is heterogenous, but that is not currently the case with
