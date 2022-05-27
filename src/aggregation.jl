@@ -185,7 +185,7 @@ internally.
 *Performs no argument validation, caller should do this.*
 """
 _inverse_eltype_tuple(ts::NTransforms, ys::Tuple) =
-    reduce(promote_type, map(((t, y),) -> inverse_eltype(t, y), zip(ts, ys)))
+    reduce(promote_type, map(inverse_eltype, ts, ys))
 # NOTE: See https://github.com/tpapp/TransformVariables.jl/pull/80
 #       `map` and `reduce` both have specializations on `Tuple`s that make them type stable
 #       even when the `Tuple` is heterogenous, but that is not currently the case with
