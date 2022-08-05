@@ -48,6 +48,15 @@ end
         a = randn() * 100
         test_transformation(as(Real, -∞, a), y -> y < a)
         test_transformation(as(Real, a, ∞), y -> y > a)
+
+        a = randn() * 1000
+        test_transformation(as(Real, a, ∞, scale = 10.0), y -> y > a)
+        test_transformation(as(Real, -∞, a, scale = 10.0), y -> y < a)
+
+        a = randn() * 10
+        test_transformation(as(Real, a, ∞, scale = 0.1), y -> y > a)
+        test_transformation(as(Real, -∞, a, scale = 0.1), y -> y < a)
+
         b = a + 0.5 + rand(Float64) + exp(randn() * 10)
         test_transformation(as(Real, a, b), y -> a < y < b)
     end
@@ -61,8 +70,12 @@ end
 
     t = as(Real, 1.0, ∞)
     @test_throws DomainError inverse(t, 0.5)
+    t = as(Real, 1.0, ∞; scale = 0.1)
+    @test_throws DomainError inverse(t, 0.5)
 
     t = as(Real, -∞, 10.0)
+    @test_throws DomainError inverse(t, 11.0)
+    t = as(Real, -∞, 10.0; scale=0.1)
     @test_throws DomainError inverse(t, 11.0)
 
     t = as(Real, 1.0, 10.0)
@@ -85,6 +98,8 @@ end
     @test transform(asℝ₊, a) isa Float32
     @test transform(asℝ₋, a) isa Float32
     @test transform(as𝕀, a) isa Float32
+    @test transform(as(Real, 0, ∞), a) isa Float32
+    @test transform(as(Real, -∞, 0), a) isa Float32
 end
 
 ####
@@ -529,24 +544,24 @@ end
     @test string(asℝ₋) == "asℝ₋"
     @test string(as𝕀) == "as𝕀"
     @test string(as(Real, 0.0, 2.0)) == "as(Real, 0.0, 2.0)"
-    @test string(as(Real, 1.0, ∞)) == "as(Real, 1.0, ∞)"
-    @test string(as(Real, -∞, 1.0)) == "as(Real, -∞, 1.0)"
+    @test string(as(Real, 1.0, ∞)) == "as(Real, 1.0, ∞; scale = 1)"
+    @test string(as(Real, -∞, 1.0)) == "as(Real, -∞, 1.0; scale = 1)"
 end
 
 @testset "sum dimensions allocations" begin
-    shifted = TransformVariables.ShiftedExp{true,Float64}(0.0)
+    shifted = TransformVariables.ShiftedExp{true,Float64,Float64}(0.0, 0.0)
     tr = (a = shifted, b = TransformVariables.Identity(), c = shifted, d = shifted, e = shifted, f = shifted)
     @test iszero(@allocated TransformVariables._sum_dimensions(tr))
 end
 
 if VERSION >= v"1.7"
 @testset "inverse_eltype allocations" begin
-    trf = as((x0 = TransformVariables.ShiftedExp{true, Float32}(0f0), x1 = TransformVariables.Identity(), x2 = UnitSimplex(7), x3 = TransformVariables.CorrCholeskyFactor(5), x4 = as(Real, -∞, 1), x5 = as(Array, 10, 2), x6 = as(Array, as𝕀, 10), x7 = as((a = asℝ₊, b = as𝕀)), x8 = TransformVariables.UnitVector(10), x9 = TransformVariables.ShiftedExp{true, Float32}(0f0), x10 = TransformVariables.ShiftedExp{true, Float32}(0f0), x11 = TransformVariables.ShiftedExp{true, Float32}(0f0), x12 = TransformVariables.ShiftedExp{true, Float32}(0f0), x13 = TransformVariables.Identity(), x14 = TransformVariables.ShiftedExp{true, Float32}(0f0), x15 = TransformVariables.ShiftedExp{true, Float32}(0f0), x16 = TransformVariables.ShiftedExp{true, Float32}(0f0), x17 = TransformVariables.ShiftedExp{true, Float64}(0.0)));
-  
+    trf = as((x0 = TransformVariables.ShiftedExp{true, Float32, Float32}(0f0, 0f0), x1 = TransformVariables.Identity(), x2 = UnitSimplex(7), x3 = TransformVariables.CorrCholeskyFactor(5), x4 = as(Real, -∞, 1), x5 = as(Array, 10, 2), x6 = as(Array, as𝕀, 10), x7 = as((a = asℝ₊, b = as𝕀)), x8 = TransformVariables.UnitVector(10), x9 = TransformVariables.ShiftedExp{true, Float32, Float32}(0f0, 0f0), x10 = TransformVariables.ShiftedExp{true, Float32, Float32}(0f0, 0f0), x11 = TransformVariables.ShiftedExp{true, Float32, Float32}(0f0, 0f0), x12 = TransformVariables.ShiftedExp{true, Float32, Float32}(0f0, 0f0), x13 = TransformVariables.Identity(), x14 = TransformVariables.ShiftedExp{true, Float32, Float32}(0f0, 0f0), x15 = TransformVariables.ShiftedExp{true, Float32, Float32}(0f0, 0f0), x16 = TransformVariables.ShiftedExp{true, Float32, Float32}(0f0, 0f0), x17 = TransformVariables.ShiftedExp{true, Float64, Float64}(0.0, 0.0)));
+
     vx = randn(@inferred(TransformVariables.dimension(trf)));
     x = TransformVariables.transform(trf, vx);
     @test @inferred(TransformVariables.inverse_eltype(trf, x)) === Float64
-  
+
 end
 end
 
