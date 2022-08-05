@@ -54,32 +54,33 @@ inverse(::Identity, x::Real) = x
 """
 $(TYPEDEF)
 
-Shifted exponential. When `D::Bool == true`, maps to `(shift, ∞)` using `x ↦
-shift + eˣ`, otherwise to `(-∞, shift)` using `x ↦ shift - eˣ`.
+Shifted exponential. When `D::Bool == true`, maps to `(shift, scale,  ∞)` using `x ↦
+shift + exp(x/scale)`, otherwise to `(-∞, shift)` using `x ↦ shift - exp(x/scale)`.
 """
-struct ShiftedExp{D, T <: Real} <: ScalarTransform
+struct ShiftedExp{D, T <: Real, S <: Real} <: ScalarTransform
     shift::T
-    function ShiftedExp{D,T}(shift::T) where {D, T <: Real}
+    scale::S
+    function ShiftedExp{D,T,S}(shift::T, scale::S) where {D, T <: Real, S <: Real}
         @argcheck D isa Bool
-        new(shift)
+        new(shift, scale)
     end
 end
-
-ShiftedExp(D::Bool, shift::T) where {T <: Real} = ShiftedExp{D,T}(shift)
+ShiftedExp(D::Bool, shift::T) where {T <: Real} = ShiftedExp{D,T,T}(shift, one(T))
+ShiftedExp(D::Bool, shift::T, scale::S) where {T <: Real, S <: Real} = ShiftedExp{D,T,S}(shift, scale)
 
 transform(t::ShiftedExp{D}, x::Real) where D =
-    D ? t.shift + exp(x) : t.shift - exp(x)
+    D ? t.shift + exp(x/t.scale) : t.shift - exp(x/t.scale)
 
-transform_and_logjac(t::ShiftedExp, x::Real) = transform(t, x), x
+transform_and_logjac(t::ShiftedExp, x::Real) = transform(t, x), x/t.scale - log(t.scale)
 
 function inverse(t::ShiftedExp{D}, x::Real) where D
-    @unpack shift = t
+    @unpack shift, scale = t
     if D
         @argcheck x > shift DomainError
-        log(x - shift)
+        scale*log(x - shift)
     else
         @argcheck x < shift DomainError
-        log(shift - x)
+        scale*log(shift - x)
     end
 end
 
@@ -155,23 +156,32 @@ Return a transformation that transforms a single real number to the given (open)
 interval.
 
 `left < right` is required, but may be `-∞` or `∞`, respectively, in which case
-the appropriate transformation is selected. See [`∞`](@ref).
+the appropriate transformation is selected. See [`∞`](@ref). If `left` or `right`
+are infinite, optionally the scale of the variable can be provied, e.g.:
+```
+as(Real, left, ∞; scale=10)
+````
 
 Some common transformations are predefined as constants, see [`asℝ`](@ref),
 [`asℝ₋`](@ref), [`asℝ₊`](@ref), [`as𝕀`](@ref).
 
 !!! note
-    The finite arguments are promoted to a common type and affect promotion. Eg
-    `transform(as(0, ∞), 0f0) isa Float32`, but `transform(as(0.0, ∞), 0f0) isa Float64`.
+    The finite arguments are promoted to a common type and affect promotion. E.g.
+    `transform(as(0, ∞; scale=10f0), 0f0) isa Float32`, but
+    `transform(as(0.0, ∞), 0f0) isa Float64`.
 """
 as(::Type{Real}, left, right) =
     throw(ArgumentError("($(left), $(right)) must be an interval"))
 
 as(::Type{Real}, ::Infinity{false}, ::Infinity{true}) = Identity()
 
-as(::Type{Real}, left::Real, ::Infinity{true}) = ShiftedExp(true, left)
+function as(::Type{Real}, left::T, ::Infinity{true}; scale=1) where T <: Real
+    ShiftedExp(true, left, scale)
+end
 
-as(::Type{Real}, ::Infinity{false}, right::Real) = ShiftedExp(false, right)
+function as(::Type{Real}, ::Infinity{false}, right::T; scale=1) where T <: Real
+    ShiftedExp(false, right, scale)
+end
 
 function as(::Type{Real}, left::Real, right::Real)
     @argcheck left < right "the interval ($(left), $(right)) is empty"
@@ -220,9 +230,9 @@ Base.show(io::IO, t::ShiftedExp) =
     elseif t === asℝ₋
         print(io, "asℝ₋")
     elseif t isa ShiftedExp{true}
-        print(io, "as(Real, ", t.shift, ", ∞)")
+        print(io, "as(Real, ", t.shift, ", ∞; scale = ", t.scale, ")")
     else
-        print(io, "as(Real, -∞, ", t.shift, ")")
+        print(io, "as(Real, -∞, ", t.shift, "; scale = ", t.scale, ")")
     end
 
 Base.show(io::IO, t::ScaledShiftedLogistic) =
