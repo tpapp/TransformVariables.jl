@@ -169,7 +169,6 @@ end
 
 """
 $(SIGNATURES)
-
 Helper function for tuple transformations.
 """
 function transform_tuple(flag::LogJacFlag, tt::NTransforms, x, index)
@@ -239,6 +238,5 @@ end
 function inverse_at!(x::AbstractVector, index, tt::TransformTuple{<:NamedTuple}, y::NamedTuple)
     @unpack transformations = tt
     @argcheck keys(transformations) == keys(y)
-    @argcheck length(x) == dimension(tt)
     _inverse!_tuple(x, index, values(transformations), values(y))
 end
