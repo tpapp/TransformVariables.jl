@@ -1,5 +1,5 @@
 export dimension, transform, transform_and_logjac, transform_logdensity, inverse, inverse!,
-    inverse_eltype, as, random_arg, random_value
+    inverse_eltype, as
 
 ###
 ### log absolute Jacobian determinant
@@ -282,25 +282,3 @@ end
 function inverse(t::VectorTransform, y)
     inverse!(Vector{inverse_eltype(t, y)}(undef, dimension(t)), t, y)
 end
-
-"""
-$(SIGNATURES)
-
-A random argument for a transformation.
-
-# Keyword arguments
-
-$(_RANDOM_REALS_KWARGS_DOC)
-"""
-random_arg(x::VectorTransform; kwargs...) = random_reals(dimension(x); kwargs...)
-
-"""
-$(SIGNATURES)
-
-Random value from a transformation.
-
-# Keyword arguments
-
-$(_RANDOM_REALS_KWARGS_DOC)
-"""
-random_value(t::AbstractTransform; kwargs...) = transform(t, random_arg(t; kwargs...))

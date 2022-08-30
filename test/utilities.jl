@@ -12,6 +12,14 @@ AD_logjac(t::ScalarTransform, x) =
 """
 $(SIGNATURES)
 
+A random input, for testing.
+"""
+random_arg(t::ScalarTransform) = randn()
+random_arg(t::VectorTransform) = randn(dimension(t))
+
+"""
+$(SIGNATURES)
+
 Test transformation `t` with random values, `N` times.
 
 `is_valid_y` checks the result of the transformation.
@@ -24,13 +32,7 @@ automatic differentiation.
 function test_transformation(t::AbstractTransform, is_valid_y;
                              vec_y = identity, N = 1000, test_inverse = true)
     for _ in 1:N
-        x = t isa ScalarTransform ? randn() : randn(dimension(t))
-        if t isa ScalarTransform
-            @test random_arg(t) isa Float64
-        else
-            y = random_arg(t)
-            @test y isa Vector{Float64} && length(y) == dimension(t)
-        end
+        x = random_arg(t)
         x isa ScalarTransform && @test dimension(x) == 1
         y = @inferred transform(t, x)
         @test is_valid_y(y)

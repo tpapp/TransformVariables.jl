@@ -18,5 +18,6 @@ include("special_arrays.jl")
 include("constant.jl")
 include("aggregation.jl")
 include("custom.jl")
+include("deprecated.jl")
 
 end # module
