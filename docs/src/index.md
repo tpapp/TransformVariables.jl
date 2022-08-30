@@ -57,11 +57,6 @@ inverse_eltype
 transform_logdensity
 ```
 
-```@docs
-random_arg
-random_value
-```
-
 # Defining transformations
 
 ## The `as` constructor and aggregations
