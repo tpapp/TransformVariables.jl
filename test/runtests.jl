@@ -1,5 +1,5 @@
 using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, UnPack,
-    Random, Test, TransformVariables, StaticArrays
+    Random, Test, TransformVariables, StaticArrays, TransformedLogDensities
 import Tracker, ForwardDiff
 using LogDensityProblems: logdensity, logdensity_and_gradient
 using TransformVariables:
@@ -385,7 +385,7 @@ end
         @unpack μ, σ, β, α, δ = θ
         -(abs2(μ) + abs2(σ) + abs2(β) + α + δ[1] + δ[2])
     end
-    P = TransformedLogDensity(t, f)
+    P = TransformedLogDensities.TransformedLogDensity(t, f)
     x = zeros(dimension(t))
     v = logdensity(P, x)
     g = ForwardDiff.gradient(x -> logdensity(P, x), x)
