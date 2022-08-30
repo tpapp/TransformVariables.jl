@@ -28,8 +28,6 @@ end
 
 inverse_eltype(t::ScalarTransform, y::T) where {T <: Real} = float(T)
 
-random_arg(t::ScalarTransform; kwargs...) = random_real(; kwargs...)
-
 ####
 #### identity
 ####
