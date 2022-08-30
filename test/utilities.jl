@@ -46,9 +46,9 @@ function test_transformation(t::AbstractTransform, is_valid_y;
         end
         if test_inverse
             x2 = inverse(t, y)
-            @test x ≈ x2
+            @test x ≈ x2 atol = 1e-6
             ι = inverse(t)
-            @test x ≈ ι(y)
+            @test x2 == ι(y)
         end
     end
 end
