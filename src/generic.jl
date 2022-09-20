@@ -280,5 +280,5 @@ function transform_and_logjac(t::VectorTransform, x::AbstractVector)
 end
 
 function inverse(t::VectorTransform, y)
-    inverse!(Vector{inverse_eltype(t, y)}(undef, dimension(t)), t, y)
+    inverse!(fill(inverse_eltype(t, y)(NaN), dimension(t)), t, y)
 end

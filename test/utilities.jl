@@ -61,7 +61,7 @@ Elements (strictly) above the diagonal as a vector.
 function vec_above_diagonal(U::UpperTriangular{T}) where T
     n = size(U, 1)
     index = 1
-    x = Vector{T}(undef, unit_triangular_dimension(n))
+    x = fill(T(NaN), unit_triangular_dimension(n))
     for col in 1:n
         for row in 1:(col-1)
             x[index] = U[row, col]
