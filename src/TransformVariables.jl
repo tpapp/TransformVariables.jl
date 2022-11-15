@@ -19,4 +19,6 @@ include("constant.jl")
 include("aggregation.jl")
 include("custom.jl")
 
+include("experimental.jl")
+
 end # module

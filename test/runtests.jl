@@ -570,3 +570,5 @@ end
     InverseFunctions.test_inverse(f, -4.2)
     InverseFunctions.test_inverse(inv_f, 1.7)
 end
+
+include("experimental.jl")
