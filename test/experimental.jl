@@ -5,9 +5,9 @@ using TransformVariables
 using TransformVariables.Experimental, StaticArrays
 
 @testset "API hook" begin
-    t = as((a = as(SVector{3}), b = asℝ))
-    @test dimension(t) == 4
-    @test transform(t, range(1.0, 4.0; length = 4)) == (a = SVector(1.0, 2.0, 3.0), b = 4.0)
+    t = as((a = asℝ₋, b = as(SMatrix{2,3}), c = asℝ₊))
+    @test dimension(t) == 8
+    @test transform(t, 1:8) == (a = -exp(1), b = SMatrix{2,3}(2:7), c = exp(8))
 end
 
 @testset "as static array" begin

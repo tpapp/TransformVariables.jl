@@ -39,7 +39,8 @@ function _transform end
 function transform_with(flag::LogJacFlag, transformation::AbstractTransformation,
                         x::AbstractVector, index::Int)
     d = dimension(transformation)
-    y, lj = _transform(flag, transformation, view(x, index:(index+d-1)))
+    v = view(x, index:(index+d-1))
+    y, lj = _transform(flag, transformation, v)
     y, lj, index + d
 end
 
