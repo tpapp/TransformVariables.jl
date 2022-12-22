@@ -1,5 +1,6 @@
 using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, UnPack,
-    Random, Test, TransformVariables, StaticArrays, TransformedLogDensities
+    Random, Test, TransformVariables, StaticArrays, TransformedLogDensities,
+    LogDensityProblemsAD
 import Tracker, ForwardDiff
 using LogDensityProblems: logdensity, logdensity_and_gradient
 using TransformVariables:
