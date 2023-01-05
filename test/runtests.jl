@@ -412,7 +412,7 @@ end
 
     # Tests https://github.com/tpapp/TransformVariables.jl/pull/102
     @testset "Enzyme ScaledShifted" begin
-        ss = as(Real, 0.0, 2.0)
+        ss = as(Real, 0.0, 3.0)
         function enzyme(ss, x)
             y, lj = transform_and_logjac(ss, x)
             return -abs2(y) + lj
