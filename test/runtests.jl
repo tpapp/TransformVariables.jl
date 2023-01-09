@@ -1,11 +1,13 @@
 using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, UnPack,
-    Random, Test, TransformVariables, StaticArrays, TransformedLogDensities
+    Random, Test, TransformVariables, StaticArrays, TransformedLogDensities,
+    LogDensityProblemsAD
 import Tracker, ForwardDiff
 using LogDensityProblems: logdensity, logdensity_and_gradient
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
     unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac
 import ChangesOfVariables, InverseFunctions
+using Enzyme: autodiff, Reverse, Active, Const
 
 const CIENV = get(ENV, "CI", "") == "true"
 
@@ -406,6 +408,18 @@ end
         v2, g2 = @inferred logdensity_and_gradient(P2, x)
         @test v2 == v
         @test g2 ≈ g
+    end
+
+    # Tests https://github.com/tpapp/TransformVariables.jl/pull/102
+    @testset "Enzyme ScaledShifted" begin
+        ss = as(Real, 0.0, 3.0)
+        function enzyme(ss, x)
+            y, lj = transform_and_logjac(ss, x)
+            return -abs2(y) + lj
+        end
+        ge = autodiff(enzyme, Const(ss), Active(0.5))
+        g = ForwardDiff.derivative(x->enzyme(ss, x), 0.5)
+        @test g ≈ first(ge)
     end
 end
 
