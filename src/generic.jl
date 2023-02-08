@@ -283,3 +283,11 @@ end
 function inverse(t::VectorTransform, y)
     inverse!(Vector{inverse_eltype(t, y)}(undef, dimension(t)), t, y)
 end
+
+"""
+$(SIGNATURES)
+
+Result size for various transformations. For simplifying the internal API, not exported.
+Return type can be anything, as long as it is consistent.
+"""
+function result_size end

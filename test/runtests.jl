@@ -5,7 +5,7 @@ import Tracker, ForwardDiff
 using LogDensityProblems: logdensity, logdensity_and_gradient
 using LogDensityProblemsAD
 using TransformVariables:
-    AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
+    AbstractTransform, ScalarTransform, VectorTransform, ArrayTransformation,
     unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac
 import ChangesOfVariables, InverseFunctions
 using Enzyme: autodiff, Reverse, Active, Const
@@ -188,7 +188,7 @@ end
 end
 
 @testset "as array fallback" begin
-    is_expected(t, dims) = t isa ArrayTransform && t.transformation == asℝ && t.dims == dims
+    is_expected(t, dims) = t isa ArrayTransformation && t.inner_transformation == asℝ && t.dims == dims
     @test is_expected(as(Array, 2, 3), (2, 3))
     @test is_expected(as(Array, (2, 3)), (2, 3))
     @test is_expected(as(Matrix, 2, 3), (2, 3))
@@ -491,7 +491,7 @@ end
     @test_nowarn @inferred transform_and_logjac(t, x)
 end
 
-@testset "support abstract array inverses in ArrayTransform" begin
+@testset "support abstract array inverses in ArrayTransformation" begin
     t = as(Array, 2, 3)
     @test inverse(t, ones(SMatrix{2,3})) == ones(6)
 end
@@ -603,6 +603,8 @@ end
     y = @inferred transform(t, x)
     @test y isa SArray{S}
     @test y == transform(as(Array, i, 2, 3), x)
+    @test inverse(t, y) ≈ x
+
 end
 
 @testset "static corr cholesky factor" begin
