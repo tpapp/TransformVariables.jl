@@ -212,7 +212,7 @@ $(SIGNATURES)
 Let ``y = t(x)``, and ``f(y)`` a log density at `y`. This function evaluates `f
 ∘ t` as a log density, taking care of the log Jacobian correction.
 """
-function transform_logdensity(t::AbstractTransform, f, x)
+function transform_logdensity(t::AbstractTransform, f::F, x) where F
     y, ℓ = transform_and_logjac(t, x)
     ℓ + f(y)
 end
