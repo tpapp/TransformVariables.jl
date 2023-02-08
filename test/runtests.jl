@@ -594,6 +594,17 @@ end
     @test y isa SArray{S}
 end
 
+@testset "as static array with inner transformation" begin
+    S = Tuple{2,3}
+    i = corr_cholesky_factor(SMatrix{2,2})
+    t = as(SArray{S}, i)
+    @test dimension(t) == dimension(i) * 6
+    x = rand(dimension(t))
+    y = @inferred transform(t, x)
+    @test y isa SArray{S}
+    @test y == transform(as(Array, i, 2, 3), x)
+end
+
 @testset "static corr cholesky factor" begin
     for K in 1:5
         for _ in 1:10

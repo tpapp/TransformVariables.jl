@@ -93,22 +93,33 @@ end
 ####
 
 """
-WIP implementation for static array transformations. Does not support a mapping function (yet).
+Transform into a static array.
 """
-struct AsStaticArray{D,S} <: VectorTransform end
-
-function as(::Type{<:SArray{S}}) where S
-    dim = fieldtypes(S)
-    @argcheck all(x -> x ≥ 1, dim)
-    AsStaticArray{prod(dim),S}()
+struct StaticArrayTransformation{D,S,T} <: VectorTransform
+    inner_transformation::T
 end
 
-dimension(transformation::AsStaticArray{D}) where D = D
+function as(::Type{<:SArray{S}}, inner_transformation = asℝ) where S
+    dim = fieldtypes(S)
+    @argcheck all(x -> x ≥ 1, dim)
+    StaticArrayTransformation{prod(dim),S,typeof(inner_transformation)}(inner_transformation)
+end
 
-function transform_with(flag::LogJacFlag, transformation::AsStaticArray{D,S},
+function dimension(transformation::StaticArrayTransformation{D}) where D
+    D * dimension(transformation.inner_transformation)
+end
+
+function transform_with(flag::LogJacFlag, transformation::StaticArrayTransformation{D,S},
                         x::AbstractVector{T}, index) where {D,S,T}
-    index′ = index + D
-    SArray{S}(@view(x[index:(index′-1)])), logjac_zero(flag, T), index′
+    @unpack inner_transformation = transformation
+    ℓ = logjac_zero(flag, robust_eltype(x))
+    SArray{S}(begin
+                  y, ℓΔ, index′ = transform_with(flag, inner_transformation, x, index)
+                  index = index′
+                  ℓ += ℓΔ
+                  y
+              end
+              for _ in 1:D), ℓ
 end
 
 ####
