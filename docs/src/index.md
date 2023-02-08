@@ -100,6 +100,7 @@ as𝕀
 UnitVector
 UnitSimplex
 CorrCholeskyFactor
+corr_cholesky_factor
 ```
 
 ## Miscellaneous transformations

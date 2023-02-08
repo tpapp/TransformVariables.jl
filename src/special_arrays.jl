@@ -145,6 +145,9 @@ end
 """
     CorrCholeskyFactor(n)
 
+!!! note
+    It is better style to use [`corr_cholesky_factor`](@ref), this will be deprecated.
+
 Cholesky factor of a correlation matrix of size `n`.
 
 Transforms ``n×(n-1)/2`` real numbers to an ``n×n`` upper-triangular matrix `U`, such that
