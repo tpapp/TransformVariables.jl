@@ -56,15 +56,6 @@ end
 #### transformations
 ####
 
-# struct asArrayView{N,S<:NTuple{N,Int}}
-#     dimension::S
-# end
-
-# function as_array_view(dimension::NTuple{N,Int}) where N
-#     @argcheck all(x -> x ≥ 1, dimension)
-#     asArrayView{N,typeof(dimension)}(dimension)
-# end
-
 struct asStaticArray{D,S} <: AbstractTransformation end
 
 function as(::Type{<:SArray{S}}) where S

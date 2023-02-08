@@ -3,6 +3,7 @@ using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, UnPa
     LogDensityProblemsAD
 import Tracker, ForwardDiff
 using LogDensityProblems: logdensity, logdensity_and_gradient
+using LogDensityProblemsAD
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
     unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac
