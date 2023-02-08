@@ -3,10 +3,11 @@ module TransformVariables
 using ArgCheck: @argcheck
 using DocStringExtensions: FUNCTIONNAME, SIGNATURES, TYPEDEF
 import ForwardDiff
+using LogExpFunctions
 using LinearAlgebra: UpperTriangular, logabsdet
 using UnPack: @unpack
 using Random: AbstractRNG, GLOBAL_RNG
-using LogExpFunctions
+using StaticArrays: MMatrix, SMatrix, SArray
 
 import ChangesOfVariables
 import InverseFunctions
@@ -18,7 +19,5 @@ include("special_arrays.jl")
 include("constant.jl")
 include("aggregation.jl")
 include("custom.jl")
-
-include("experimental.jl")
 
 end # module

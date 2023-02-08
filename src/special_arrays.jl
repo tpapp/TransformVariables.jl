@@ -1,4 +1,4 @@
-export UnitVector, UnitSimplex, CorrCholeskyFactor
+export UnitVector, UnitSimplex, CorrCholeskyFactor, corr_cholesky_factor
 
 ####
 #### building blocks
@@ -50,7 +50,7 @@ dimension(t::UnitVector) = t.n - 1
 
 function transform_with(flag::LogJacFlag, t::UnitVector, x::AbstractVector, index)
     @unpack n = t
-    T = extended_eltype(x)
+    T = robust_eltype(x)
     r = one(T)
     y = Vector{T}(undef, n)
     ℓ = logjac_zero(flag, T)
@@ -64,7 +64,7 @@ function transform_with(flag::LogJacFlag, t::UnitVector, x::AbstractVector, inde
     y, ℓ, index
 end
 
-inverse_eltype(t::UnitVector, y::AbstractVector) = extended_eltype(y)
+inverse_eltype(t::UnitVector, y::AbstractVector) = robust_eltype(y)
 
 function inverse_at!(x::AbstractVector, index, t::UnitVector, y::AbstractVector)
     @unpack n = t
@@ -99,7 +99,7 @@ dimension(t::UnitSimplex) = t.n - 1
 
 function transform_with(flag::LogJacFlag, t::UnitSimplex, x::AbstractVector, index)
     @unpack n = t
-    T = extended_eltype(x)
+    T = robust_eltype(x)
 
     ℓ = logjac_zero(flag, T)
     stick = one(T)
@@ -122,7 +122,7 @@ function transform_with(flag::LogJacFlag, t::UnitSimplex, x::AbstractVector, ind
     y, ℓ, index
 end
 
-inverse_eltype(t::UnitSimplex, y::AbstractVector) = extended_eltype(y)
+inverse_eltype(t::UnitSimplex, y::AbstractVector) = robust_eltype(y)
 
 function inverse_at!(x::AbstractVector, index, t::UnitSimplex, y::AbstractVector)
     @unpack n = t
@@ -171,29 +171,80 @@ struct CorrCholeskyFactor <: VectorTransform
     end
 end
 
+"""
+$(SIGNATURES)
+
+Transform into a Cholesky factor of a correlation matrix.
+
+If the argument is a (positive) integer `n`, it determines the size of the output `n × n`,
+resulting in a `Matrix`.
+
+If the argument is `SMatrix{N,N}`, an `SMatrix` is produced.
+"""
+function corr_cholesky_factor(n::Int)
+    @argcheck n ≥ 1 "Dimension should be positive."
+    CorrCholeskyFactor(n)
+end
+
 dimension(t::CorrCholeskyFactor) = unit_triangular_dimension(t.n)
 
-function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor, x::AbstractVector, index)
-    @unpack n = t
-    T = extended_eltype(x)
+"Static version of cholesky correlation factor."
+struct StaticCorrCholeskyFactor{D,S} <: VectorTransform end
+
+function Base.getproperty(::StaticCorrCholeskyFactor{D,S}, key::Symbol) where {D,S}
+    @argcheck key ≡ :n
+    S
+end
+
+function corr_cholesky_factor(::Type{SMatrix{S,S}}) where S
+    D = unit_triangular_dimension(S)
+    StaticCorrCholeskyFactor{D,S}()
+end
+
+dimension(transformation::StaticCorrCholeskyFactor{D}) where D = D
+
+"""
+$(SIGNATURES)
+
+Implementation of Cholesky factor calculation.
+"""
+function calculate_corr_cholesky_factor!(U::AbstractMatrix{T}, flag::LogJacFlag,
+                                          x::AbstractVector, index::Int) where {T<:Real}
+    n = size(U, 1)
     ℓ = logjac_zero(flag, T)
-    U = Matrix{T}(undef, n, n)
-    @inbounds for col in 1:n
+    @inbounds for col_index in 1:n
         r = one(T)
-        for row in 1:(col-1)
+        for row_index in 1:(col_index-1)
             xi = x[index]
-            U[row, col], r, ℓi = l2_remainder_transform(flag, xi, r)
+            U[row_index, col_index], r, ℓi = l2_remainder_transform(flag, xi, r)
             ℓ += ℓi
             index += 1
         end
-        U[col, col] = √r
+        U[col_index, col_index] = √r
     end
-    UpperTriangular(U), ℓ, index
+    U, ℓ, index
 end
 
-inverse_eltype(t::CorrCholeskyFactor, U::UpperTriangular) = extended_eltype(U)
+function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor, x::AbstractVector{T},
+                        index) where T
+    @unpack n = t
+    U, ℓ, index′ = calculate_corr_cholesky_factor!(Matrix{robust_eltype(x)}(undef, n, n),
+                                                    flag, x, index)
+    UpperTriangular(U), ℓ, index′
+end
 
-function inverse_at!(x::AbstractVector, index, t::CorrCholeskyFactor, U::UpperTriangular)
+function transform_with(flag::LogJacFlag, transformation::StaticCorrCholeskyFactor{D,S},
+                        x::AbstractVector{T}, index) where {D,S,T}
+    # NOTE: add an unrolled version for small sizes
+    U, ℓ, index′ = calculate_corr_cholesky_factor!(zero(MMatrix{S,S,robust_eltype(x)}),
+                                                    flag, x, index)
+    UpperTriangular(SMatrix(U)), ℓ, index′
+end
+
+inverse_eltype(t::Union{CorrCholeskyFactor,StaticCorrCholeskyFactor}, U::UpperTriangular) = robust_eltype(U)
+
+function inverse_at!(x::AbstractVector, index,
+                     t::Union{CorrCholeskyFactor,StaticCorrCholeskyFactor}, U::UpperTriangular)
     @unpack n = t
     @argcheck size(U, 1) == n
     @inbounds for col in 1:n

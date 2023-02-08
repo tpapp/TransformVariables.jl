@@ -586,4 +586,25 @@ end
     InverseFunctions.test_inverse(inv_f, 1.7)
 end
 
-include("experimental.jl")
+@testset "as static array" begin
+    S = Tuple{2,3,4}
+    t = as(SArray{S})
+    x = 1:dimension(t)
+    y = @inferred transform(t, x)
+    @test y isa SArray{S}
+end
+
+@testset "static corr cholesky factor" begin
+    for K in 1:5
+        for _ in 1:10
+            t = corr_cholesky_factor(SMatrix{K,K})
+            t2 = corr_cholesky_factor(K)
+            @test dimension(t) == dimension(t2)
+            x = rand(dimension(t))
+            y = @inferred transform(t, x)
+            @test parent(y) isa SMatrix
+            @test y == transform(t2, x)
+            @test inverse(t, y) ≈ x
+        end
+    end
+end

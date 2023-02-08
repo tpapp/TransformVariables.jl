@@ -61,7 +61,7 @@ function transform_with(flag::LogJacFlag, t::ArrayTransform, x, index::T) where 
     len = prod(dims)              # number of elements
     𝐼 = reshape(range(index; length = len, step = d), dims)
     yℓ = map(index -> ((y, ℓ, _) = transform_with(flag, transformation, x, index); (y, ℓ)), 𝐼)
-    ℓz = logjac_zero(flag, extended_eltype(x))
+    ℓz = logjac_zero(flag, robust_eltype(x))
     index′ = index + d * len
     first.(yℓ), isempty(yℓ) ? ℓz : ℓz + sum(last, yℓ), index′
 end
@@ -71,7 +71,7 @@ function transform_with(flag::LogJacFlag, t::ArrayTransform{Identity}, x, index)
     # y = reshape(copy(x), t.dims)
     index′ = index+dimension(t)
     y = reshape(map(identity, x[index:(index′-1)]), t.dims)
-    y, logjac_zero(flag, extended_eltype(x)), index′
+    y, logjac_zero(flag, robust_eltype(x)), index′
 end
 
 function inverse_eltype(t::ArrayTransform, x::AbstractArray)
@@ -86,6 +86,29 @@ function inverse_at!(x::AbstractVector, index, transformation_array::ArrayTransf
         index = inverse_at!(x, index, transformation, elt)
     end
     index
+end
+
+####
+#### static array
+####
+
+"""
+WIP implementation for static array transformations. Does not support a mapping function (yet).
+"""
+struct AsStaticArray{D,S} <: VectorTransform end
+
+function as(::Type{<:SArray{S}}) where S
+    dim = fieldtypes(S)
+    @argcheck all(x -> x ≥ 1, dim)
+    AsStaticArray{prod(dim),S}()
+end
+
+dimension(transformation::AsStaticArray{D}) where D = D
+
+function transform_with(flag::LogJacFlag, transformation::AsStaticArray{D,S},
+                        x::AbstractVector{T}, index) where {D,S,T}
+    index′ = index + D
+    SArray{S}(@view(x[index:(index′-1)])), logjac_zero(flag, T), index′
 end
 
 ####
@@ -158,7 +181,7 @@ Helper function for transforming tuples. Used internally, to help type inference
 `transfom_tuple`.
 """
 _transform_tuple(flag::LogJacFlag, x::AbstractVector, index, ::Tuple{}) =
-    (), logjac_zero(flag, extended_eltype(x)), index
+    (), logjac_zero(flag, robust_eltype(x)), index
 
 function _transform_tuple(flag::LogJacFlag, x::AbstractVector, index, ts)
     tfirst = first(ts)
