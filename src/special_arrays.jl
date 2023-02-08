@@ -188,13 +188,12 @@ end
 
 dimension(t::CorrCholeskyFactor) = unit_triangular_dimension(t.n)
 
+result_size(transformation::CorrCholeskyFactor) = transformation.n
+
 "Static version of cholesky correlation factor."
 struct StaticCorrCholeskyFactor{D,S} <: VectorTransform end
 
-function Base.getproperty(::StaticCorrCholeskyFactor{D,S}, key::Symbol) where {D,S}
-    @argcheck key ≡ :n
-    S
-end
+result_size(::StaticCorrCholeskyFactor{D,S}) where {D,S} = S
 
 function corr_cholesky_factor(::Type{SMatrix{S,S}}) where S
     D = unit_triangular_dimension(S)
@@ -227,7 +226,7 @@ end
 
 function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor, x::AbstractVector{T},
                         index) where T
-    @unpack n = t
+    n = result_size(t)
     U, ℓ, index′ = calculate_corr_cholesky_factor!(Matrix{robust_eltype(x)}(undef, n, n),
                                                     flag, x, index)
     UpperTriangular(U), ℓ, index′
@@ -245,7 +244,7 @@ inverse_eltype(t::Union{CorrCholeskyFactor,StaticCorrCholeskyFactor}, U::UpperTr
 
 function inverse_at!(x::AbstractVector, index,
                      t::Union{CorrCholeskyFactor,StaticCorrCholeskyFactor}, U::UpperTriangular)
-    @unpack n = t
+    n = result_size(t)
     @argcheck size(U, 1) == n
     @inbounds for col in 1:n
         r = one(eltype(U))

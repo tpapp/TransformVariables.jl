@@ -13,15 +13,15 @@ abstract type ScalarTransform <: AbstractTransform end
 
 dimension(::ScalarTransform) = 1
 
-function transform_with(flag::NoLogJac, t::ScalarTransform, x::AbstractVector, index)
+function transform_with(flag::NoLogJac, t::ScalarTransform, x::AbstractVector, index::Int)
     transform(t, @inbounds x[index]), flag, index + 1
 end
 
-function transform_with(::LogJac, t::ScalarTransform, x::AbstractVector, index)
+function transform_with(::LogJac, t::ScalarTransform, x::AbstractVector, index::Int)
     transform_and_logjac(t, @inbounds x[index])..., index + 1
 end
 
-function inverse_at!(x::AbstractVector, index, t::ScalarTransform, y::Real)
+function inverse_at!(x::AbstractVector, index::Int, t::ScalarTransform, y::Real)
     x[index] = inverse(t, y)
     index + 1
 end
