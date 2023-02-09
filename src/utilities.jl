@@ -31,9 +31,9 @@ Extend element type of argument so that it is closed under the algebra used by t
 
 Pessimistic default for non-real types.
 """
-function extended_eltype(::Type{S}) where S
+function robust_eltype(::Type{S}) where S
     T = eltype(S)
     T <: Real ? typeof(√(one(T))) : Any
 end
 
-extended_eltype(x::T) where T = extended_eltype(T)
+robust_eltype(x::T) where T = robust_eltype(T)

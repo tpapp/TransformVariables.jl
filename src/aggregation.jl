@@ -9,12 +9,16 @@ $(TYPEDEF)
 
 Apply `transformation` repeatedly to create an array with given `dims`.
 """
-struct ArrayTransform{T <: AbstractTransform,M} <: VectorTransform
-    transformation::T
+struct ArrayTransformation{T <: AbstractTransform,M} <: VectorTransform
+    inner_transformation::T
     dims::NTuple{M, Int}
 end
 
-dimension(t::ArrayTransform) = dimension(t.transformation) * prod(t.dims)
+function dimension(transformation::ArrayTransformation)
+    dimension(transformation.inner_transformation) * prod(transformation.dims)
+end
+
+result_size(transformation::ArrayTransformation) = transformation.dims
 
 """
     as(Array, [transformation], dims...)
@@ -32,13 +36,15 @@ as(Array, asℝ₊, 2, 3)           # transform to a 2x3 matrix of positive numb
 as(Vector, 3)                   # ℝ³ → ℝ³, identity
 ```
 """
-as(::Type{Array}, transformation::AbstractTransform, dims::Tuple{Vararg{Int}}) =
-    ArrayTransform(transformation, dims)
+function as(::Type{Array}, transformation::AbstractTransform, dims::Tuple{Vararg{Int}})
+    ArrayTransformation(transformation, dims)
+end
 
 as(::Type{Array}, dims::Tuple{Vararg{Int}}) = as(Array, Identity(), dims)
 
-as(::Type{Array}, transformation::AbstractTransform, dims::Int...) =
-    ArrayTransform(transformation, dims)
+function as(::Type{Array}, transformation::AbstractTransform, dims::Int...)
+    ArrayTransformation(transformation, dims)
+end
 
 as(::Type{Array}, dims::Int...) = as(Array, Identity(), dims)
 
@@ -54,36 +60,90 @@ function as(::Type{Matrix}, args...)
     t
 end
 
-function transform_with(flag::LogJacFlag, t::ArrayTransform, x, index::T) where {T}
-    @unpack transformation, dims = t
+function transform_with(flag::LogJacFlag, transformation::ArrayTransformation, x, index::T) where {T}
+    @unpack inner_transformation, dims = transformation
     # NOTE not using index increments as that somehow breaks type inference
-    d = dimension(transformation) # length of an element transformation
+    d = dimension(inner_transformation) # length of an element transformation
     len = prod(dims)              # number of elements
     𝐼 = reshape(range(index; length = len, step = d), dims)
-    yℓ = map(index -> ((y, ℓ, _) = transform_with(flag, transformation, x, index); (y, ℓ)), 𝐼)
-    ℓz = logjac_zero(flag, extended_eltype(x))
+    yℓ = map(index -> ((y, ℓ, _) = transform_with(flag, inner_transformation, x, index); (y, ℓ)), 𝐼)
+    ℓz = logjac_zero(flag, robust_eltype(x))
     index′ = index + d * len
     first.(yℓ), isempty(yℓ) ? ℓz : ℓz + sum(last, yℓ), index′
 end
 
-function transform_with(flag::LogJacFlag, t::ArrayTransform{Identity}, x, index)
+function transform_with(flag::LogJacFlag, t::ArrayTransformation{Identity}, x, index)
     # TODO use version below when https://github.com/FluxML/Flux.jl/issues/416 is fixed
     # y = reshape(copy(x), t.dims)
     index′ = index+dimension(t)
     y = reshape(map(identity, x[index:(index′-1)]), t.dims)
-    y, logjac_zero(flag, extended_eltype(x)), index′
+    y, logjac_zero(flag, robust_eltype(x)), index′
 end
 
-function inverse_eltype(t::ArrayTransform, x::AbstractArray)
-    inverse_eltype(t.transformation, first(x)) # FIXME shortcut
+####
+#### static array
+####
+
+"""
+Transform into a static array.
+"""
+struct StaticArrayTransformation{D,S,T} <: VectorTransform
+    inner_transformation::T
 end
 
-function inverse_at!(x::AbstractVector, index, transformation_array::ArrayTransform,
+"""
+    as(SArray{S}, [inner_transformation])
+
+Return a transformation that applies `inner_transformation` (which defaults to `asℝ`, the
+identity transformation for scalars) repeatedly to create an array with the given dimensions.
+
+`SMatrix` or `SVector` can be used in place of `SArray`, with conforming dimensions.
+
+# Example
+
+```julia
+as(SArray{2,3}, asℝ₊, 2, 3)     # transform to a 2x3 SMatrix of positive numbers
+as(SVector{3})                   # ℝ³ → ℝ³, identity, but an SVector
+```
+"""
+function as(::Type{<:SArray{S}}, inner_transformation = Identity()) where S
+    dim = fieldtypes(S)
+    @argcheck all(x -> x ≥ 1, dim)
+    StaticArrayTransformation{prod(dim),S,typeof(inner_transformation)}(inner_transformation)
+end
+
+function dimension(transformation::StaticArrayTransformation{D}) where D
+    D * dimension(transformation.inner_transformation)
+end
+
+result_size(::StaticArrayTransformation{D,S}) where {D,S} = fieldtypes(S)
+
+function transform_with(flag::LogJacFlag, transformation::StaticArrayTransformation{D,S},
+                        x::AbstractVector{T}, index) where {D,S,T}
+    @unpack inner_transformation = transformation
+    ℓ = logjac_zero(flag, robust_eltype(x))
+    SArray{S}(begin
+                  y, ℓΔ, index′ = transform_with(flag, inner_transformation, x, index)
+                  index = index′
+                  ℓ += ℓΔ
+                  y
+              end
+              for _ in 1:D), ℓ
+end
+
+function inverse_eltype(transformation::Union{ArrayTransformation,StaticArrayTransformation},
+                        x::AbstractArray)
+    inverse_eltype(transformation.inner_transformation, first(x)) # FIXME shortcut
+end
+
+function inverse_at!(x::AbstractVector, index,
+                     transformation::Union{ArrayTransformation,StaticArrayTransformation},
                      y::AbstractArray)
-    @unpack transformation, dims = transformation_array
+    @unpack inner_transformation = transformation
+    dims = result_size(transformation)
     @argcheck size(y) == dims
     for elt in vec(y)
-        index = inverse_at!(x, index, transformation, elt)
+        index = inverse_at!(x, index, inner_transformation, elt)
     end
     index
 end
@@ -158,7 +218,7 @@ Helper function for transforming tuples. Used internally, to help type inference
 `transfom_tuple`.
 """
 _transform_tuple(flag::LogJacFlag, x::AbstractVector, index, ::Tuple{}) =
-    (), logjac_zero(flag, extended_eltype(x)), index
+    (), logjac_zero(flag, robust_eltype(x)), index
 
 function _transform_tuple(flag::LogJacFlag, x::AbstractVector, index, ts)
     tfirst = first(ts)
