@@ -238,9 +238,15 @@ end
 function transform_with(flag::LogJacFlag, transformation::StaticCorrCholeskyFactor{D,S},
                         x::AbstractVector{T}, index) where {D,S,T}
     # NOTE: add an unrolled version for small sizes
-    U, ℓ, index′ = calculate_corr_cholesky_factor!(zero(MMatrix{S,S,robust_eltype(x)}),
-                                                    flag, x, index)
-    UpperTriangular(SMatrix(U)), ℓ, index′
+    E = robust_eltype(x)
+    U = if isbitstype(E)
+        zero(MMatrix{S,S,robust_eltype(x)})
+    else
+        # NOTE: currently allocating because non-bitstype based AD (eg ReverseDiff) does not work with MMatrix
+        zeros(E, S, S)
+    end
+    U, ℓ, index′ = calculate_corr_cholesky_factor!(U, flag, x, index)
+    UpperTriangular(SMatrix{S,S}(U)), ℓ, index′
 end
 
 inverse_eltype(t::Union{CorrCholeskyFactor,StaticCorrCholeskyFactor}, U::UpperTriangular) = robust_eltype(U)

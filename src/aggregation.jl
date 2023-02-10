@@ -128,7 +128,7 @@ function transform_with(flag::LogJacFlag, transformation::StaticArrayTransformat
                   ℓ += ℓΔ
                   y
               end
-              for _ in 1:D), ℓ
+              for _ in 1:D), ℓ, index
 end
 
 function inverse_eltype(transformation::Union{ArrayTransformation,StaticArrayTransformation},
