@@ -11,6 +11,7 @@ using StaticArrays: MMatrix, SMatrix, SArray
 
 import ChangesOfVariables
 import InverseFunctions
+import LogDensityProblems: dimension
 
 include("utilities.jl")
 include("generic.jl")
