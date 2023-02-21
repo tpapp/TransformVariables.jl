@@ -183,7 +183,7 @@ struct CorrCholeskyFactor <: VectorTransform
 end
 
 function _summary_rows(transformation::CorrCholeskyFactor, mime)
-    (; n) = transformation
+    @unpack n = transformation
     _summary_row(transformation, "$(n)×$(n) correlation cholesky factor")
 end
 

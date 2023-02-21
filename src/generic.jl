@@ -331,7 +331,7 @@ function Base.show(io::IO,  mime::MIME"text/plain", transformation::AbstractTran
         print(io, rows[begin].repr, " (dimension $(dimension(transformation)))")
     else
         for (i, row) in enumerate(rows)
-            (; level, indices, repr) = row # could deconstruct above, but bug in Julia 1.6
+            @unpack level, indices, repr = row
             i > 1 && println(io)
             print(io, ' '^(2 * (level - 1)), '[', indices, "] ", repr)
         end
