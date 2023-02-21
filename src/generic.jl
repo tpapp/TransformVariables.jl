@@ -330,7 +330,8 @@ function Base.show(io::IO,  mime::MIME"text/plain", transformation::AbstractTran
     if length(rows) == 1
         print(io, rows[begin].repr, " (dimension $(dimension(transformation)))")
     else
-        for (i, (; level, indices, repr)) in enumerate(rows)
+        for (i, row) in enumerate(rows)
+            (; level, indices, repr) = row # could deconstruct above, but bug in Julia 1.6
             i > 1 && println(io)
             print(io, ' '^(2 * (level - 1)), '[', indices, "] ", repr)
         end
