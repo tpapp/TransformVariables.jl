@@ -291,3 +291,48 @@ Result size for various transformations. For simplifying the internal API, not e
 Return type can be anything, as long as it is consistent.
 """
 function result_size end
+
+####
+#### printing
+####
+
+"""
+$(SIGNATURES)
+
+Utility function to make a single row for [`_summary_rows`](@ref), for transformations
+that just need one.
+"""
+function _summary_row(transformation, repr)
+    [(level = 1, indices = 1:dimension(transformation), repr)]
+end
+
+"""
+$(SIGNATURES)
+
+Return a vector of rows, each consisting of a `NamedTuple` with the following fields:
+
+- `level::Int`, nesting level of that row, starting from `1`,
+- `indices::UnitRange{Int}`, the indices it applies to
+- `repr`, representation relevant for `mime`, usually a string.
+
+Not exported, used to generate displayed output.
+
+!!! note
+    Transformations should define either this method, or `Base.show` when they have a really
+    short name that has trivial indexing (eg scalar transformations).
+"""
+function _summary_rows(transformation::AbstractTransform, mime)
+    _summary_row(transformation, repr(transformation))
+end
+
+function Base.show(io::IO,  mime::MIME"text/plain", transformation::AbstractTransform)
+    rows = _summary_rows(transformation, mime)
+    if length(rows) == 1
+        print(io, rows[begin].repr, " (dimension $(dimension(transformation)))")
+    else
+        for (i, (; level, indices, repr)) in enumerate(rows)
+            i > 1 && println(io)
+            print(io, ' '^(2 * (level - 1)), '[', indices, "] ", repr)
+        end
+    end
+end

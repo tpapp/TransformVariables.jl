@@ -48,6 +48,10 @@ end
 
 dimension(t::UnitVector) = t.n - 1
 
+function _summary_rows(transformation::UnitVector, mime)
+    _summary_row(transformation, "$(transformation.n) element unit vector transformation")
+end
+
 function transform_with(flag::LogJacFlag, t::UnitVector, x::AbstractVector, index)
     @unpack n = t
     T = robust_eltype(x)
@@ -93,6 +97,10 @@ struct UnitSimplex <: VectorTransform
         @argcheck n ≥ 1 "Dimension should be positive."
         new(n)
     end
+end
+
+function _summary_rows(transformation::UnitSimplex, mime)
+    _summary_row(transformation, "$(transformation.n) element unit simplex transformation")
 end
 
 dimension(t::UnitSimplex) = t.n - 1
@@ -174,6 +182,12 @@ struct CorrCholeskyFactor <: VectorTransform
     end
 end
 
+function _summary_rows(transformation::CorrCholeskyFactor, mime)
+    (; n) = transformation
+    _summary_row(transformation, "$(n)×$(n) correlation cholesky factor")
+end
+
+
 """
 $(SIGNATURES)
 
@@ -195,6 +209,11 @@ result_size(transformation::CorrCholeskyFactor) = transformation.n
 
 "Static version of cholesky correlation factor."
 struct StaticCorrCholeskyFactor{D,S} <: VectorTransform end
+
+function _summary_rows(transformation::StaticCorrCholeskyFactor{D,S}, mime) where {D,S}
+    _summary_row(transformation, "SMatrix{$(S),$(S)} correlation cholesky factor")
+end
+
 
 result_size(::StaticCorrCholeskyFactor{D,S}) where {D,S} = S
 
