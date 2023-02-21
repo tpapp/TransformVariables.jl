@@ -328,7 +328,7 @@ end
 function Base.show(io::IO,  mime::MIME"text/plain", transformation::AbstractTransform)
     rows = _summary_rows(transformation, mime)
     if length(rows) == 1
-        print(io, rows[begin].repr, " (dimension $(dimension(transformation)))")
+        print(io, only(rows).repr, " (dimension $(dimension(transformation)))")
     else
         for (i, row) in enumerate(rows)
             @unpack level, indices, repr = row
