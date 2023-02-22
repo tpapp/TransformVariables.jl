@@ -209,7 +209,7 @@ const asℝ = as(Real, -∞, ∞)
 
 const as_real = asℝ
 
-Base.show(io::IO, t::ShiftedExp) =
+function Base.show(io::IO, t::ShiftedExp)
     if t === asℝ₊
         print(io, "asℝ₊")
     elseif t === asℝ₋
@@ -219,12 +219,14 @@ Base.show(io::IO, t::ShiftedExp) =
     else
         print(io, "as(Real, -∞, ", t.shift, ")")
     end
+end
 
-Base.show(io::IO, t::ScaledShiftedLogistic) =
+function Base.show(io::IO, t::ScaledShiftedLogistic)
     if t === as𝕀
         print(io, "as𝕀")
     else
         print(io, "as(Real, ", t.shift, ", ", t.shift + t.scale, ")")
     end
+end
 
 Base.show(io::IO, t::Identity) = print(io, "asℝ")

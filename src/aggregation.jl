@@ -14,6 +14,12 @@ struct ArrayTransformation{T <: AbstractTransform,M} <: VectorTransform
     dims::NTuple{M, Int}
 end
 
+function _summary_rows(transformation::ArrayTransformation, mime)
+    @unpack inner_transformation, dims = transformation
+    _dims = foldr((a,b) -> "$(a)×$(b)", dims, init = repr(mime, inner_transformation))
+    _summary_row(transformation, _dims)
+end
+
 function dimension(transformation::ArrayTransformation)
     dimension(transformation.inner_transformation) * prod(transformation.dims)
 end
@@ -180,6 +186,21 @@ struct TransformTuple{T} <: VectorTransform
                             ) where {N, S <: NTransforms, T <: NamedTuple{N, S}}
         new{T}(transformations, _sum_dimensions(transformations))
     end
+end
+
+function _summary_rows(transformation::TransformTuple, mime)
+    @unpack transformations = transformation
+    repr1 = (transformations isa NamedTuple ? "NamedTuple" : "Tuple" ) * " of transformations"
+    rows = [(level = 1, indices = 1:transformation.dimension, repr = repr1)]
+    _index = 0
+    for (key, t) in pairs(transformations)
+        for row in _summary_rows(t, mime)
+            _repr = row.level == 1 ? (repr(key) * " → " * row.repr) : row.repr
+            push!(rows, (level = row.level + 1, indices = row.indices .+ _index, repr = _repr))
+            _index += dimension(t)
+        end
+    end
+    rows
 end
 
 dimension(tt::TransformTuple) = tt.dimension

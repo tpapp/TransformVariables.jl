@@ -621,3 +621,21 @@ end
         end
     end
 end
+
+@testset "pretty printing" begin
+    t = as((a = asℝ₊,
+            b = as(Array, asℝ₋, 3, 3),
+            c = corr_cholesky_factor(13),
+            d = as((asℝ, corr_cholesky_factor(SMatrix{3,3}), UnitSimplex(3), UnitVector(4)))))
+    repr_t = """
+[1:97] NamedTuple of transformations
+  [1:1] :a → asℝ₊
+  [2:10] :b → 3×3×asℝ₋
+  [11:88] :c → 13×13 correlation cholesky factor
+  [89:97] :d → Tuple of transformations
+    [98:98] 1 → asℝ
+    [108:110] 2 → SMatrix{3,3} correlation cholesky factor
+    [120:121] 3 → 3 element unit simplex transformation
+    [131:133] 4 → 4 element unit vector transformation"""
+    repr(MIME("text/plain"), t) == repr_t
+end
