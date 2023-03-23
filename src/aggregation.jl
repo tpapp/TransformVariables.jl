@@ -16,8 +16,12 @@ end
 
 function _summary_rows(transformation::ArrayTransformation, mime)
     @unpack inner_transformation, dims = transformation
-    _dims = foldr((a,b) -> "$(a)×$(b)", dims, init = repr(mime, inner_transformation))
-    _summary_row(transformation, _dims)
+    _dims = foldr((a,b) -> "$(string(a))×$(string(b))", dims, init = "")
+    rows = _summary_row(transformation, _dims)
+    for row in _summary_rows(inner_transformation, mime)
+        push!(rows, (level = row.level + 1, indices = nothing, repr = row.repr))
+    end
+    rows
 end
 
 function dimension(transformation::ArrayTransformation)
@@ -191,14 +195,15 @@ end
 function _summary_rows(transformation::TransformTuple, mime)
     @unpack transformations = transformation
     repr1 = (transformations isa NamedTuple ? "NamedTuple" : "Tuple" ) * " of transformations"
-    rows = [(level = 1, indices = 1:transformation.dimension, repr = repr1)]
+    rows = _summary_row(transformation, repr1)
     _index = 0
     for (key, t) in pairs(transformations)
         for row in _summary_rows(t, mime)
             _repr = row.level == 1 ? (repr(key) * " → " * row.repr) : row.repr
-            push!(rows, (level = row.level + 1, indices = row.indices .+ _index, repr = _repr))
-            _index += dimension(t)
+            push!(rows, (level = row.level + 1, indices = _offset(row.indices, _index),
+                         repr = _repr))
         end
+        _index += dimension(t)
     end
     rows
 end
