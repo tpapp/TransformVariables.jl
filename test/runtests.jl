@@ -636,6 +636,6 @@ end
 @testset "domain labels" begin
     t = as((a = asℝ₊,
             b = as(Array, asℝ₋, 1, 1),
-            c = corr_cholesky_factor(2))
+            c = corr_cholesky_factor(2)))
     @test [domain_label(t, i) for i in 1:dimension(t)] == [".a", ".b[1,1]", ".c[1]"]
 end
