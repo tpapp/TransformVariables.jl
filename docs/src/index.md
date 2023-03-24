@@ -57,6 +57,10 @@ inverse_eltype
 transform_logdensity
 ```
 
+```@docs
+domain_label
+```
+
 # Defining transformations
 
 ## The `as` constructor and aggregations

@@ -5,7 +5,7 @@ import ForwardDiff
 using LogDensityProblems: logdensity, logdensity_and_gradient
 using LogDensityProblemsAD
 using TransformVariables:
-    AbstractTransform, ScalarTransform, VectorTransform, ArrayTransformation,
+    AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
     unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac
 import ChangesOfVariables, InverseFunctions
 using Enzyme: autodiff, Reverse, Active, Const
@@ -631,4 +631,12 @@ end
     [120:121] 3 → 3 element unit simplex transformation
     [131:133] 4 → 4 element unit vector transformation"""
     repr(MIME("text/plain"), t) == repr_t
+end
+
+@testset "domain labels" begin
+    t = as((a = asℝ₊,
+            b = as(Array, asℝ₋, 1, 1),
+            c = corr_cholesky_factor(2),
+            d = as((asℝ, corr_cholesky_factor(SMatrix{1,1}), UnitSimplex(1), UnitVector(1)))))
+    @test [domain_label(t, i) for i in 1:dimension(t)] == [".a", ".b[1,1]", ".c[1]", ".d[1]"]
 end
