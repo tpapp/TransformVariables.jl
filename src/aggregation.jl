@@ -90,6 +90,22 @@ function transform_with(flag::LogJacFlag, t::ArrayTransformation{Identity}, x, i
     y, logjac_zero(flag, robust_eltype(x)), index′
 end
 
+"""
+$(SIGNATURES)
+
+Implementation of array domain labels, for reuse in the transformations that implement
+variations. Internal, not exported.
+"""
+function _array_domain_label(inner_transformation, dims, index::Int)
+    n, r = divrem(index, dimension(inner_transformation))
+    (Tuple(CartesianIndices(dims)[n]), _domain_label(inner_transformation, r)...)
+end
+
+function _domain_label(transformation::ArrayTransformation, index::Int)
+    @unpack inner_transformation, dims = transformation
+    _array_domain_label(inner_transformation, dims, index)
+end
+
 ####
 #### static array
 ####
@@ -156,6 +172,10 @@ function inverse_at!(x::AbstractVector, index,
         index = inverse_at!(x, index, inner_transformation, elt)
     end
     index
+end
+
+function _domain_label(transformation::StaticArrayTransformation{D}, index::Int) where D
+    _array_domain_label(transformation.inner_transformation, D, index)
 end
 
 ####
@@ -325,4 +345,17 @@ function inverse_at!(x::AbstractVector, index, tt::TransformTuple{<:NamedTuple},
     @unpack transformations = tt
     @argcheck keys(transformations) == keys(y)
     _inverse!_tuple(x, index, values(transformations), values(y))
+end
+
+function _domain_label(t::TransformTuple, index::Int)
+    for (key, inner_transformation) in pairs(t.transformations)
+        d = dimension(inner_transformation)
+        if index ≤ d
+            l = key isa Symbol ? key : (key, )
+            return (l, _domain_label(inner_transformation, index)...)
+        else
+            index -= d
+        end
+    end
+    error("internal error")
 end

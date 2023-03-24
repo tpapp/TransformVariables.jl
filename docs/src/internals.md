@@ -15,7 +15,7 @@ TransformVariables.ShiftedExp
 ### Aggregating transformations
 
 ```@docs
-TransformVariables.ArrayTransform
+TransformVariables.ArrayTransformation
 TransformVariables.TransformTuple
 ```
 

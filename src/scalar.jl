@@ -28,6 +28,8 @@ end
 
 inverse_eltype(t::ScalarTransform, y::T) where {T <: Real} = float(T)
 
+_domain_label(::ScalarTransform, index::Int) = ()
+
 ####
 #### identity
 ####

@@ -1,5 +1,5 @@
 export dimension, transform, transform_and_logjac, transform_logdensity, inverse, inverse!,
-    inverse_eltype, as
+    inverse_eltype, as, domain_label
 
 ###
 ### log absolute Jacobian determinant
@@ -348,4 +348,69 @@ function Base.show(io::IO,  mime::MIME"text/plain", transformation::AbstractTran
             print(io, repr)
         end
     end
+end
+
+####
+#### labels
+####
+
+"""
+$(SIGNATURES)
+
+Return a string that can be used to for identifying a coordinate. Mainly for debugging and
+generating graphs and data summaries.
+
+Transformations may provide a heuristic label.
+
+Transformations should implement [`_domain_label`](@ref).
+
+# Example
+
+```jldoctest
+julia> t = as((a = asℝ₊,
+            b = as(Array, asℝ₋, 1, 1),
+            c = corr_cholesky_factor(2)));
+
+julia> [domain_label(t, i) for i in 1:dimension(t)]
+3-element Vector{String}:
+ ".a"
+ ".b[1,1]"
+ ".c[1]"
+```
+"""
+function domain_label(transformation, index::Integer)
+    @argcheck 1 ≤ index ≤ dimension(transformation)
+    io = IOBuffer()
+    for e in _domain_label(transformation, Int(index))
+        if e isa Symbol
+            print(io, '.', e)
+        elseif e isa Tuple{Vararg{Int}}
+            print(io, '[')
+            join(io, e, ',')
+            print(io, ']')
+        else
+            error("Internal error: invalid label $e")
+        end
+    end
+    String(take!(io))
+end
+
+"""
+$(SIGNATURES)
+
+Internal function for implementing [`domain label`](@ref). Skips bounds checking, returns a
+tuple interpreted as follows:
+
+- tuples of integers are array indices
+- symbols are keys
+
+Transformations should implement this function.
+
+# Implementation note
+
+Returning the semantic parts allows future extensions, eg have `domain_label` format to
+other MIME types.
+"""
+function _domain_label(transformation, index::Int)
+    ((index,), )                   # fall back to a flat index
 end
