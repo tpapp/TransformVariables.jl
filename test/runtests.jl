@@ -5,7 +5,7 @@ import ForwardDiff
 using LogDensityProblems: logdensity, logdensity_and_gradient
 using LogDensityProblemsAD
 using TransformVariables:
-    AbstractTransform, ScalarTransform, VectorTransform, ArrayTransform,
+    AbstractTransform, ScalarTransform, VectorTransform, ArrayTransformation,
     unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac
 import ChangesOfVariables, InverseFunctions
 using Enzyme: autodiff, Reverse, Active, Const
