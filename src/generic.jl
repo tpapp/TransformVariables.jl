@@ -367,12 +367,12 @@ Transformations should implement [`_domain_label`](@ref).
 # Example
 
 ```jldoctest
-> t = as((a = asℝ₊,
+julia> t = as((a = asℝ₊,
             b = as(Array, asℝ₋, 1, 1),
             c = corr_cholesky_factor(2),
             d = as((asℝ, corr_cholesky_factor(SMatrix{1,1}), UnitSimplex(1), UnitVector(1)))));
 
-> [domain_label(t, i) for i in 1:dimension(t)]
+julia> [domain_label(t, i) for i in 1:dimension(t)]
 4-element Vector{String}:
  ".a"
  ".b[1,1]"
