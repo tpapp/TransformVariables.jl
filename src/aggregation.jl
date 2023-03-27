@@ -174,8 +174,8 @@ function inverse_at!(x::AbstractVector, index,
     index
 end
 
-function _domain_label(transformation::StaticArrayTransformation{D}, index::Int) where D
-    _array_domain_label(transformation.inner_transformation, D, index)
+function _domain_label(transformation::StaticArrayTransformation{D,S}, index::Int) where {D,S}
+    _array_domain_label(transformation.inner_transformation, fieldtypes(S), index)
 end
 
 ####
