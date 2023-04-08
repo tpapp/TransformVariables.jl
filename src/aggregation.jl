@@ -145,16 +145,22 @@ end
 result_size(::StaticArrayTransformation{D,S}) where {D,S} = fieldtypes(S)
 
 function transform_with(flag::LogJacFlag, transformation::StaticArrayTransformation{D,S},
-                        x::AbstractVector{T}, index) where {D,S,T}
+                        x::AbstractVector{T}, index::Int) where {D,S,T}
     @unpack inner_transformation = transformation
-    ℓ = logjac_zero(flag, robust_eltype(x))
-    SArray{S}(begin
-                  y, ℓΔ, index′ = transform_with(flag, inner_transformation, x, index)
-                  index = index′
-                  ℓ += ℓΔ
-                  y
-              end
-              for _ in 1:D), ℓ, index
+    # NOTE this is a fix for #112, enforcing types taken from the transformation of the
+    # first element.
+    y1, ℓ1, index1 = transform_with(flag, inner_transformation, x, index)
+    L = typeof(ℓ1)
+    let ℓ::L = ℓ1, index::Int = index1
+        function _f(_)
+            y, ℓΔ, index′ = transform_with(flag, inner_transformation, x, index)
+            index = index′
+            ℓ = ℓ + ℓΔ
+            y
+        end
+        yrest = SVector{D-1}(_f(i) for i in 2:D)
+        SArray{S}(pushfirst(yrest, y1)), ℓ, index
+    end
 end
 
 function inverse_eltype(transformation::Union{ArrayTransformation,StaticArrayTransformation},
