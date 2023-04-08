@@ -6,7 +6,7 @@ using LogDensityProblems: logdensity, logdensity_and_gradient
 using LogDensityProblemsAD
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransformation,
-    unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac
+    unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac, NOLOGJAC, transform_with
 import ChangesOfVariables, InverseFunctions
 using Enzyme: autodiff, Reverse, Active, Const
 
@@ -639,4 +639,8 @@ end
             c = corr_cholesky_factor(2),
             d = as(SVector{2}, asℝ₊)))
     @test [domain_label(t, i) for i in 1:dimension(t)] == [".a", ".b[1,1]", ".c[1]", ".d[1]", ".d[2]"]
+end
+
+@testset "static arrays inference" begin
+    @test @inferred transform_with(NOLOGJAC, as(SVector{3, Float64}), zeros(3), 1) == (SVector(0.0, 0.0, 0.0), NOLOGJAC, 4)
 end
