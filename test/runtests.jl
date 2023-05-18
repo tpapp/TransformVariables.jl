@@ -8,7 +8,7 @@ using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransformation,
     unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac, NOLOGJAC, transform_with
 import ChangesOfVariables, InverseFunctions
-using Enzyme: autodiff, Reverse, Active, Const
+using Enzyme: autodiff, ReverseWithPrimal, Active, Const
 
 const CIENV = get(ENV, "CI", "") == "true"
 
