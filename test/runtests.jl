@@ -1,4 +1,4 @@
-using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, UnPack,
+using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, SimpleUnPack,
     Random, Test, TransformVariables, StaticArrays, TransformedLogDensities,
     LogDensityProblemsAD
 import ForwardDiff
