@@ -1,4 +1,4 @@
-using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, UnPack,
+using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, SimpleUnPack,
     Random, Test, TransformVariables, StaticArrays, TransformedLogDensities,
     LogDensityProblemsAD
 import ForwardDiff
@@ -8,7 +8,7 @@ using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransformation,
     unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac, NOLOGJAC, transform_with
 import ChangesOfVariables, InverseFunctions
-using Enzyme: autodiff, Reverse, Active, Const
+using Enzyme: autodiff, ReverseWithPrimal, Active, Const
 
 const CIENV = get(ENV, "CI", "") == "true"
 
@@ -411,9 +411,9 @@ end
             y, lj = transform_and_logjac(ss, x)
             return -abs2(y) + lj
         end
-        ge = autodiff(enzyme, Const(ss), Active(0.5))
-        g = ForwardDiff.derivative(x->enzyme(ss, x), 0.5)
-        @test g ≈ first(ge)
+        g, _ = autodiff(ReverseWithPrimal, enzyme, Const(ss), Active(0.5))
+        g2 = ForwardDiff.derivative(x -> enzyme(ss, x), 0.5)
+        @test g[2] ≈ g2
     end
 end
 
@@ -643,4 +643,18 @@ end
 
 @testset "static arrays inference" begin
     @test @inferred transform_with(NOLOGJAC, as(SVector{3, Float64}), zeros(3), 1) == (SVector(0.0, 0.0, 0.0), NOLOGJAC, 4)
+end
+
+@testset "view transformations" begin
+    x = randn(10)
+    t = as((a = asℝ, b = as(view, 2, 4), c = asℝ))
+    y, lj = transform_and_logjac(t, x)
+    @test typeof(y.b) <: AbstractMatrix
+    @test size(y.b) == (2, 4)
+    # test inverse
+    @test inverse(t, y) == x
+    # test that it is a view
+    z = y.b[3]
+    y.b[3] += 1
+    @test x[4] == z + 1
 end

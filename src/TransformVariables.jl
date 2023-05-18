@@ -5,9 +5,9 @@ using DocStringExtensions: FUNCTIONNAME, SIGNATURES, TYPEDEF
 import ForwardDiff
 using LogExpFunctions
 using LinearAlgebra: UpperTriangular, logabsdet
-using UnPack: @unpack
 using Random: AbstractRNG, GLOBAL_RNG
 using StaticArrays: MMatrix, SMatrix, SArray, SVector, pushfirst
+using SimpleUnPack: @unpack
 
 import ChangesOfVariables
 import InverseFunctions
