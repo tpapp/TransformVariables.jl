@@ -411,9 +411,9 @@ end
             y, lj = transform_and_logjac(ss, x)
             return -abs2(y) + lj
         end
-        ge = autodiff(enzyme, Const(ss), Active(0.5))
-        g = ForwardDiff.derivative(x->enzyme(ss, x), 0.5)
-        @test g ≈ first(ge)
+        g, _ = autodiff(ReverseWithPrimal, enzyme, Const(ss), Active(0.5))
+        g2 = ForwardDiff.derivative(x -> enzyme(ss, x), 0.5)
+        @test g[2] ≈ g2
     end
 end
 
