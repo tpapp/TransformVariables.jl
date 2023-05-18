@@ -644,3 +644,17 @@ end
 @testset "static arrays inference" begin
     @test @inferred transform_with(NOLOGJAC, as(SVector{3, Float64}), zeros(3), 1) == (SVector(0.0, 0.0, 0.0), NOLOGJAC, 4)
 end
+
+@testset "view transformations" begin
+    x = randn(10)
+    t = as((a = asℝ, b = as(view, 2, 4), c = asℝ))
+    y, lj = transform_and_logjac(t, x)
+    @test typeof(y.b) <: AbstractMatrix
+    @test size(y.b) == (2, 4)
+    # test inverse
+    @test inverse(t, y) == x
+    # test that it is a view
+    z = y.b[3]
+    y.b[3] += 1
+    @test x[4] == z + 1
+end

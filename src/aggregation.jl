@@ -107,6 +107,53 @@ function _domain_label(transformation::ArrayTransformation, index::Int)
 end
 
 ####
+#### array view
+####
+
+"""
+$(TYPEDEF)
+
+View of an array with `dims`.
+
+!!! note
+    This feature is experimental, and not part of the stable API; it may disappear or change without
+    relevant changes in SemVer or deprecations. Inner transformations are not supported.
+"""
+struct ViewTransformation{M} <: VectorTransform
+    dims::NTuple{M, Int}
+end
+
+function as(::typeof(view), dims::Tuple{Vararg{Int}})
+    @argcheck all(d -> d ≥ 0, dims) "All dimensions need to be non-negative."
+    ViewTransformation(dims)
+end
+
+as(::typeof(view), dims::Int...) = as(view, dims)
+
+dimension(transformation::ViewTransformation) = prod(transformation.dims)
+
+function transform_with(flag::LogJacFlag, t::ViewTransformation, x, index)
+    index′ = index + dimension(t)
+    y = reshape(@view(x[index:(index′-1)]), t.dims)
+    y, logjac_zero(flag, robust_eltype(x)), index′
+end
+
+function _domain_label(transformation::ViewTransformation, index::Int)
+    @unpack dims = transformation
+    _array_domain_label(asℝ, dims, index)
+end
+
+inverse_eltype(transformation::ViewTransformation, y) = eltype(y)
+
+function inverse_at!(x::AbstractVector, index, transformation::ViewTransformation,
+                     y::AbstractArray)
+    @argcheck size(y) == transformation.dims
+    index′ = index + dimension(transformation)
+    copy!(@view(x[index:(index′-1)]), vec(y))
+    index′
+end
+
+####
 #### static array
 ####
 
