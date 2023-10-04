@@ -197,6 +197,7 @@ function transform_with(flag::LogJacFlag, transformation::StaticArrayTransformat
     # NOTE this is a fix for #112, enforcing types taken from the transformation of the
     # first element.
     y1, ℓ1, index1 = transform_with(flag, inner_transformation, x, index)
+    D == 1 && return SArray{S}(y1), ℓ1, index1
     L = typeof(ℓ1)
     let ℓ::L = ℓ1, index::Int = index1
         function _f(_)

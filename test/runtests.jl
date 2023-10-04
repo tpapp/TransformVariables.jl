@@ -643,6 +643,7 @@ end
 
 @testset "static arrays inference" begin
     @test @inferred transform_with(NOLOGJAC, as(SVector{3, Float64}), zeros(3), 1) == (SVector(0.0, 0.0, 0.0), NOLOGJAC, 4)
+    @test @inferred transform_with(NOLOGJAC, as(SVector{1, Float64}), zeros(1), 1) == (SVector(0.0), NOLOGJAC, 2)
 end
 
 @testset "view transformations" begin
