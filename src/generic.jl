@@ -362,7 +362,7 @@ generating graphs and data summaries.
 
 Transformations may provide a heuristic label.
 
-Transformations should implement [`_domain_label`](@ref).
+Transformations should implement `_domain_label`.
 
 # Example
 
