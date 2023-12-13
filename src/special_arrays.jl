@@ -5,20 +5,30 @@ export UnitVector, UnitSimplex, CorrCholeskyFactor, corr_cholesky_factor
 ####
 
 """
+$(SIGNATURES)
+
+`log(abs(…))` of the derivative of `tanh`, calculated accurately.
+"""
+function _tanh_logabsderiv(x)
+    d = 2*x
+    log(4) + d - 2 * log1pexp(d)
+end
+
+"""
     (y, r, ℓ) = $SIGNATURES
 
 Given ``x ∈ ℝ`` and ``0 ≤ r ≤ 1``, return `(y, r′)` such that
 
-1. ``y² + r′² = r²``,
+1. ``y² + (r′)² = r²``,
 
 2. ``y: |y| ≤ r`` is mapped with a bijection from `x`.
 
 `ℓ` is the log Jacobian (whether it is evaluated depends on `flag`).
 """
 @inline function l2_remainder_transform(flag::LogJacFlag, x, r)
-    z = 2*logistic(x) - 1
-    (z * √r, r*(1 - abs2(z)),
-     flag isa NoLogJac ? flag : log(2) + logistic_logjac(x) + 0.5*log(r))
+    # note that 1-tanh(x)^2 = sech(x)^2
+    (tanh(x) * √r, r*sech(x)^2,
+     flag isa NoLogJac ? flag : _tanh_logabsderiv(x) + 0.5*log(r))
 end
 
 """
@@ -26,7 +36,7 @@ end
 
 Inverse of [`l2_remainder_transform`](@ref) in `x` and `y`.
 """
-@inline l2_remainder_inverse(y, r) = logit((y/√r+1)/2), r-abs2(y)
+@inline l2_remainder_inverse(y, r) = atanh(y/√r), r-y^2
 
 ####
 #### UnitVector
