@@ -7,28 +7,41 @@ export UnitVector, UnitSimplex, CorrCholeskyFactor, corr_cholesky_factor
 """
 $(SIGNATURES)
 
-`log(abs(…))` of the derivative of `tanh`, calculated accurately.
+Return a `NamedTuple` of
+
+- `log_l2_rem`, for `log(1 - tanh(x)^2)`,
+
+- `logjac`, for `log(abs( ∂(log(abs(tanh(x))) / ∂x ))`
+
+Caller ensures that `x ≥ 0`. `x == 0` is handled correctly, but results in infinities.
 """
-function _tanh_logabsderiv(x)
+function tanh_helpers(x)
     d = 2*x
-    log(4) + d - 2 * log1pexp(d)
+    log_denom = log1pexp(d)             # log(exp(2x) + 1)
+    logjac = log(4) + d - 2 * log_denom # log(ab
+    log_l2_rem = 2*(log(2) + x - log_denom)   # log(2exp(x) / (exp(2x) + 1))
+    (; logjac, log_l2_rem)
 end
 
 """
-    (y, r, ℓ) = $SIGNATURES
+    (y, log_r, ℓ) = $SIGNATURES
 
-Given ``x ∈ ℝ`` and ``0 ≤ r ≤ 1``, return `(y, r′)` such that
+Given ``x ∈ ℝ`` and ``0 ≤ r ≤ 1``, we define `(y, r′)` such that
 
 1. ``y² + (r′)² = r²``,
 
-2. ``y: |y| ≤ r`` is mapped with a bijection from `x`.
+2. ``y: |y| ≤ r`` is mapped with a bijection from `x`, with the sign depending on `x`,
+
+but use `log(r)` for actual calculations so that large `y`s still give nonsingular results.
 
 `ℓ` is the log Jacobian (whether it is evaluated depends on `flag`).
 """
-@inline function l2_remainder_transform(flag::LogJacFlag, x, r)
+@inline function l2_remainder_transform(flag::LogJacFlag, x, log_r)
+    @unpack logjac, log_l2_rem = tanh_helpers(x)
     # note that 1-tanh(x)^2 = sech(x)^2
-    (tanh(x) * √r, r*sech(x)^2,
-     flag isa NoLogJac ? flag : _tanh_logabsderiv(x) + 0.5*log(r))
+    (tanh(x) * exp(log_r / 2),
+     log_r + log_l2_rem,
+     flag isa NoLogJac ? flag : logjac + 0.5*log_r)
 end
 
 """
@@ -36,7 +49,11 @@ end
 
 Inverse of [`l2_remainder_transform`](@ref) in `x` and `y`.
 """
-@inline l2_remainder_inverse(y, r) = atanh(y/√r), r-y^2
+@inline function l2_remainder_inverse(y, log_r)
+    x = atanh(y / exp(log_r / 2))
+    log_r′ = logsubexp(log_r, 2 * log(abs(y)))
+    x, log_r′
+end
 
 ####
 #### UnitVector
@@ -65,16 +82,16 @@ end
 function transform_with(flag::LogJacFlag, t::UnitVector, x::AbstractVector, index)
     @unpack n = t
     T = robust_eltype(x)
-    r = one(T)
+    log_r = zero(T)
     y = Vector{T}(undef, n)
     ℓ = logjac_zero(flag, T)
     @inbounds for i in 1:(n - 1)
         xi = x[index]
         index += 1
-        y[i], r, ℓi = l2_remainder_transform(flag, xi, r)
+        y[i], log_r, ℓi = l2_remainder_transform(flag, xi, log_r)
         ℓ += ℓi
     end
-    y[end] = √r
+    y[end] = exp(log_r / 2)
     y, ℓ, index
 end
 
@@ -83,9 +100,9 @@ inverse_eltype(t::UnitVector, y::AbstractVector) = robust_eltype(y)
 function inverse_at!(x::AbstractVector, index, t::UnitVector, y::AbstractVector)
     @unpack n = t
     @argcheck length(y) == n
-    r = one(eltype(y))
+    log_r = zero(eltype(y))
     @inbounds for yi in axes(y, 1)[1:(end-1)]
-        x[index], r = l2_remainder_inverse(y[yi], r)
+        x[index], log_r = l2_remainder_inverse(y[yi], log_r)
         index += 1
     end
     index
@@ -244,14 +261,14 @@ function calculate_corr_cholesky_factor!(U::AbstractMatrix{T}, flag::LogJacFlag,
     n = size(U, 1)
     ℓ = logjac_zero(flag, T)
     @inbounds for col_index in 1:n
-        r = one(T)
+        log_r = zero(T)
         for row_index in 1:(col_index-1)
             xi = x[index]
-            U[row_index, col_index], r, ℓi = l2_remainder_transform(flag, xi, r)
+            U[row_index, col_index], log_r, ℓi = l2_remainder_transform(flag, xi, log_r)
             ℓ += ℓi
             index += 1
         end
-        U[col_index, col_index] = √r
+        U[col_index, col_index] = exp(log_r / 2)
     end
     U, ℓ, index
 end
@@ -285,9 +302,9 @@ function inverse_at!(x::AbstractVector, index,
     n = result_size(t)
     @argcheck size(U, 1) == n
     @inbounds for col in 1:n
-        r = one(eltype(U))
+        log_r = zero(eltype(U))
         for row in 1:(col-1)
-            x[index], r = l2_remainder_inverse(U[row, col], r)
+            x[index], log_r = l2_remainder_inverse(U[row, col], log_r)
             index += 1
         end
     end

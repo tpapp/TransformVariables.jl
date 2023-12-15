@@ -3,11 +3,12 @@ $(SIGNATURES)
 
 Log jacobian abs determinant via automatic differentiation. For testing.
 """
+AD_logjac(f, x) = log(abs(ForwardDiff.derivative(f, x)))
+
 AD_logjac(t::VectorTransform, x, vec_y) =
     logabsdet(ForwardDiff.jacobian(x -> vec_y(transform(t, x)), x))[1]
 
-AD_logjac(t::ScalarTransform, x) =
-    log(abs(ForwardDiff.derivative(x -> transform(t, x), x)))
+AD_logjac(t::ScalarTransform, x) = AD_logjac(x -> transform(t, x), x)
 
 """
 $(SIGNATURES)
