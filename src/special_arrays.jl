@@ -37,7 +37,7 @@ but use `log(r)` for actual calculations so that large `y`s still give nonsingul
 `ℓ` is the log Jacobian (whether it is evaluated depends on `flag`).
 """
 @inline function l2_remainder_transform(flag::LogJacFlag, x, log_r)
-    (; logjac, log_l2_rem) = tanh_helpers(x)
+    @unpack logjac, log_l2_rem = tanh_helpers(x)
     # note that 1-tanh(x)^2 = sech(x)^2
     (tanh(x) * exp(log_r / 2),
      log_r + log_l2_rem,
