@@ -6,7 +6,8 @@ using LogDensityProblems: logdensity, logdensity_and_gradient
 using LogDensityProblemsAD
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransformation,
-    unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac, NOLOGJAC, transform_with
+    unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac,
+    NOLOGJAC, transform_with
 import ChangesOfVariables, InverseFunctions
 using Enzyme: autodiff, ReverseWithPrimal, Active, Const
 
@@ -136,9 +137,18 @@ end
     end
 end
 
+@testset "tanh helpers" begin
+    for _ in 1:10000
+        x = (rand() - 0.5) * 100
+        @unpack log_l2_rem, logjac =  TransformVariables.tanh_helpers(x)
+        @test Float64(AD_logjac(tanh, BigFloat(x))) ≈ logjac atol = 1e-4
+        @test Float64(log(sech(BigFloat(x))^2)) ≈ log_l2_rem atol = 1e-4
+    end
+end
+
 @testset "to correlation cholesky factor" begin
     @testset "dimension checks" begin
-        C = CorrCholeskyFactor(3)
+        C = corr_cholesky_factor(3)
         wrong_x = zeros(dimension(C) + 1)
 
         @test_throws ArgumentError transform(C, wrong_x)
@@ -147,7 +157,7 @@ end
 
     @testset "consistency checks" begin
         for K in 1:8
-            t = CorrCholeskyFactor(K)
+            t = corr_cholesky_factor(K)
             @test dimension(t) == (K - 1)*K/2
             CIENV && @info "testing correlation cholesky K = $(K)"
             if K > 1
@@ -612,6 +622,15 @@ end
             @test y == transform(t2, x)
             @test inverse(t, y) ≈ x
         end
+    end
+end
+
+@testset "corr cholesky factor large inputs" begin
+    t = corr_cholesky_factor(7)
+    d = dimension(t)
+    for _ in 1:100
+        x = sign.(rand(d) .- 0.5) .* 100
+        @test isfinite(logdet(transform(t, x)) )
     end
 end
 
