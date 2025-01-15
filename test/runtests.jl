@@ -316,6 +316,16 @@ end
     @test x ≈ x′
 end
 
+@testset "different order and superset of NamedTuple" begin
+    # test for #100
+    t = as((a = asℝ, b = asℝ))
+    @test @inferred(inverse(t, (a = 1.0, b = 2.0))) == [1.0, 2.0]
+    @test @inferred(inverse(t, (b = 2.0, a = 1.0))) == [1.0, 2.0]
+    @test_throws ArgumentError inverse(t, (; a = 1.0))
+    @test_throws ArgumentError inverse(t, (a = 1.0, b = 2.0, c = 3.0))
+    @test_throws ArgumentError inverse(t, (a = 1.0, c = 2.0))
+end
+
 ####
 #### log density correctness checks
 ####

@@ -391,14 +391,18 @@ end
 
 function inverse_eltype(tt::TransformTuple{<:NamedTuple}, y::NamedTuple)
     @unpack transformations = tt
-    @argcheck keys(transformations) == keys(y)
-    _inverse_eltype_tuple(values(transformations), values(y))
+    @argcheck _same_set_of_names(transformations, y)
+    _inverse_eltype_tuple(values(transformations), values(NamedTuple{keys(transformations)}(y)))
 end
 
 function inverse_at!(x::AbstractVector, index, tt::TransformTuple{<:NamedTuple}, y::NamedTuple)
     @unpack transformations = tt
-    @argcheck keys(transformations) == keys(y)
-    _inverse!_tuple(x, index, values(transformations), values(y))
+    @argcheck _same_set_of_names(transformations, y)
+    _inverse!_tuple(x, index, values(transformations), values(NamedTuple{keys(transformations)}(y)))
+end
+
+function _same_set_of_names(x::NamedTuple, y::NamedTuple)
+    return length(x) == length(y) && Base.structdiff(x, y) === (;)
 end
 
 function _domain_label(t::TransformTuple, index::Int)
