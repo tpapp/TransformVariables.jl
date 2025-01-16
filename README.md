@@ -13,9 +13,4 @@ Successor of [ContinuousTransformations.jl](https://github.com/tpapp/ContinuousT
 - Simple interface.
 - Fast implementation, unrolling when it makes sense.
 - Targeted to applications in statistics, mainly [ML](https://en.wikipedia.org/wiki/Maximum_likelihood), [MAP](https://en.wikipedia.org/wiki/Maximum_a_posteriori_estimation), and Bayesian inference.
-- Take advantage of Julia v0.7 features, especially named tuples and compiler optimizations.
 
-## Caveat
-
-- **Work in progress.** API will change rapidly, without warning.
-- Expect speed regressions until API is finalized.
