@@ -37,7 +37,7 @@ but use `log(r)` for actual calculations so that large `y`s still give nonsingul
 `ℓ` is the log Jacobian (whether it is evaluated depends on `flag`).
 """
 @inline function l2_remainder_transform(flag::LogJacFlag, x, log_r)
-    @unpack logjac, log_l2_rem = tanh_helpers(x)
+    (; logjac, log_l2_rem) = tanh_helpers(x)
     # note that 1-tanh(x)^2 = sech(x)^2
     (tanh(x) * exp(log_r / 2),
      log_r + log_l2_rem,
@@ -80,7 +80,7 @@ function _summary_rows(transformation::UnitVector, mime)
 end
 
 function transform_with(flag::LogJacFlag, t::UnitVector, x::AbstractVector, index)
-    @unpack n = t
+    (; n) = t
     T = robust_eltype(x)
     log_r = zero(T)
     y = Vector{T}(undef, n)
@@ -98,7 +98,7 @@ end
 inverse_eltype(t::UnitVector, y::AbstractVector) = robust_eltype(y)
 
 function inverse_at!(x::AbstractVector, index, t::UnitVector, y::AbstractVector)
-    @unpack n = t
+    (; n) = t
     @argcheck length(y) == n
     log_r = zero(eltype(y))
     @inbounds for yi in axes(y, 1)[1:(end-1)]
@@ -133,7 +133,7 @@ end
 dimension(t::UnitSimplex) = t.n - 1
 
 function transform_with(flag::LogJacFlag, t::UnitSimplex, x::AbstractVector, index)
-    @unpack n = t
+    (; n) = t
     T = robust_eltype(x)
 
     ℓ = logjac_zero(flag, T)
@@ -160,7 +160,7 @@ end
 inverse_eltype(t::UnitSimplex, y::AbstractVector) = robust_eltype(y)
 
 function inverse_at!(x::AbstractVector, index, t::UnitSimplex, y::AbstractVector)
-    @unpack n = t
+    (; n) = t
     @argcheck length(y) == n
 
     stick = one(eltype(y))
@@ -210,7 +210,7 @@ struct CorrCholeskyFactor <: VectorTransform
 end
 
 function _summary_rows(transformation::CorrCholeskyFactor, mime)
-    @unpack n = transformation
+    (; n) = transformation
     _summary_row(transformation, "$(n)×$(n) correlation cholesky factor")
 end
 

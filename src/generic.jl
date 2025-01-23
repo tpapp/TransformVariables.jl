@@ -341,7 +341,7 @@ function Base.show(io::IO,  mime::MIME"text/plain", transformation::AbstractTran
         print(io, only(rows).repr, " (dimension $(dimension(transformation)))")
     else
         for (i, row) in enumerate(rows)
-            @unpack level, indices, repr = row
+            (; level, indices, repr) = row
             i > 1 && println(io)
             print(io, ' '^(2 * (level - 1)))
             indices ≢ nothing && print(io, '[', indices, "] ")

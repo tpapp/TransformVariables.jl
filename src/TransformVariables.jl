@@ -7,7 +7,6 @@ using LogExpFunctions
 using LinearAlgebra: UpperTriangular, logabsdet
 using Random: AbstractRNG, GLOBAL_RNG
 using StaticArrays: MMatrix, SMatrix, SArray, SVector, pushfirst
-using SimpleUnPack: @unpack
 
 import ChangesOfVariables
 import InverseFunctions

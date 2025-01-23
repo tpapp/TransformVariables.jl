@@ -1,6 +1,5 @@
-using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, SimpleUnPack,
-    Random, Test, TransformVariables, StaticArrays, TransformedLogDensities,
-    LogDensityProblemsAD
+using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, Random, Test,
+    TransformVariables, StaticArrays, TransformedLogDensities, LogDensityProblemsAD
 import ForwardDiff
 using LogDensityProblems: logdensity, logdensity_and_gradient
 using LogDensityProblemsAD
@@ -140,7 +139,7 @@ end
 @testset "tanh helpers" begin
     for _ in 1:10000
         x = (rand() - 0.5) * 100
-        @unpack log_l2_rem, logjac =  TransformVariables.tanh_helpers(x)
+        (; log_l2_rem, logjac) =  TransformVariables.tanh_helpers(x)
         @test Float64(AD_logjac(tanh, BigFloat(x))) ≈ logjac atol = 1e-4
         @test Float64(log(sech(BigFloat(x))^2)) ≈ log_l2_rem atol = 1e-4
     end
@@ -405,7 +404,7 @@ end
             u = UnitVector(3), L = CorrCholeskyFactor(4),
             δ = as((asℝ₋, as𝕀))))
     function f(θ)
-        @unpack μ, σ, β, α, δ = θ
+        (; μ, σ, β, α, δ) = θ
         -(abs2(μ) + abs2(σ) + abs2(β) + α + δ[1] + δ[2])
     end
     P = TransformedLogDensities.TransformedLogDensity(t, f)
@@ -452,7 +451,7 @@ end
 #         # NOTE tests simplified disabled as they currently fail
 #         t = as((μ = asℝ, ))
 #         function f(θ)
-#             @unpack μ = θ
+#             (; μ) = θ
 #             -(abs2(μ))
 #         end
 #         P = TransformedLogDensity(t, f)
