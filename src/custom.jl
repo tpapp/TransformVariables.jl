@@ -75,12 +75,12 @@ CustomTransform(n::Integer, f, flatten; kwargs...) =
 dimension(t::CustomTransform) = dimension(t.g)
 
 function transform_with(flag::NoLogJac, t::CustomTransform, x::AbstractVector, index)
-    @unpack g, f = t
+    (; g, f) = t
     f(first(transform_with(flag, g, x, index))), flag, index + dimension(t)
 end
 
 function transform_with(flag::LogJac, t::CustomTransform, x::AbstractVector, index)
-    @unpack g, f, flatten, cfg = t
+    (; g, f, flatten, cfg) = t
     index = firstindex(x)
     index′ = index + dimension(g)
     y, ℓ = value_and_logjac_forwarddiff(_custom_f(g, f), x[index:(index′ - 1)];

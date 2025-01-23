@@ -15,7 +15,7 @@ struct ArrayTransformation{T <: AbstractTransform,M} <: VectorTransform
 end
 
 function _summary_rows(transformation::ArrayTransformation, mime)
-    @unpack inner_transformation, dims = transformation
+    (; inner_transformation, dims) = transformation
     _dims = foldr((a,b) -> "$(string(a))×$(string(b))", dims, init = "")
     rows = _summary_row(transformation, _dims)
     for row in _summary_rows(inner_transformation, mime)
@@ -71,7 +71,7 @@ function as(::Type{Matrix}, args...)
 end
 
 function transform_with(flag::LogJacFlag, transformation::ArrayTransformation, x, index::T) where {T}
-    @unpack inner_transformation, dims = transformation
+    (; inner_transformation, dims) = transformation
     # NOTE not using index increments as that somehow breaks type inference
     d = dimension(inner_transformation) # length of an element transformation
     len = prod(dims)              # number of elements
@@ -102,7 +102,7 @@ function _array_domain_label(inner_transformation, dims, index::Int)
 end
 
 function _domain_label(transformation::ArrayTransformation, index::Int)
-    @unpack inner_transformation, dims = transformation
+    (; inner_transformation, dims) = transformation
     _array_domain_label(inner_transformation, dims, index)
 end
 
@@ -139,7 +139,7 @@ function transform_with(flag::LogJacFlag, t::ViewTransformation, x, index)
 end
 
 function _domain_label(transformation::ViewTransformation, index::Int)
-    @unpack dims = transformation
+    (; dims) = transformation
     _array_domain_label(asℝ, dims, index)
 end
 
@@ -193,7 +193,7 @@ result_size(::StaticArrayTransformation{D,S}) where {D,S} = fieldtypes(S)
 
 function transform_with(flag::LogJacFlag, transformation::StaticArrayTransformation{D,S},
                         x::AbstractVector{T}, index::Int) where {D,S,T}
-    @unpack inner_transformation = transformation
+    (; inner_transformation) = transformation
     # NOTE this is a fix for #112, enforcing types taken from the transformation of the
     # first element.
     y1, ℓ1, index1 = transform_with(flag, inner_transformation, x, index)
@@ -219,7 +219,7 @@ end
 function inverse_at!(x::AbstractVector, index,
                      transformation::Union{ArrayTransformation,StaticArrayTransformation},
                      y::AbstractArray)
-    @unpack inner_transformation = transformation
+    (; inner_transformation) = transformation
     dims = result_size(transformation)
     @argcheck size(y) == dims
     for elt in vec(y)
@@ -267,7 +267,7 @@ struct TransformTuple{T} <: VectorTransform
 end
 
 function _summary_rows(transformation::TransformTuple, mime)
-    @unpack transformations = transformation
+    (; transformations) = transformation
     repr1 = (transformations isa NamedTuple ? "NamedTuple" : "Tuple" ) * " of transformations"
     rows = _summary_row(transformation, repr1)
     _index = 0
@@ -369,13 +369,13 @@ function transform_with(flag::LogJacFlag, tt::TransformTuple{<:Tuple}, x, index)
 end
 
 function inverse_eltype(tt::TransformTuple{<:Tuple}, y::Tuple)
-    @unpack transformations = tt
+    (; transformations) = tt
     @argcheck length(transformations) == length(y)
     _inverse_eltype_tuple(transformations, y)
 end
 
 function inverse_at!(x::AbstractVector, index, tt::TransformTuple{<:Tuple}, y::Tuple)
-    @unpack transformations = tt
+    (; transformations) = tt
     @argcheck length(transformations) == length(y)
     _inverse!_tuple(x, index, tt.transformations, y)
 end
@@ -384,19 +384,19 @@ as(transformations::NamedTuple{N,<:NTransforms}) where N =
     TransformTuple(transformations)
 
 function transform_with(flag::LogJacFlag, tt::TransformTuple{<:NamedTuple}, x, index)
-    @unpack transformations = tt
+    (; transformations) = tt
     y, ℓ, index′ = transform_tuple(flag, values(transformations), x, index)
     NamedTuple{keys(transformations)}(y), ℓ, index′
 end
 
 function inverse_eltype(tt::TransformTuple{<:NamedTuple}, y::NamedTuple)
-    @unpack transformations = tt
+    (; transformations) = tt
     @argcheck _same_set_of_names(transformations, y)
     _inverse_eltype_tuple(values(transformations), values(NamedTuple{keys(transformations)}(y)))
 end
 
 function inverse_at!(x::AbstractVector, index, tt::TransformTuple{<:NamedTuple}, y::NamedTuple)
-    @unpack transformations = tt
+    (; transformations) = tt
     @argcheck _same_set_of_names(transformations, y)
     _inverse!_tuple(x, index, values(transformations), values(NamedTuple{keys(transformations)}(y)))
 end

@@ -73,7 +73,7 @@ transform(t::ShiftedExp{D}, x::Real) where D =
 transform_and_logjac(t::ShiftedExp, x::Real) = transform(t, x), x
 
 function inverse(t::ShiftedExp{D}, x::Real) where D
-    @unpack shift = t
+    (; shift) = t
     if D
         @argcheck x > shift DomainError
         log(x - shift)

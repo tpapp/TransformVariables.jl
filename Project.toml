@@ -1,7 +1,7 @@
 name = "TransformVariables"
 uuid = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
-version = "0.8.11"
+version = "0.9.0"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
@@ -12,7 +12,6 @@ InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 LogExpFunctions = "2ab3a3ac-af41-5b50-aa03-7779005ae688"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
-SimpleUnPack = "ce78b400-467f-4804-87d8-8f486da07d0a"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
@@ -24,6 +23,5 @@ InverseFunctions = "0.1"
 LinearAlgebra = "1.6"
 LogExpFunctions = "0.3"
 Random = "1.6"
-SimpleUnPack = "1"
 StaticArrays = "1"
-julia = "1.6"
+julia = "1.10"
