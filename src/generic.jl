@@ -125,6 +125,8 @@ transform(t, x) == transform(t)(x)
 """
 function transform end
 
+transform(t::AbstractTransform) = Base.Fix1(transform, t)
+
 """
 $(TYPEDEF)
 
@@ -137,9 +139,25 @@ function Base.show(io::IO, f::CallableTransform)
     print(io, "callable for the transformation ", f.x)
 end
 
-transform(t) = Base.Fix1(transform, t)
+inverse(f::CallableTransform) = Base.Fix1(inverse, f.x)
+InverseFunctions.inverse(f::CallableTransform) = inverse(f)
 
 ChangesOfVariables.with_logabsdet_jacobian(f::CallableTransform, x) = transform_and_logjac(f.x, x)
+
+"""
+`$(FUNCTIONNAME)(t, y)`
+
+Return `x` so that `transform(t, x) ≈ y`.
+
+`$(FUNCTIONNAME)(t)`
+
+Return a callable equivalent to `y -> inverse(t, y)`. `t` can also be a callable created
+with transform, so the following holds:
+```julia
+inverse(t)(y) == inverse(t, y) == inverse(transform(t))(y)
+```
+"""
+inverse(t::AbstractTransform) = Base.Fix1(inverse, t)
 
 """
 $(TYPEDEF)
@@ -156,27 +174,7 @@ end
 inverse(f::CallableInverse) = Base.Fix1(transform, f.x)
 InverseFunctions.inverse(f::CallableInverse) = inverse(f)
 
-inverse(f::CallableTransform) = Base.Fix1(inverse, f.x)
-InverseFunctions.inverse(f::CallableTransform) = inverse(f)
-
 ChangesOfVariables.with_logabsdet_jacobian(f::CallableInverse, x) = inverse_and_logjac(f.x, x)
-
-"""
-`$(FUNCTIONNAME)(t, y)`
-
-Return `x` so that `transform(t, x) ≈ y`.
-
-`$(FUNCTIONNAME)(t)`
-
-Return a callable equivalent to `y -> inverse(t, y)`. `t` can also be a callable created
-with transform, so the following holds:
-```julia
-inverse(t)(y) == inverse(t, y) == inverse(transform(t))(y)
-```
-"""
-inverse(t::AbstractTransform) = CallableInverse(t)
-
-(f::CallableInverse)(y) = inverse(f.t, y)
 
 """
 `$(FUNCTIONNAME)(t::AbstractTransform, y)`
