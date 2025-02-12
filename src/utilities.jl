@@ -4,7 +4,7 @@
 
 function logistic_logjac(x::Real)
     mx = -abs(x)
-    mx - 2*log1p(exp(mx))
+    mx - 2*log1pexp(mx)
 end
 
 logit_logjac(y) = -log(y) - log1p(-y)
