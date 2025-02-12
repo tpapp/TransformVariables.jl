@@ -8,9 +8,6 @@ using LinearAlgebra: UpperTriangular, logabsdet
 using Random: AbstractRNG, GLOBAL_RNG
 using StaticArrays: MMatrix, SMatrix, SArray, SVector, pushfirst
 
-import ChangesOfVariables
-import InverseFunctions
-
 include("utilities.jl")
 include("generic.jl")
 include("scalar.jl")
