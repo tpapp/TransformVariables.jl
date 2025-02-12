@@ -140,9 +140,6 @@ function Base.show(io::IO, f::CallableTransform)
 end
 
 inverse(f::CallableTransform) = Base.Fix1(inverse, f.x)
-InverseFunctions.inverse(f::CallableTransform) = inverse(f)
-
-ChangesOfVariables.with_logabsdet_jacobian(f::CallableTransform, x) = transform_and_logjac(f.x, x)
 
 """
 `$(FUNCTIONNAME)(t, y)`
@@ -172,9 +169,6 @@ function Base.show(io::IO, f::CallableInverse)
 end
 
 inverse(f::CallableInverse) = Base.Fix1(transform, f.x)
-InverseFunctions.inverse(f::CallableInverse) = inverse(f)
-
-ChangesOfVariables.with_logabsdet_jacobian(f::CallableInverse, x) = inverse_and_logjac(f.x, x)
 
 """
 `$(FUNCTIONNAME)(t::AbstractTransform, y)`
