@@ -131,19 +131,15 @@ $(TYPEDEF)
 Partial application of `transform(t, x)`, callable with `x`. Use `transform(t)` to
 construct.
 """
-struct CallableTransform{T}
-    t::T
-end
-
-(f::CallableTransform)(x) = transform(f.t, x)
+const CallableTransform{T} = Base.Fix1{typeof(transform),T<:AbstractTransform}
 
 function Base.show(io::IO, f::CallableTransform)
-    print(io, "callable for the transformation $(f.t)")
+    print(io, "callable for the transformation ", f.x)
 end
 
-transform(t) = CallableTransform(t)
+transform(t) = Base.Fix1(transform, t)
 
-ChangesOfVariables.with_logabsdet_jacobian(f::CallableTransform, x) = transform_and_logjac(f.t, x)
+ChangesOfVariables.with_logabsdet_jacobian(f::CallableTransform, x) = transform_and_logjac(f.x, x)
 
 """
 $(TYPEDEF)
@@ -151,21 +147,19 @@ $(TYPEDEF)
 Partial application of `inverse(t, y)`, callable with `y`. Use `inverse(t)` to
 construct.
 """
-struct CallableInverse{T}
-    t::T
-end
+const CallableInverse{T} = Base.Fix1{typeof(inverse),T<:AbstractTransform}
 
 function Base.show(io::IO, f::CallableInverse)
-    print(io, "callable inverse for the transformation $(f.t)")
+    print(io, "callable inverse for the transformation ", f.x)
 end
 
-inverse(f::CallableInverse) = CallableTransform(f.t)
-InverseFunctions.inverse(f::CallableInverse) = CallableTransform(f.t)
+inverse(f::CallableInverse) = Base.Fix1(transform, f.x)
+InverseFunctions.inverse(f::CallableInverse) = inverse(f)
 
-inverse(f::CallableTransform) = CallableInverse(f.t)
-InverseFunctions.inverse(f::CallableTransform) = CallableInverse(f.t)
+inverse(f::CallableTransform) = Base.Fix1(inverse, f.x)
+InverseFunctions.inverse(f::CallableTransform) = inverse(f)
 
-ChangesOfVariables.with_logabsdet_jacobian(f::CallableInverse, x) = inverse_and_logjac(f.t, x)
+ChangesOfVariables.with_logabsdet_jacobian(f::CallableInverse, x) = inverse_and_logjac(f.x, x)
 
 """
 `$(FUNCTIONNAME)(t, y)`
