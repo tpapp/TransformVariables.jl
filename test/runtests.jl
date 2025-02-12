@@ -583,8 +583,8 @@ end
 
 @testset "ChangesOfVariables" begin
     t = as(Real, 1.0, 3.0)
-    f = TransformVariables.CallableTransform(t)
-    inv_f = TransformVariables.CallableInverse(t)
+    f = transform(t)
+    inv_f = inverse(t)
     ChangesOfVariables.test_with_logabsdet_jacobian(f, -4.2, ForwardDiff.derivative)
     ChangesOfVariables.test_with_logabsdet_jacobian(inv_f, 1.7, ForwardDiff.derivative)
 end
@@ -592,8 +592,8 @@ end
 
 @testset "InverseFunctions" begin
     t = as(Real, 1.0, 3.0)
-    f = TransformVariables.CallableTransform(t)
-    inv_f = TransformVariables.CallableInverse(t)
+    f = transform(t)
+    inv_f = inverse(t)
     InverseFunctions.test_inverse(f, -4.2)
     InverseFunctions.test_inverse(inv_f, 1.7)
 end

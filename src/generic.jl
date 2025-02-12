@@ -125,41 +125,21 @@ transform(t, x) == transform(t)(x)
 """
 function transform end
 
+transform(t::AbstractTransform) = Base.Fix1(transform, t)
+
 """
 $(TYPEDEF)
 
 Partial application of `transform(t, x)`, callable with `x`. Use `transform(t)` to
 construct.
 """
-struct CallableTransform{T}
-    t::T
-end
-
-(f::CallableTransform)(x) = transform(f.t, x)
+const CallableTransform{T} = Base.Fix1{typeof(transform),T} where {T<:AbstractTransform}
 
 function Base.show(io::IO, f::CallableTransform)
-    print(io, "callable for the transformation $(f.t)")
+    print(io, "callable for the transformation ", f.x)
 end
 
-transform(t) = CallableTransform(t)
-
-"""
-$(TYPEDEF)
-
-Partial application of `inverse(t, y)`, callable with `y`. Use `inverse(t)` to
-construct.
-"""
-struct CallableInverse{T}
-    t::T
-end
-
-function Base.show(io::IO, f::CallableInverse)
-    print(io, "callable inverse for the transformation $(f.t)")
-end
-
-inverse(f::CallableInverse) = CallableTransform(f.t)
-
-inverse(f::CallableTransform) = CallableInverse(f.t)
+inverse(f::CallableTransform) = Base.Fix1(inverse, f.x)
 
 """
 `$(FUNCTIONNAME)(t, y)`
@@ -174,9 +154,21 @@ with transform, so the following holds:
 inverse(t)(y) == inverse(t, y) == inverse(transform(t))(y)
 ```
 """
-inverse(t::AbstractTransform) = CallableInverse(t)
+inverse(t::AbstractTransform) = Base.Fix1(inverse, t)
 
-(f::CallableInverse)(y) = inverse(f.t, y)
+"""
+$(TYPEDEF)
+
+Partial application of `inverse(t, y)`, callable with `y`. Use `inverse(t)` to
+construct.
+"""
+const CallableInverse{T} = Base.Fix1{typeof(inverse),T} where {T<:AbstractTransform}
+
+function Base.show(io::IO, f::CallableInverse)
+    print(io, "callable inverse for the transformation ", f.x)
+end
+
+inverse(f::CallableInverse) = Base.Fix1(transform, f.x)
 
 """
 `$(FUNCTIONNAME)(t::AbstractTransform, y)`
