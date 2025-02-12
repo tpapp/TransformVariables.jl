@@ -131,7 +131,7 @@ $(TYPEDEF)
 Partial application of `transform(t, x)`, callable with `x`. Use `transform(t)` to
 construct.
 """
-const CallableTransform{T} = Base.Fix1{typeof(transform),T<:AbstractTransform}
+const CallableTransform{T} = Base.Fix1{typeof(transform),T} where {T<:AbstractTransform}
 
 function Base.show(io::IO, f::CallableTransform)
     print(io, "callable for the transformation ", f.x)
@@ -147,7 +147,7 @@ $(TYPEDEF)
 Partial application of `inverse(t, y)`, callable with `y`. Use `inverse(t)` to
 construct.
 """
-const CallableInverse{T} = Base.Fix1{typeof(inverse),T<:AbstractTransform}
+const CallableInverse{T} = Base.Fix1{typeof(inverse),T} where {T<:AbstractTransform}
 
 function Base.show(io::IO, f::CallableInverse)
     print(io, "callable inverse for the transformation ", f.x)
