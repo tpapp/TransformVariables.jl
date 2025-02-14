@@ -7,7 +7,7 @@ using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransformation,
     unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac,
     NOLOGJAC, transform_with
-import ChangesOfVariables, InverseFunctions
+import ChangesOfVariables, InverseFunctions, Unitful
 using Enzyme: autodiff, ReverseWithPrimal, Active, Const
 
 const CIENV = get(ENV, "CI", "") == "true"
@@ -15,6 +15,26 @@ const CIENV = get(ENV, "CI", "") == "true"
 include("utilities.jl")
 
 Random.seed!(1)
+
+@testset "Unitful" begin
+    t = as(Real, 0.0u"s", 2u"hr")
+    f = transform(t)
+    inv_f = inverse(t)
+    InverseFunctions.test_inverse(f, -4.2)
+    InverseFunctions.test_inverse(inv_f, 50u"s")
+
+    t = as(Real, -1.0u"s", ∞)
+    f = transform(t)
+    inv_f = inverse(t)
+    InverseFunctions.test_inverse(f, -4.2)
+    InverseFunctions.test_inverse(inv_f, 50u"s")
+
+    t = as(Real, -∞, 1.0u"s")
+    f = transform(t)
+    inv_f = inverse(t)
+    InverseFunctions.test_inverse(f, -4.2)
+    InverseFunctions.test_inverse(inv_f, -50u"s")
+end
 
 ####
 #### utilities
@@ -597,6 +617,7 @@ end
     InverseFunctions.test_inverse(f, -4.2)
     InverseFunctions.test_inverse(inv_f, 1.7)
 end
+
 
 @testset "as static array" begin
     S = Tuple{2,3,4}
