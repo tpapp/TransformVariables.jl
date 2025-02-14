@@ -7,7 +7,8 @@ using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransformation,
     unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac,
     NOLOGJAC, transform_with
-import ChangesOfVariables, InverseFunctions, Unitful
+import ChangesOfVariables, InverseFunctions
+import Unitful: @u_str, ustrip
 using Enzyme: autodiff, ReverseWithPrimal, Active, Const
 
 const CIENV = get(ENV, "CI", "") == "true"
@@ -15,26 +16,6 @@ const CIENV = get(ENV, "CI", "") == "true"
 include("utilities.jl")
 
 Random.seed!(1)
-
-@testset "Unitful" begin
-    t = as(Real, 0.0u"s", 2u"hr")
-    f = transform(t)
-    inv_f = inverse(t)
-    InverseFunctions.test_inverse(f, -4.2)
-    InverseFunctions.test_inverse(inv_f, 50u"s")
-
-    t = as(Real, -1.0u"s", ∞)
-    f = transform(t)
-    inv_f = inverse(t)
-    InverseFunctions.test_inverse(f, -4.2)
-    InverseFunctions.test_inverse(inv_f, 50u"s")
-
-    t = as(Real, -∞, 1.0u"s")
-    f = transform(t)
-    inv_f = inverse(t)
-    InverseFunctions.test_inverse(f, -4.2)
-    InverseFunctions.test_inverse(inv_f, -50u"s")
-end
 
 ####
 #### utilities
@@ -617,6 +598,45 @@ end
     InverseFunctions.test_inverse(f, -4.2)
     InverseFunctions.test_inverse(inv_f, 1.7)
 end
+
+@testset "Unitful" begin
+    @testset "finite" begin
+        t = as(Real, 0.0u"s", 2u"hr")
+        f = transform(t)
+        inv_f = inverse(t)
+        q = transform(t, 1.0)
+        @test ustrip(u"s", q) > 0
+        @test_throws DomainError inverse(t, -1.0u"s")
+        @test_throws DomainError inverse(t, 3u"hr")
+        InverseFunctions.test_inverse(f, -4.2)
+        InverseFunctions.test_inverse(inv_f, 1.7u"s")
+    end
+
+    @testset "positive real" begin
+        t = as(Real, -1.0u"s", ∞)
+        f = transform(t)
+        inv_f = inverse(t)
+        q = transform(t, 1.0)
+        @test q ≈ exp(1.0)*u"s" - 1.0u"s"
+        @test ustrip(u"s", q) > -1
+        @test_throws DomainError inverse(t, -2.0u"s")
+        InverseFunctions.test_inverse(f, -4.2)
+        InverseFunctions.test_inverse(inv_f, 1.7u"s")
+    end
+
+    @testset "negative real" begin
+        t = as(Real, -∞, 1.0u"s")
+        f = transform(t)
+        inv_f = inverse(t)
+        q = transform(t, 2.0)
+        @test q ≈ -exp(2.0)*u"s" + 1.0u"s"
+        @test ustrip(u"s", q) < 1
+        @test_throws DomainError inverse(t, 2.0u"s")
+        InverseFunctions.test_inverse(f, -4.2)
+        InverseFunctions.test_inverse(inv_f, -1.7u"s")
+    end
+end
+
 
 
 @testset "as static array" begin

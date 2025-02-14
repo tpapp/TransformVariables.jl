@@ -3,7 +3,7 @@ module UnitfulExt
 using ArgCheck: @argcheck
 using DocStringExtensions: FUNCTIONNAME, SIGNATURES, TYPEDEF
 using LogExpFunctions: logistic, logit
-import Unitful: Quantity, Units, ustrip
+import Unitful: Quantity, Units, ustrip, NoUnits
 import TransformVariables: ScalarTransform, transform, transform_and_logjac, inverse, as, Infinity, asℝ₊
 
 
@@ -78,7 +78,7 @@ transform(t::DimScaledShiftedLogistic, x::Real) = muladd(logistic(x), t.scale, t
 function inverse(t::DimScaledShiftedLogistic{Quantity{N,D,U}}, y) where {N,D,U}
     @argcheck y > t.shift           DomainError
     @argcheck y < t.scale + t.shift DomainError
-    logit(ustrip(U(), (y - t.shift)/t.scale))
+    logit(ustrip(NoUnits, (y - t.shift)/t.scale))
 end
 
 # NOTE: not sure if or how this should be defined, since units.
@@ -100,5 +100,6 @@ as(::Type{Real}, left::Quantity, ::Infinity{true}) = DimShiftedExp(true, left)
 as(::Type{Real}, ::Infinity{false}, right::Quantity) = DimShiftedExp(false, right)
 
 Base.:(*)(a::typeof(asℝ₊), u::Units) = as(Real, 0.0*u, Infinity{true}())
+Base.:(*)(a::typeof(asℝ₋), u::Units) = as(Real, Infinity{false}(), 0.0*u)
 
 end # module
