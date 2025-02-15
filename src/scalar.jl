@@ -6,8 +6,8 @@ $(TYPEDEF)
 
 Transform a scalar (real number) to another scalar.
 
-Subtypes mustdefine `transform`, `transform_and_logjac`, and `inverse`; other
-methods of of the interface should have the right defaults.
+Subtypes must define `transform`, `transform_and_logjac`, and `inverse`.
+Other methods of of the interface should have the right defaults.
 """
 abstract type ScalarTransform <: AbstractTransform end
 
@@ -26,7 +26,7 @@ function inverse_at!(x::AbstractVector, index::Int, t::ScalarTransform, y::Real)
     index + 1
 end
 
-inverse_eltype(t::ScalarTransform, y::T) where {T <: Real} = float(T)
+inverse_eltype(t::ScalarTransform, y::Real) = typeof(inverse(t, y))
 
 _domain_label(::ScalarTransform, index::Int) = ()
 
