@@ -26,7 +26,9 @@ function inverse_at!(x::AbstractVector, index::Int, t::ScalarTransform, y::Real)
     index + 1
 end
 
-inverse_eltype(t::ScalarTransform, y::Real) = typeof(inverse(t, y))
+function inverse_eltype(t::ScalarTransform, y::Real)
+    return Base.promote_typejoin_union(Base.promote_op(inverse, typeof(t), typeof(y)))
+end
 
 _domain_label(::ScalarTransform, index::Int) = ()
 
