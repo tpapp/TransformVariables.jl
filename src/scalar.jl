@@ -8,6 +8,9 @@ Transform a scalar (real number) to another scalar.
 
 Subtypes must define `transform`, `transform_and_logjac`, and `inverse`.
 Other methods of of the interface should have the right defaults.
+
+!!! NOTE
+    This type is for code organization within the package, and is not part of the public API.
 """
 abstract type ScalarTransform <: AbstractTransform end
 
@@ -27,6 +30,8 @@ function inverse_at!(x::AbstractVector, index::Int, t::ScalarTransform, y::Real)
 end
 
 function inverse_eltype(t::ScalarTransform, y::Real)
+    # NOTE this is a shortcut to get sensible types for all subtypes of ScalarTransform, which
+    # we test for. If it breaks it should be extended accordingly.
     return Base.promote_typejoin_union(Base.promote_op(inverse, typeof(t), typeof(y)))
 end
 
