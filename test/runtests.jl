@@ -699,3 +699,34 @@ end
     U = transform(t, x)
     @test isfinite(logabsdet(U)[1])
 end
+
+@testset "inverse_eltype of scalar transforms with parameters" begin
+    # `Float64` parameters and `Float32` input
+    for t in (as(Real, 0.5, ∞), as(Real, -∞, 2.1), as(Real, 0.5, 2.1))
+        @test @inferred(inverse_eltype(t, 1.1f0)) === Float64
+        @test @inferred(inverse(t, 1.1f0)) isa Float64
+    end
+
+    # Derivatives wrt parameters of the transforms
+    d1 = ForwardDiff.derivative(5.3) do x
+        return @inferred only(inverse(as(Vector, as(Real, x, ∞), 1), [10]))
+    end
+    d2 = ForwardDiff.derivative(5.3) do x
+        return @inferred inverse(as(Real, x, ∞), 10)
+    end
+    @test d1 == d2
+    d1 = ForwardDiff.derivative(-3) do x
+        return @inferred only(inverse(as(Vector, as(Real, -∞, x), 1), [-6.1]))
+    end
+    d2 = ForwardDiff.derivative(-3) do x
+        return @inferred inverse(as(Real, -∞, x), -6.1)
+    end
+    @test d1 == d2
+    d1 = ForwardDiff.gradient([-0.3, 4.7]) do x
+        return @inferred only(inverse(as(Vector, as(Real, x[1], x[2]), 1), [2.3]))
+    end
+    d2 = ForwardDiff.gradient([-0.3, 4.7]) do x
+        return @inferred inverse(as(Real, x[1], x[2]), 2.3)
+    end
+    @test d1 == d2
+end
