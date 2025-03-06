@@ -126,6 +126,9 @@ function transform_and_logjac(ts::CompositeScalarTransform, x)
 end
 
 Base.∘(t::ScalarTransform, s::ScalarTransform) = CompositeScalarTransform((t, s))
+Base.∘(t::ScalarTransform, ct::CompositeScalarTransform) = CompositeScalarTransform((t, ct.transforms...))
+Base.∘(ct::CompositeScalarTransform, t::ScalarTransform) = CompositeScalarTransform((ct.transforms..., t))
+Base.∘(ct1::CompositeScalarTransform, ct2::CompositeScalarTransform) = CompositeScalarTransform((ct1.transforms..., ct2.transforms...))
 Base.∘(t::ScalarTransform, tt::Vararg{ScalarTransform}) = CompositeScalarTransform((t, tt...))
 
 
