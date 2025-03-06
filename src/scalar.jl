@@ -55,6 +55,77 @@ transform_and_logjac(::Identity, x::Real) = x, zero(x)
 inverse(::Identity, x::Real) = x
 
 ####
+#### composite scalar transforms
+####
+"""
+$(TYPEDEF)
+
+A composite scalar transformation, i.e. a sequence of scalar transformations.
+"""
+struct CompositeScalarTransform{Ts <: Tuple} <: ScalarTransform
+    transforms::Ts
+end
+
+transform(t::CompositeScalarTransform, x) = foldr((t, x) -> transform(t, x), t.transforms, init=x)
+function transform_and_logjac(ts::CompositeScalarTransform, x) 
+    logjac = zero(x)
+    for t in ts[end:begin]
+        nx, nlogjac = transform_and_logjac(t, x)
+        x = nx
+        logjac += nlogjac
+    end
+    return x, logjac
+end
+
+####
+#### elementary scalar transforms
+####
+
+"""
+$(TYPEDEF)
+
+Exponential transformation `x ↦ eˣ`. Maps from all reals to the positive reals.
+"""
+struct Exp <: ScalarTransform 
+end
+transform(::Exp, x::Real) = exp(x)
+transform_and_logjac(::Exp, x::Real) = transform(Exp(), x), x
+
+"""
+$(TYPEDEF)
+
+Logistic transformation `x ↦ logit(x)`. Maps from all reals to (0, 1).
+"""
+struct Logistic <: ScalarTransform
+end
+transform(::Logistic, x::Real) = logit(x)
+transform_and_logjac(::Logistic, x::Real) = transform(Logistic(), x), logit_logjac(x)
+
+"""
+$(TYPEDEF)
+
+Shift transformation `x ↦ x + shift`. 
+"""
+struct Shift{T <: Real} <: ScalarTransform
+    shift::T
+end
+transform(t::Shift, x::Real) = x + t.shift
+transform_and_logjac(t::Shift, x::Real) = transform(t, x), zero(x)
+
+"""
+$(TYPEDEF)
+
+Scale transformation `x ↦ scale * x`.
+"""
+struct Scale{T <: Real} <: ScalarTransform
+    scale::T
+end
+
+transform(t::Scale, x::Real) = t.scale * x
+transform_and_logjac(t::Scale, x::Real) = transform(t, x), log(abs(t.scale)) #???? need to think about this abs
+
+
+####
 #### shifted exponential
 ####
 
