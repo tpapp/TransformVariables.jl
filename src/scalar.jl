@@ -54,28 +54,6 @@ transform_and_logjac(::Identity, x::Real) = x, zero(x)
 
 inverse(::Identity, x::Real) = x
 
-####
-#### composite scalar transforms
-####
-"""
-$(TYPEDEF)
-
-A composite scalar transformation, i.e. a sequence of scalar transformations.
-"""
-struct CompositeScalarTransform{Ts <: Tuple} <: ScalarTransform
-    transforms::Ts
-end
-
-transform(t::CompositeScalarTransform, x) = foldr((t, x) -> transform(t, x), t.transforms, init=x)
-function transform_and_logjac(ts::CompositeScalarTransform, x) 
-    logjac = zero(x)
-    for t in ts[end:begin]
-        nx, nlogjac = transform_and_logjac(t, x)
-        x = nx
-        logjac += nlogjac
-    end
-    return x, logjac
-end
 
 ####
 #### elementary scalar transforms
@@ -123,6 +101,32 @@ end
 
 transform(t::Scale, x::Real) = t.scale * x
 transform_and_logjac(t::Scale, x::Real) = transform(t, x), log(abs(t.scale)) #???? need to think about this abs
+
+####
+#### composite scalar transforms
+####
+"""
+$(TYPEDEF)
+
+A composite scalar transformation, i.e. a sequence of scalar transformations.
+"""
+struct CompositeScalarTransform{Ts <: Tuple} <: ScalarTransform
+    transforms::Ts
+end
+
+transform(t::CompositeScalarTransform, x) = foldr((t, x) -> transform(t, x), t.transforms, init=x)
+function transform_and_logjac(ts::CompositeScalarTransform, x) 
+    logjac = zero(x)
+    for t in ts[end:begin]
+        nx, nlogjac = transform_and_logjac(t, x)
+        x = nx
+        logjac += nlogjac
+    end
+    return x, logjac
+end
+
+Base.∘(t::ScalarTransform, s::ScalarTransform) = CompositeScalarTransform((t, s))
+Base.∘(t::ScalarTransform, tt::Vararg{ScalarTransform}) = CompositeScalarTransform((t, tt...))
 
 
 ####
