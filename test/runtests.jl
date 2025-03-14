@@ -53,6 +53,13 @@ end
         test_transformation(as(Real, a, ∞), y -> y > a)
         b = a + 0.5 + rand(Float64) + exp(randn() * 10)
         test_transformation(as(Real, a, b), y -> a < y < b)
+
+        posexp = TVShift(a) ∘ TVExp()
+        negexp = TVShift(a) ∘ TVScale(-1) ∘ TVExp()
+        finite = TVShift(a) ∘ TVScale(b-a) ∘ TVLogistic()
+        test_transformation(posexp, y -> y > a)
+        test_transformation(negexp, y -> y < a)
+        test_transformation(finite, y -> a < y < b)
     end
     test_transformation(as(Real, -∞, ∞), _ -> true)
 end
