@@ -64,10 +64,10 @@ $(TYPEDEF)
 
 Exponential transformation `x ↦ eˣ`. Maps from all reals to the positive reals.
 """
-struct Exp <: ScalarTransform 
+struct TVExp <: ScalarTransform 
 end
-transform(::Exp, x::Real) = exp(x)
-transform_and_logjac(::Exp, x::Real) = transform(Exp(), x), x
+transform(::TVExp, x::Real) = exp(x)
+transform_and_logjac(::TVExp, x::Real) = transform(TVExp(), x), x
 
 """
 $(TYPEDEF)
@@ -84,23 +84,23 @@ $(TYPEDEF)
 
 Shift transformation `x ↦ x + shift`. 
 """
-struct Shift{T <: Real} <: ScalarTransform
+struct TVShift{T <: Real} <: ScalarTransform
     shift::T
 end
-transform(t::Shift, x::Real) = x + t.shift
-transform_and_logjac(t::Shift, x::Real) = transform(t, x), zero(x)
+transform(t::TVShift, x::Real) = x + t.shift
+transform_and_logjac(t::TVShift, x::Real) = transform(t, x), zero(x)
 
 """
 $(TYPEDEF)
 
 Scale transformation `x ↦ scale * x`.
 """
-struct Scale{T <: Real} <: ScalarTransform
+struct TVScale{T <: Real} <: ScalarTransform
     scale::T
 end
 
-transform(t::Scale, x::Real) = t.scale * x
-transform_and_logjac(t::Scale, x::Real) = transform(t, x), log(abs(t.scale)) #???? need to think about this abs
+transform(t::TVScale, x::Real) = t.scale * x
+transform_and_logjac(t::TVScale, x::Real) = transform(t, x), log(abs(t.scale)) #???? need to think about this abs
 
 ####
 #### composite scalar transforms
