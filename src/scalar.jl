@@ -1,3 +1,4 @@
+export TVExp, TVScale, TVShift
 export ∞, asℝ, asℝ₊, asℝ₋, as𝕀, as_real, as_positive_real, as_negative_real,
     as_unit_interval
 
