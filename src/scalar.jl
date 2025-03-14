@@ -1,4 +1,4 @@
-export TVExp, TVScale, TVShift
+export TVExp, TVScale, TVShift, TVLogistic
 export ∞, asℝ, asℝ₊, asℝ₋, as𝕀, as_real, as_positive_real, as_negative_real,
     as_unit_interval
 
@@ -75,10 +75,10 @@ $(TYPEDEF)
 
 Logistic transformation `x ↦ logit(x)`. Maps from all reals to (0, 1).
 """
-struct Logistic <: ScalarTransform
+struct TVLogistic <: ScalarTransform
 end
-transform(::Logistic, x::Real) = logit(x)
-transform_and_logjac(::Logistic, x::Real) = transform(Logistic(), x), logit_logjac(x)
+transform(::TVLogistic, x::Real) = logit(x)
+transform_and_logjac(::TVLogistic, x::Real) = transform(TVLogistic(), x), logit_logjac(x)
 
 """
 $(TYPEDEF)
