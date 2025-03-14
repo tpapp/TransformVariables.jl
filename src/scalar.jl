@@ -77,8 +77,8 @@ Logistic transformation `x ↦ logit(x)`. Maps from all reals to (0, 1).
 """
 struct TVLogistic <: ScalarTransform
 end
-transform(::TVLogistic, x::Real) = logit(x)
-transform_and_logjac(::TVLogistic, x::Real) = transform(TVLogistic(), x), logit_logjac(x)
+transform(::TVLogistic, x::Real) = logistic(x)
+transform_and_logjac(::TVLogistic, x::Real) = transform(TVLogistic(), x), logistic_logjac(x)
 
 """
 $(TYPEDEF)
