@@ -70,6 +70,11 @@ end
 transform(::TVExp, x::Real) = exp(x)
 transform_and_logjac(::TVExp, x::Real) = transform(TVExp(), x), x
 
+function inverse(::TVExp, x::Real)
+    @argcheck x > 0 DomainError
+    log(x)
+end
+
 """
 $(TYPEDEF)
 
@@ -79,6 +84,11 @@ struct TVLogistic <: ScalarTransform
 end
 transform(::TVLogistic, x::Real) = logistic(x)
 transform_and_logjac(::TVLogistic, x::Real) = transform(TVLogistic(), x), logistic_logjac(x)
+
+function inverse(::TVLogistic, x::Real)
+    @argcheck 0 < x < 1 DomainError
+    logit(x)
+end
 
 """
 $(TYPEDEF)
@@ -91,6 +101,8 @@ end
 transform(t::TVShift, x::Real) = x + t.shift
 transform_and_logjac(t::TVShift, x::Real) = transform(t, x), zero(x)
 
+inverse(t::TVShift, x::Real) = x - t.shift
+
 """
 $(TYPEDEF)
 
@@ -102,6 +114,8 @@ end
 
 transform(t::TVScale, x::Real) = t.scale * x
 transform_and_logjac(t::TVScale, x::Real) = transform(t, x), log(abs(t.scale)) #???? need to think about this abs
+
+inverse(t::TVScale, x::Real) = x / t.scale
 
 ####
 #### composite scalar transforms
@@ -119,7 +133,7 @@ Base.getindex(t::CompositeScalarTransform, i) = t.transforms[i]
 Base.firstindex(t::CompositeScalarTransform) = firstindex(t.transforms)
 Base.lastindex(t::CompositeScalarTransform) = lastindex(t.transforms)
 
-transform(t::CompositeScalarTransform, x) = foldr((t, x) -> transform(t, x), t.transforms, init=x)
+transform(t::CompositeScalarTransform, x) = foldr((t, y) -> transform(t, y), t.transforms, init=x)
 function transform_and_logjac(ts::CompositeScalarTransform, x) 
     foldr(ts.transforms, init=(x, zero(x))) do t, (x, logjac)
         nx, nlogjac = transform_and_logjac(t, x)
@@ -128,6 +142,8 @@ function transform_and_logjac(ts::CompositeScalarTransform, x)
         (x, logjac)
     end
 end
+
+inverse(ts::CompositeScalarTransform, x) = foldl((y, t) -> inverse(t, y), ts.transforms, init=x)
 
 Base.:∘(t::ScalarTransform, s::ScalarTransform) = CompositeScalarTransform((t, s))
 Base.:∘(t::ScalarTransform, ct::CompositeScalarTransform) = CompositeScalarTransform((t, ct.transforms...))
