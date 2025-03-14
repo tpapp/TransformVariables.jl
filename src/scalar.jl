@@ -115,6 +115,10 @@ struct CompositeScalarTransform{Ts <: Tuple} <: ScalarTransform
     transforms::Ts
 end
 
+Base.getindex(t::CompositeScalarTransform, i) = t.transforms[i]
+Base.firstindex(t::CompositeScalarTransform) = lastindex(t.transforms)
+Base.lastindex(t::CompositeScalarTransform) = lastindex(t.transforms)
+
 transform(t::CompositeScalarTransform, x) = foldr((t, x) -> transform(t, x), t.transforms, init=x)
 function transform_and_logjac(ts::CompositeScalarTransform, x) 
     logjac = zero(x)
