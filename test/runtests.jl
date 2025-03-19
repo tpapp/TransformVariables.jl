@@ -64,6 +64,23 @@ end
     test_transformation(as(Real, -∞, ∞), _ -> true)
 end
 
+@testset "composite scalar transformations" begin
+    all_transforms = [TVShift(3.0), TVScale(2.0), TVExp(), TVLogistic(), TVNeg(), 
+        as(Real, 1.0, 3.0), as(Real, 5.0, ∞), as(Real, -∞, 4.5)]
+    for t1 in all_transforms
+        for t2 in all_transforms
+            for t3 in all_transforms
+                t = t1 ∘ t2 ∘ t3
+                @test t isa TransformVariables.CompositeScalarTransform
+                # x = randn()
+                # y = transform(t, x)
+                # x2 = inverse(t, y)
+                # @test x ≈ x2
+            end
+        end
+    end
+end
+
 @testset "scalar transformation corner cases" begin
     @test_throws ArgumentError as(Real, "a fish", 9)
     @test as(Real, 1, 4.0) == as(Real, 1.0, 4.0)
