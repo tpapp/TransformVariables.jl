@@ -55,7 +55,7 @@ end
         test_transformation(as(Real, a, b), y -> a < y < b)
 
         posexp = TVShift(a) ∘ TVExp()
-        negexp = TVShift(a) ∘ TVScale(-1) ∘ TVExp()
+        negexp = TVShift(a) ∘ TVNeg() ∘ TVExp()
         finite = TVShift(a) ∘ TVScale(b-a) ∘ TVLogistic()
         test_transformation(posexp, y -> y > a)
         test_transformation(negexp, y -> y < a)

@@ -1,4 +1,4 @@
-export TVExp, TVScale, TVShift, TVLogistic
+export TVExp, TVScale, TVShift, TVLogistic, TVNeg
 export ∞, asℝ, asℝ₊, asℝ₋, as𝕀, as_real, as_positive_real, as_negative_real,
     as_unit_interval
 
@@ -110,12 +110,30 @@ Scale transformation `x ↦ scale * x`.
 """
 struct TVScale{T <: Real} <: ScalarTransform
     scale::T
+    function TVScale{T}(scale::T) where {T <: Real}
+        @argcheck scale > 0 DomainError
+        new(scale)
+    end
 end
+TVScale(scale::T) where {T<:Real} = TVScale{T}(scale)
 
 transform(t::TVScale, x::Real) = t.scale * x
-transform_and_logjac(t::TVScale, x::Real) = transform(t, x), log(abs(t.scale)) #???? need to think about this abs
+transform_and_logjac(t::TVScale, x::Real) = transform(t, x), log(t.scale) 
 
 inverse(t::TVScale, x::Real) = x / t.scale
+
+"""
+$(TYPEDEF)
+
+Negative transformation `x ↦ -x`.
+"""
+struct TVNeg <: ScalarTransform
+end
+
+transform(::TVNeg, x::Real) = -x
+transform_and_logjac(t::TVNeg, x::Real) = transform(t, x), zero(x)
+
+inverse(::TVNeg, x::Real) = -x
 
 ####
 #### composite scalar transforms
