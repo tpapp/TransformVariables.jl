@@ -71,7 +71,8 @@ end
         for t2 in all_transforms
             for t3 in all_transforms
                 t = t1 ∘ t2 ∘ t3
-                @test t isa TransformVariables.CompositeScalarTransform
+                @test t isa TransformVariables.CompositeScalarTransform{Tuple{typeof(t1), typeof(t2), typeof(t3)}}
+                @test t ∘ t isa TransformVariables.CompositeScalarTransform{Tuple{typeof(t1), typeof(t2), typeof(t3), typeof(t1), typeof(t2), typeof(t3)}}
                 # x = randn()
                 # y = transform(t, x)
                 # x2 = inverse(t, y)
