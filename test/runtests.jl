@@ -66,18 +66,25 @@ end
 
 @testset "composite scalar transformations" begin
     all_transforms = [TVShift(3.0), TVScale(2.0), TVExp(), TVLogistic(), TVNeg(), 
-        as(Real, 1.0, 3.0), as(Real, 5.0, ∞), as(Real, -∞, 4.5)]
+        as(Real, 1.0, 3.0), as(Real, -5.0, ∞), as(Real, -∞, 4.5)]
     for t1 in all_transforms
         for t2 in all_transforms
             for t3 in all_transforms
                 t = t1 ∘ t2 ∘ t3
                 @test t isa TransformVariables.CompositeScalarTransform{Tuple{typeof(t1), typeof(t2), typeof(t3)}}
                 @test t ∘ t isa TransformVariables.CompositeScalarTransform{Tuple{typeof(t1), typeof(t2), typeof(t3), typeof(t1), typeof(t2), typeof(t3)}}
-                # x = randn()
-                # y = transform(t, x)
-                # x2 = inverse(t, y)
-                # @test x ≈ x2
             end
+        end
+    end
+end
+
+@testset "semiarbitrary compositions" begin
+    same_domain_transforms = [TVShift(3.0), TVScale(2.0), TVNeg()]
+    new_domain_transforms = [TVExp(), TVLogistic(), as(Real, 1.0, 3.0), as(Real, -5.0, ∞), as(Real, -∞, 4.5)]
+    for s1 in same_domain_transforms, s2 in same_domain_transforms, n in new_domain_transforms
+        for s3 in same_domain_transforms, s4 in same_domain_transforms
+            # don't worry about valid output here, let inverse check that
+            test_transformation(s1 ∘ s2 ∘ n ∘ s3 ∘ s4, _ -> true; N=5) 
         end
     end
 end
