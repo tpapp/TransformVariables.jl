@@ -347,6 +347,30 @@ const asℝ = as(Real, -∞, ∞)
 
 const as_real = asℝ
 
+function Base.show(io::IO, ct::CompositeScalarTransform)
+    # if ct === asℝ₋
+    #     print(io, "asℝ₋")
+    # else
+        str = string(ct.transforms[1])
+        for ti in ct.transforms[begin+1:end]
+            str *= " ∘ "*string(ti)
+        end
+        print(io, str)
+    # end
+end
+function Base.show(io::IO, t::TVScale)
+    print(io, "TVScale(", t.scale, ")")
+end
+function Base.show(io::IO, t::TVShift)
+    print(io, "TVShift(", t.shift, ")")
+end
+# function Base.show(io::IO, ::TVExp)
+#     print(io, "asℝ₊")
+# end
+# function Base.show(io::IO, ::TVLogistic)
+#     print(io, "as𝕀")
+# end
+
 function Base.show(io::IO, t::ShiftedExp)
     if t === asℝ₊
         print(io, "asℝ₊")
