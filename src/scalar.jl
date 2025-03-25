@@ -302,13 +302,13 @@ as(::Type{Real}, left, right) =
 
 as(::Type{Real}, ::Infinity{false}, ::Infinity{true}) = Identity()
 
-as(::Type{Real}, left::Real, ::Infinity{true}) = ShiftedExp(true, left)
+as(::Type{Real}, left::Real, ::Infinity{true}) = TVShift(left) ∘ TVExp()
 
-as(::Type{Real}, ::Infinity{false}, right::Real) = ShiftedExp(false, right)
+as(::Type{Real}, ::Infinity{false}, right::Real) = TVShift(right) ∘ TVNeg() ∘ TVExp()
 
 function as(::Type{Real}, left::Real, right::Real)
     @argcheck left < right "the interval ($(left), $(right)) is empty"
-    ScaledShiftedLogistic(right - left, left)
+    TVShift(left) ∘ TVScale(right - left) ∘ TVLogistic()
 end
 
 """
@@ -316,7 +316,7 @@ Transform to a positive real number. See [`as`](@ref).
 
 `asℝ₊` and `as_positive_real` are equivalent alternatives.
 """
-const asℝ₊ = as(Real, 0, ∞)
+const asℝ₊ = TVExp()
 
 const as_positive_real = asℝ₊
 
@@ -325,7 +325,7 @@ Transform to a negative real number. See [`as`](@ref).
 
 `asℝ₋` and `as_negative_real` are equivalent alternatives.
 """
-const asℝ₋ = as(Real, -∞, 0)
+const asℝ₋ = TVNeg() ∘ TVExp()
 
 const as_negative_real = asℝ₋
 
@@ -334,7 +334,7 @@ Transform to the unit interval `(0, 1)`. See [`as`](@ref).
 
 `as𝕀` and `as_unit_interval` are equivalent alternatives.
 """
-const as𝕀 = as(Real, 0, 1)
+const as𝕀 = TVLogistic()
 
 const as_unit_interval = as𝕀
 
