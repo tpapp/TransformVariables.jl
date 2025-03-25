@@ -68,12 +68,13 @@ Exponential transformation `x ↦ eˣ`. Maps from all reals to the positive real
 struct TVExp <: ScalarTransform 
 end
 transform(::TVExp, x::Real) = exp(x)
-transform_and_logjac(::TVExp, x::Real) = transform(TVExp(), x), x
+transform_and_logjac(t::TVExp, x::Real) = transform(t, x), x
 
 function inverse(::TVExp, x::Real)
     @argcheck x > 0 DomainError
     log(x)
 end
+inverse_and_logjac(t::TVExp, x::Real) = inverse(t, x), -x
 
 """
 $(TYPEDEF)
@@ -83,12 +84,13 @@ Logistic transformation `x ↦ logit(x)`. Maps from all reals to (0, 1).
 struct TVLogistic <: ScalarTransform
 end
 transform(::TVLogistic, x::Real) = logistic(x)
-transform_and_logjac(::TVLogistic, x::Real) = transform(TVLogistic(), x), logistic_logjac(x)
+transform_and_logjac(t::TVLogistic, x::Real) = transform(t, x), logistic_logjac(x)
 
 function inverse(::TVLogistic, x::Real)
     @argcheck 0 < x < 1 DomainError
     logit(x)
 end
+inverse_and_logjac(t::TVLogistic, x::Real) = inverse(t, x), logit_logjac(x)
 
 """
 $(TYPEDEF)
@@ -102,6 +104,7 @@ transform(t::TVShift, x::Real) = x + t.shift
 transform_and_logjac(t::TVShift, x::Real) = transform(t, x), zero(x)
 
 inverse(t::TVShift, x::Real) = x - t.shift
+inverse_and_logjac(t::TVShift, x::Real) = inverse(t, x), zero(x)
 
 """
 $(TYPEDEF)
@@ -121,6 +124,7 @@ transform(t::TVScale, x::Real) = t.scale * x
 transform_and_logjac(t::TVScale, x::Real) = transform(t, x), log(t.scale) 
 
 inverse(t::TVScale, x::Real) = x / t.scale
+inverse_and_logjac(t::TVScale, x::Real) = inverse(t, x), -log(t.scale)
 
 """
 $(TYPEDEF)
@@ -134,6 +138,7 @@ transform(::TVNeg, x::Real) = -x
 transform_and_logjac(t::TVNeg, x::Real) = transform(t, x), zero(x)
 
 inverse(::TVNeg, x::Real) = -x
+inverse_and_logjac(::TVNeg, x::Real) = -x, zero(x)
 
 ####
 #### composite scalar transforms
@@ -162,6 +167,14 @@ function transform_and_logjac(ts::CompositeScalarTransform, x)
 end
 
 inverse(ts::CompositeScalarTransform, x) = foldl((y, t) -> inverse(t, y), ts.transforms, init=x)
+function inverse_and_logjac(ts::CompositeScalarTransform, x) 
+    foldl(ts.transforms, init=(x, zero(x))) do (x, logjac), t
+        nx, nlogjac = inverse_and_logjac(t, x)
+        x = nx
+        logjac += nlogjac
+        (x, logjac)
+    end
+end
 
 Base.:∘(t::ScalarTransform, s::ScalarTransform) = CompositeScalarTransform((t, s))
 Base.:∘(t::ScalarTransform, ct::CompositeScalarTransform) = CompositeScalarTransform((t, ct.transforms...))
