@@ -113,6 +113,15 @@ Consistent with common notation, transforms are applied right-to-left; for examp
 This composition works with any scalar transform in any order, so `TVScale(4) ∘ as(Real, 2, ∞) ∘ TVShift(1e3)` is a valid transform.
 This is useful especially for making sure that values near 0, when transformed, yield usefully-scaled values for a given variable.
 
+In addition, the `TVScale` transform accepts arbitrary types. It can be used as the outermost transform (so leftmost in the composition), to add Unitful units to a number (or to create other exotic number types which can be constructed by multiplying, such as a `ForwardDiff.Dual`).
+For example, 
+
+```julia
+using Unitful
+t = TVScale(5u"m") ∘ TVExp()
+```
+produces positive quantities with the dimension of length.
+
 ## Special arrays
 
 ```@docs
