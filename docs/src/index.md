@@ -98,6 +98,21 @@ asℝ₋
 as𝕀
 ```
 
+For more granular control than the `as(Real, a, b)`, scalar transformations can be built from individual elements with the composition operator `∘` (typed as `\circ<tab>`):
+
+```@docs
+TVExp
+TVLogistic
+TVScale
+TVShift
+TVNeg
+```
+
+Consistent with common notation, transforms are applied right-to-left; for example, `as(Real, ∞, 3)` is equivalent to `TVShift(3) ∘ TVNeg() ∘ TVExp()`.
+
+This composition works with any scalar transform in any order, so `TVScale(4) ∘ as(Real, 2, ∞) ∘ TVShift(1e3)` is a valid transform.
+This is useful especially for making sure that values near 0, when transformed, yield usefully-scaled values for a given variable.
+
 ## Special arrays
 
 ```@docs
