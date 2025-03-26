@@ -84,8 +84,13 @@ end
         for t2 in all_transforms
             for t3 in all_transforms
                 t = t1 ∘ t2 ∘ t3
+                # Basic functionality
                 @test t isa TransformVariables.CompositeScalarTransform{Tuple{typeof(t1), typeof(t2), typeof(t3)}}
+                # Other constructions
                 @test t ∘ t isa TransformVariables.CompositeScalarTransform{Tuple{typeof(t1), typeof(t2), typeof(t3), typeof(t1), typeof(t2), typeof(t3)}}
+                @test t == t1 ∘ (t2 ∘ t3)
+                @test t == ∘(t1, t2, t3)
+                @test all([t[1] == t1, t[2] == t2, t[3] == t3])
             end
         end
     end
