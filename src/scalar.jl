@@ -53,7 +53,7 @@ transform(::Identity, x::Real) = x
 
 transform_and_logjac(::Identity, x::Real) = x, zero(x)
 
-inverse(::Identity, x::Real) = x
+inverse(::Identity, x::Number) = x
 
 
 ####
@@ -70,11 +70,11 @@ end
 transform(::TVExp, x::Real) = exp(x)
 transform_and_logjac(t::TVExp, x::Real) = transform(t, x), x
 
-function inverse(::TVExp, x::Real)
+function inverse(::TVExp, x::Number)
     @argcheck x > 0 DomainError
     log(x)
 end
-inverse_and_logjac(t::TVExp, x::Real) = inverse(t, x), -x
+inverse_and_logjac(t::TVExp, x::Number) = inverse(t, x), -x
 
 """
 $(TYPEDEF)
@@ -86,11 +86,11 @@ end
 transform(::TVLogistic, x::Real) = logistic(x)
 transform_and_logjac(t::TVLogistic, x::Real) = transform(t, x), logistic_logjac(x)
 
-function inverse(::TVLogistic, x::Real)
+function inverse(::TVLogistic, x::Number)
     @argcheck 0 < x < 1 DomainError
     logit(x)
 end
-inverse_and_logjac(t::TVLogistic, x::Real) = inverse(t, x), logit_logjac(x)
+inverse_and_logjac(t::TVLogistic, x::Number) = inverse(t, x), logit_logjac(x)
 
 """
 $(TYPEDEF)
@@ -103,28 +103,28 @@ end
 transform(t::TVShift, x::Real) = x + t.shift
 transform_and_logjac(t::TVShift, x::Real) = transform(t, x), zero(x)
 
-inverse(t::TVShift, x::Real) = x - t.shift
-inverse_and_logjac(t::TVShift, x::Real) = inverse(t, x), zero(x)
+inverse(t::TVShift, x::Number) = x - t.shift
+inverse_and_logjac(t::TVShift, x::Number) = inverse(t, x), zero(x)
 
 """
 $(TYPEDEF)
 
 Scale transformation `x ↦ scale * x`.
 """
-struct TVScale{T <: Real} <: ScalarTransform
+struct TVScale{T} <: ScalarTransform
     scale::T
-    function TVScale{T}(scale::T) where {T <: Real}
-        @argcheck scale > 0 DomainError
+    function TVScale{T}(scale::T) where {T}
+        @argcheck scale > zero(scale) DomainError
         new(scale)
     end
 end
-TVScale(scale::T) where {T<:Real} = TVScale{T}(scale)
+TVScale(scale::T) where {T} = TVScale{T}(scale)
 
 transform(t::TVScale, x::Real) = t.scale * x
 transform_and_logjac(t::TVScale, x::Real) = transform(t, x), log(t.scale) 
 
-inverse(t::TVScale, x::Real) = x / t.scale
-inverse_and_logjac(t::TVScale, x::Real) = inverse(t, x), -log(t.scale)
+inverse(t::TVScale, x::Number) = x / t.scale
+inverse_and_logjac(t::TVScale, x::Number) = inverse(t, x), -log(t.scale)
 
 """
 $(TYPEDEF)
@@ -137,8 +137,8 @@ end
 transform(::TVNeg, x::Real) = -x
 transform_and_logjac(t::TVNeg, x::Real) = transform(t, x), zero(x)
 
-inverse(::TVNeg, x::Real) = -x
-inverse_and_logjac(::TVNeg, x::Real) = -x, zero(x)
+inverse(::TVNeg, x::Number) = -x
+inverse_and_logjac(::TVNeg, x::Number) = -x, zero(x)
 
 ####
 #### composite scalar transforms
