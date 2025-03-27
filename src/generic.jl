@@ -68,7 +68,7 @@ Return `(y, logjac), index′`, where
 **Internal function**. Implementations
 
 1. can assume that `x` has enough elements for `transformation` (ie `@inbounds` can be
-used),
+   used),
 
 2. should work with generalized indexing on `x`.
 """
