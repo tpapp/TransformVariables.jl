@@ -9,7 +9,7 @@ Transform a scalar (real number) to another scalar.
 Subtypes must define `transform`, `transform_and_logjac`, and `inverse`.
 Other methods of of the interface should have the right defaults.
 
-!!! NOTE
+!!! note
     This type is for code organization within the package, and is not part of the public API.
 """
 abstract type ScalarTransform <: AbstractTransform end
