@@ -1,3 +1,4 @@
+export TVExp, TVScale, TVShift, TVLogistic, TVNeg
 export ∞, asℝ, asℝ₊, asℝ₋, as𝕀, as_real, as_positive_real, as_negative_real,
     as_unit_interval
 
@@ -52,7 +53,135 @@ transform(::Identity, x::Real) = x
 
 transform_and_logjac(::Identity, x::Real) = x, zero(x)
 
-inverse(::Identity, x::Real) = x
+inverse(::Identity, x::Number) = x
+
+
+####
+#### elementary scalar transforms
+####
+
+"""
+$(TYPEDEF)
+
+Exponential transformation `x ↦ eˣ`. Maps from all reals to the positive reals.
+"""
+struct TVExp <: ScalarTransform 
+end
+transform(::TVExp, x::Real) = exp(x)
+transform_and_logjac(t::TVExp, x::Real) = transform(t, x), x
+
+function inverse(::TVExp, x::Number)
+    @argcheck x > 0 DomainError
+    log(x)
+end
+inverse_and_logjac(t::TVExp, x::Number) = inverse(t, x), -x
+
+"""
+$(TYPEDEF)
+
+Logistic transformation `x ↦ logit(x)`. Maps from all reals to (0, 1).
+"""
+struct TVLogistic <: ScalarTransform
+end
+transform(::TVLogistic, x::Real) = logistic(x)
+transform_and_logjac(t::TVLogistic, x::Real) = transform(t, x), logistic_logjac(x)
+
+function inverse(::TVLogistic, x::Number)
+    @argcheck 0 < x < 1 DomainError
+    logit(x)
+end
+inverse_and_logjac(t::TVLogistic, x::Number) = inverse(t, x), logit_logjac(x)
+
+"""
+$(TYPEDEF)
+
+Shift transformation `x ↦ x + shift`. 
+"""
+struct TVShift{T <: Real} <: ScalarTransform
+    shift::T
+end
+transform(t::TVShift, x::Real) = x + t.shift
+transform_and_logjac(t::TVShift, x::Real) = transform(t, x), zero(x)
+
+inverse(t::TVShift, x::Number) = x - t.shift
+inverse_and_logjac(t::TVShift, x::Number) = inverse(t, x), zero(x)
+
+"""
+$(TYPEDEF)
+
+Scale transformation `x ↦ scale * x`.
+"""
+struct TVScale{T} <: ScalarTransform
+    scale::T
+    function TVScale{T}(scale::T) where {T}
+        @argcheck scale > zero(scale) DomainError
+        new(scale)
+    end
+end
+TVScale(scale::T) where {T} = TVScale{T}(scale)
+
+transform(t::TVScale, x::Real) = t.scale * x
+transform_and_logjac(t::TVScale{T}, x::Real) where {T<:Real} = transform(t, x), log(t.scale) 
+
+inverse(t::TVScale, x::Number) = x / t.scale
+inverse_and_logjac(t::TVScale{T}, x::Number) where {T<:Real} = inverse(t, x), -log(t.scale)
+
+"""
+$(TYPEDEF)
+
+Negative transformation `x ↦ -x`.
+"""
+struct TVNeg <: ScalarTransform
+end
+
+transform(::TVNeg, x::Real) = -x
+transform_and_logjac(t::TVNeg, x::Real) = transform(t, x), zero(x)
+
+inverse(::TVNeg, x::Number) = -x
+inverse_and_logjac(::TVNeg, x::Number) = -x, zero(x)
+
+####
+#### composite scalar transforms
+####
+"""
+$(TYPEDEF)
+
+A composite scalar transformation, i.e. a sequence of scalar transformations.
+"""
+struct CompositeScalarTransform{Ts <: Tuple} <: ScalarTransform
+    transforms::Ts
+end
+
+Base.getindex(t::CompositeScalarTransform, i) = t.transforms[i]
+Base.firstindex(t::CompositeScalarTransform) = firstindex(t.transforms)
+Base.lastindex(t::CompositeScalarTransform) = lastindex(t.transforms)
+
+transform(t::CompositeScalarTransform, x) = foldr((t, y) -> transform(t, y), t.transforms, init=x)
+function transform_and_logjac(ts::CompositeScalarTransform, x) 
+    foldr(ts.transforms, init=(x, zero(x))) do t, (x, logjac)
+        nx, nlogjac = transform_and_logjac(t, x)
+        x = nx
+        logjac += nlogjac
+        (x, logjac)
+    end
+end
+
+inverse(ts::CompositeScalarTransform, x) = foldl((y, t) -> inverse(t, y), ts.transforms, init=x)
+function inverse_and_logjac(ts::CompositeScalarTransform, x) 
+    foldl(ts.transforms, init=(x, zero(x))) do (x, logjac), t
+        nx, nlogjac = inverse_and_logjac(t, x)
+        x = nx
+        logjac += nlogjac
+        (x, logjac)
+    end
+end
+
+Base.:∘(t::ScalarTransform, s::ScalarTransform) = CompositeScalarTransform((t, s))
+Base.:∘(t::ScalarTransform, ct::CompositeScalarTransform) = CompositeScalarTransform((t, ct.transforms...))
+Base.:∘(ct::CompositeScalarTransform, t::ScalarTransform) = CompositeScalarTransform((ct.transforms..., t))
+Base.:∘(ct1::CompositeScalarTransform, ct2::CompositeScalarTransform) = CompositeScalarTransform((ct1.transforms..., ct2.transforms...))
+Base.:∘(t::ScalarTransform, tt::Vararg{ScalarTransform}) = CompositeScalarTransform((t, tt...))
+
 
 ####
 #### shifted exponential
@@ -173,13 +302,13 @@ as(::Type{Real}, left, right) =
 
 as(::Type{Real}, ::Infinity{false}, ::Infinity{true}) = Identity()
 
-as(::Type{Real}, left::Real, ::Infinity{true}) = ShiftedExp(true, left)
+as(::Type{Real}, left::Real, ::Infinity{true}) = TVShift(left) ∘ TVExp()
 
-as(::Type{Real}, ::Infinity{false}, right::Real) = ShiftedExp(false, right)
+as(::Type{Real}, ::Infinity{false}, right::Real) = TVShift(right) ∘ TVNeg() ∘ TVExp()
 
 function as(::Type{Real}, left::Real, right::Real)
     @argcheck left < right "the interval ($(left), $(right)) is empty"
-    ScaledShiftedLogistic(right - left, left)
+    TVShift(left) ∘ TVScale(right - left) ∘ TVLogistic()
 end
 
 """
@@ -187,7 +316,7 @@ Transform to a positive real number. See [`as`](@ref).
 
 `asℝ₊` and `as_positive_real` are equivalent alternatives.
 """
-const asℝ₊ = as(Real, 0, ∞)
+const asℝ₊ = TVExp()
 
 const as_positive_real = asℝ₊
 
@@ -196,7 +325,7 @@ Transform to a negative real number. See [`as`](@ref).
 
 `asℝ₋` and `as_negative_real` are equivalent alternatives.
 """
-const asℝ₋ = as(Real, -∞, 0)
+const asℝ₋ = TVNeg() ∘ TVExp()
 
 const as_negative_real = asℝ₋
 
@@ -205,7 +334,7 @@ Transform to the unit interval `(0, 1)`. See [`as`](@ref).
 
 `as𝕀` and `as_unit_interval` are equivalent alternatives.
 """
-const as𝕀 = as(Real, 0, 1)
+const as𝕀 = TVLogistic()
 
 const as_unit_interval = as𝕀
 
@@ -217,6 +346,30 @@ Transform to the real line (identity). See [`as`](@ref).
 const asℝ = as(Real, -∞, ∞)
 
 const as_real = asℝ
+
+function Base.show(io::IO, ct::CompositeScalarTransform)
+    # if ct === asℝ₋
+    #     print(io, "asℝ₋")
+    # else
+        str = string(ct.transforms[1])
+        for ti in ct.transforms[begin+1:end]
+            str *= " ∘ "*string(ti)
+        end
+        print(io, str)
+    # end
+end
+function Base.show(io::IO, t::TVScale)
+    print(io, "TVScale(", t.scale, ")")
+end
+function Base.show(io::IO, t::TVShift)
+    print(io, "TVShift(", t.shift, ")")
+end
+# function Base.show(io::IO, ::TVExp)
+#     print(io, "asℝ₊")
+# end
+# function Base.show(io::IO, ::TVLogistic)
+#     print(io, "as𝕀")
+# end
 
 function Base.show(io::IO, t::ShiftedExp)
     if t === asℝ₊
