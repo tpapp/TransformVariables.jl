@@ -266,8 +266,17 @@ function transform_and_logjac(t::VectorTransform, x::AbstractVector)
     y, ℓ
 end
 
+# We want to avoid vectors with non-numerical element types
+# Ref https://github.com/tpapp/TransformVariables.jl/issues/132
 function inverse(t::VectorTransform, y)
-    inverse!(Vector{inverse_eltype(t, y)}(undef, dimension(t)), t, y)
+    inverse!(Vector{_float_or_Float64(inverse_eltype(t, y))}(undef, dimension(t)), t, y)
+end
+function _float_or_Float64(::Type{T}) where T
+    if T !== Union{} && T <: Number # heuristic: it is assumed that every `Number` type defines `float`
+        return float(T)
+    else
+        return Float64
+    end
 end
 
 """
