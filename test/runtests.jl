@@ -66,16 +66,16 @@ end
     test_transformation(as(Real, -∞, ∞), _ -> true)
 end
 
-# @testset "scalar non-Real (Unitful) consistency" begin
-#     for _ in 1:10    
-#         a = randn() * 100
-#         b = a + 0.5 + rand(Float64) + exp(randn() * 10)
-#         t1 = TVScale(2u"m") ∘ TVShift(a) ∘ TVExp() 
-#         test_transformation(t1, y -> y > 2u"m")
-#         t2 = TVScale(1u"s") ∘ TVShift(a) ∘ TVScale(b-a) ∘ TVLogistic()
-#         test_transformation(t2, y -> a*u"s" < y < b*u"s")
-#     end
-# end
+@testset "scalar non-Real (Unitful) consistency" begin
+    for _ in 1:10    
+        a = randn() * 100
+        b = a + 0.5 + rand(Float64) + exp(randn() * 10)
+        t1 = TVScale(2u"m") ∘ TVShift(a) ∘ TVExp() 
+        test_transformation(t1, y -> y > 2u"m", jac=false)
+        t2 = TVScale(1u"s") ∘ TVShift(a) ∘ TVScale(b-a) ∘ TVLogistic()
+        test_transformation(t2, y -> a*u"s" < y < b*u"s", jac=false)
+    end
+end
 
 @testset "composite scalar transformations" begin
     all_transforms = [TVShift(3.0), TVScale(2.0), TVExp(), TVLogistic(), TVNeg(), 

@@ -31,19 +31,21 @@ automatic differentiation.
 `test_inverse` determines whether the inverse is tested.
 """
 function test_transformation(t::AbstractTransform, is_valid_y;
-                             vec_y = identity, N = 1000, test_inverse = true)
+                             vec_y = identity, N = 1000, test_inverse = true, jac=true)
     for _ in 1:N
         x = random_arg(t)
         x isa ScalarTransform && @test dimension(x) == 1
         y = @inferred transform(t, x)
         @test is_valid_y(y)
         @test transform(t, x) == y
-        y2, lj = @inferred transform_and_logjac(t, x)
-        @test y2 == y
-        if t isa ScalarTransform
-            @test lj ≈ AD_logjac(t, x)
-        else
-            @test lj ≈ AD_logjac(t, x, vec_y)
+        if jac
+            y2, lj = @inferred transform_and_logjac(t, x)
+            @test y2 == y
+            if t isa ScalarTransform
+                @test lj ≈ AD_logjac(t, x)
+            else
+                @test lj ≈ AD_logjac(t, x, vec_y)
+            end
         end
         if test_inverse
             x2 = inverse(t, y)
