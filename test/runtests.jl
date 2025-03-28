@@ -732,8 +732,8 @@ end
 end
 
 @testset "inverse of VectorTransform" begin
-    # `VectorTransform` with empty `inverse`
-    for a in (3, 4.7, [5])
+    # Empty `inverse(::VectorTransform, _)`
+    for a in (3, 4.7, [5], 3f0, 4.7f0, [5f0])
         x = @inferred(inverse(as((; a = Constant(a))), (; a)))
         @test x isa Vector{Float64}
         @test isempty(x)
@@ -747,16 +747,20 @@ end
         @test isempty(x)
     end
 
-    # `VectorTransform` with integer input
-    x = @inferred(inverse(as((; a = asℝ)), (; a = 3)))
-    @test x isa Vector{Float64}
-    @test x == [3]
+    # Element type of `inverse(::VectorTransform, _)`
+    for a in (3, 3.0, 3f0)
+        T = float(typeof(a))
 
-    x = @inferred(inverse(as((asℝ,)), (3,)))
-    @test x isa Vector{Float64}
-    @test x == [3]
+        x = @inferred(inverse(as((; a = asℝ)), (; a)))
+        @test x isa Vector{T}
+        @test x == [3]
 
-    x = @inferred(inverse(as(Vector, asℝ, 1), [3]))
-    @test x isa Vector{Float64}
-    @test x == [3]
+        x = @inferred(inverse(as((asℝ,)), (a,)))
+        @test x isa Vector{T}
+        @test x == [3]
+
+        x = @inferred(inverse(as(Vector, asℝ, 1), [a]))
+        @test x isa Vector{T}
+        @test x == [3]
+    end
 end
