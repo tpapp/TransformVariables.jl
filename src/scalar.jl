@@ -121,10 +121,10 @@ end
 TVScale(scale::T) where {T} = TVScale{T}(scale)
 
 transform(t::TVScale, x::Real) = t.scale * x
-transform_and_logjac(t::TVScale, x::Real) = transform(t, x), log(t.scale) 
+transform_and_logjac(t::TVScale{T}, x::Real) where {T<:Real} = transform(t, x), log(t.scale) 
 
 inverse(t::TVScale, x::Number) = x / t.scale
-inverse_and_logjac(t::TVScale, x::Number) = inverse(t, x), -log(t.scale)
+inverse_and_logjac(t::TVScale{T}, x::Number) where {T<:Real} = inverse(t, x), -log(t.scale)
 
 """
 $(TYPEDEF)

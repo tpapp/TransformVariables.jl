@@ -120,7 +120,10 @@ For example,
 using Unitful
 t = TVScale(5u"m") ∘ TVExp()
 ```
-produces positive quantities with the dimension of length.
+produces positive quantities with the dimension of length. 
+!!! note
+    Because the log-Jacobian of a transform that adds units is not defined, `transform_and_logjac` and `inverse_and_logjac`
+    only have methods defined for `TVScale{T} where {T<:Real}`. 
 
 ## Special arrays
 
