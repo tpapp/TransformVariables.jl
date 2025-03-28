@@ -71,9 +71,9 @@ end
         a = randn() * 100
         b = a + 0.5 + rand(Float64) + exp(randn() * 10)
         t1 = TVScale(2u"m") ∘ TVShift(a) ∘ TVExp() 
-        test_transformation(t1, y -> y > 2u"m", jac=false)
+        test_transformation(t1, y -> y > a*2u"m", jac=false)
         t2 = TVScale(1u"s") ∘ TVShift(a) ∘ TVScale(b-a) ∘ TVLogistic()
-        test_transformation(t2, y -> a*u"s" < y < b*u"s", jac=false)
+        test_transformation(t2, y -> (a*u"s" < y < b*u"s"), jac=false)
     end
 end
 
