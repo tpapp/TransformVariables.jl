@@ -91,6 +91,8 @@ end
                 @test t == t1 ∘ (t2 ∘ t3)
                 @test t == ∘(t1, t2, t3)
                 @test all([t[1] == t1, t[2] == t2, t[3] == t3])
+                @test all([t[begin] == t1, t[end] == t3])
+                @test t[begin:end] == t[:]
             end
         end
     end
@@ -527,6 +529,18 @@ end
         x = randn()
         a = randn()
         t = as(Real, a, a + abs(randn()) + 0.1)
+        y, lj = transform_and_logjac(t, x)
+        x2, lj2 = TransformVariables.inverse_and_logjac(t, y)
+        @test x2 ≈ x
+        @test lj2 ≈ -lj
+
+        t = as(Real, a, ∞)
+        y, lj = transform_and_logjac(t, x)
+        x2, lj2 = TransformVariables.inverse_and_logjac(t, y)
+        @test x2 ≈ x
+        @test lj2 ≈ -lj
+
+        t = as(Real, -∞, a)
         y, lj = transform_and_logjac(t, x)
         x2, lj2 = TransformVariables.inverse_and_logjac(t, y)
         @test x2 ≈ x
