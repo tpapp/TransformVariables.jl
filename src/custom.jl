@@ -3,14 +3,14 @@ export logjac_forwarddiff, value_and_logjac_forwarddiff, CustomTransform
 """
 $(SIGNATURES)
 
-Calculate the log Jacobian determinant of `f` at `x` using `ForwardDiff.
+Calculate the log Jacobian determinant of `f` at `x` using `ForwardDiff`.
 
 # Note
 
 `f` should be a bijection, mapping from vectors of real numbers to vectors of
 equal length.
 
-When `handleNaN = true` (the default), NaN log Jacobians are converted to -Inf.
+When `handleNaN = true` (the default), `NaN` log Jacobians are converted to `-Inf`.
 """
 function logjac_forwarddiff(f, x; handleNaN = true,
                             chunk = ForwardDiff.Chunk(x),
@@ -49,7 +49,7 @@ _custom_cfg(g, f, flatten, chunk = _custom_chunk(g)) =
 """
 $(SIGNATURES)
 
-Wrap a custom transform `y = f(transform(g, x))`` in a type that calculates the log Jacobian
+Wrap a custom transform `y = f(transform(g, x))` in a type that calculates the log Jacobian
 of ``∂y/∂x`` using `ForwardDiff` when necessary.
 
 Usually, `g::TransformReals`, but when an integer is used, it amounts to the identity
