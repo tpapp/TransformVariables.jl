@@ -316,7 +316,7 @@ Transform to a positive real number. See [`as`](@ref).
 
 `asℝ₊` and `as_positive_real` are equivalent alternatives.
 """
-const asℝ₊ = TVExp()
+const asℝ₊ = ∘(TVExp())
 
 const as_positive_real = asℝ₊
 
@@ -334,7 +334,7 @@ Transform to the unit interval `(0, 1)`. See [`as`](@ref).
 
 `as𝕀` and `as_unit_interval` are equivalent alternatives.
 """
-const as𝕀 = TVLogistic()
+const as𝕀 = ∘(TVLogistic())
 
 const as_unit_interval = as𝕀
 
@@ -347,29 +347,51 @@ const asℝ = as(Real, -∞, ∞)
 
 const as_real = asℝ
 
+# Fallback method: print all transforms in order
 function Base.show(io::IO, ct::CompositeScalarTransform)
-    # if ct === asℝ₋
-    #     print(io, "asℝ₋")
-    # else
-        str = string(ct.transforms[1])
-        for ti in ct.transforms[begin+1:end]
-            str *= " ∘ "*string(ti)
-        end
-        print(io, str)
-    # end
+    str = string(ct.transforms[1])
+    for ti in ct.transforms[begin+1:end]
+        str *= " ∘ "*string(ti)
+    end
+    print(io, str)
 end
+
+# If equivalent to asℝ₊, print as such. Two ways to achieve this
+function Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVShift{T}, TVExp}}) where T
+    if ct[1].shift == 0
+        print(io, "asℝ₊")
+    else
+        print(io, "as(Real, ", ct[1].shift, ", ∞)")
+    end
+end
+Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVExp}}) = print(io, "asℝ₊")
+
+# If equivalent to asℝ₋, print as such. Two ways to achieve this
+function Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVShift{T}, TVNeg, TVExp}}) where T
+    if ct[1].shift == 0
+        print(io, "asℝ₋")
+    else
+        print(io, "as(Real, -∞, ", ct[1].shift, ")")
+    end
+end
+Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVNeg, TVExp}}) = print(io, "asℝ₋")
+
+# If equivalent to as𝕀, print as such. Two ways to achieve this
+function Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVShift{T1}, TVScale{T2}, TVLogistic}}) where {T1, T2}
+    if ct[1].shift == 0 && ct[2].scale == 1
+        print(io, "as𝕀")
+    else
+        print(io, "as(Real, ", ct[1].shift, ", ", ct[1].shift + ct[2].scale, ")")
+    end
+end
+Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVLogistic}}) = print(io, "as𝕀")
+
 function Base.show(io::IO, t::TVScale)
     print(io, "TVScale(", t.scale, ")")
 end
 function Base.show(io::IO, t::TVShift)
     print(io, "TVShift(", t.shift, ")")
 end
-# function Base.show(io::IO, ::TVExp)
-#     print(io, "asℝ₊")
-# end
-# function Base.show(io::IO, ::TVLogistic)
-#     print(io, "as𝕀")
-# end
 
 function Base.show(io::IO, t::ShiftedExp)
     if t === asℝ₊

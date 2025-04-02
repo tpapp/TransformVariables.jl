@@ -47,6 +47,26 @@ end
 #### scalar transformations correctness checks
 ####
 
+@testset "scalar show" begin
+    @test string(asℝ) == "asℝ"
+    @test string(asℝ₊) == "asℝ₊"
+    @test string(asℝ₋) == "asℝ₋"
+    @test string(as𝕀) == "as𝕀"
+    @test string(as(Real, 0.0, 2.0)) == "as(Real, 0.0, 2.0)"
+    @test string(as(Real, 1.0, ∞)) == "as(Real, 1.0, ∞)"
+    @test string(as(Real, -∞, 1.0)) == "as(Real, -∞, 1.0)"
+
+    @test string(TVShift(4.0)) == "TVShift(4.0)"
+    @test string(TVScale(4.0)) == "TVScale(4.0)"
+    @test string(TVExp()) == "TVExp()"
+    @test string(TVLogistic()) == "TVLogistic()"
+    @test string(TVNeg()) == "TVNeg()"
+
+    @test string(TVShift(0) ∘ TVNeg() ∘ TVExp()) == "asℝ₋" 
+    @test string(TVShift(0) ∘ TVExp()) == "asℝ₊" 
+    @test string(TVScale(2.0) ∘ TVNeg() ∘ TVExp()) == "TVScale(2.0) ∘ TVNeg() ∘ TVExp()" 
+    @test string(TVScale(5.0u"m") ∘ TVExp()) == "TVScale(5.0 m) ∘ TVExp()" 
+end
 
 @testset "scalar transformations consistency" begin
     for _ in 1:100
@@ -610,16 +630,6 @@ end
 ####
 #### show
 ####
-
-@testset "scalar show" begin
-    @test string(asℝ) == "asℝ"
-    @test_broken string(asℝ₊) == "asℝ₊"
-    @test_broken string(asℝ₋) == "asℝ₋"
-    @test_broken string(as𝕀) == "as𝕀"
-    @test_broken string(as(Real, 0.0, 2.0)) == "as(Real, 0.0, 2.0)"
-    @test_broken string(as(Real, 1.0, ∞)) == "as(Real, 1.0, ∞)"
-    @test_broken string(as(Real, -∞, 1.0)) == "as(Real, -∞, 1.0)"
-end
 
 @testset "sum dimensions allocations" begin
     shifted = TransformVariables.ShiftedExp{true,Float64}(0.0)
