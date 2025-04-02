@@ -24,6 +24,8 @@ implementations.
 abstract type LogJacFlag end
 
 """
+$(TYPEDEF)
+
 Calculate log Jacobian as the second value.
 """
 struct LogJac <: LogJacFlag end
@@ -31,6 +33,8 @@ struct LogJac <: LogJacFlag end
 const LOGJAC = LogJac()
 
 """
+$(TYPEDEF)
+
 Don't calculate log Jacobian, return `NOLOGJAC` as the second value.
 """
 struct NoLogJac <: LogJacFlag end
@@ -53,7 +57,7 @@ logjac_zero(::NoLogJac, _) = NOLOGJAC
 ###
 
 """
-`$(FUNCTIONNAME)(flag::LogJacFlag, transformation, x::AbstractVector, index)`
+    $(FUNCTIONNAME)(flag::LogJacFlag, transformation, x::AbstractVector, index)
 
 Transform elements of `x` from `index`, using `transformation`.
 
@@ -75,7 +79,7 @@ Return `(y, logjac), index′`, where
 function transform_with end
 
 """
-`$(FUNCTIONNAME)(x, index, transformation, y)`
+    $(FUNCTIONNAME)(x, index, transformation, y)
 
 Invert transformation at `y` and put the result in `x` starting at `index`.
 
@@ -111,11 +115,11 @@ abstract type AbstractTransform end
 Base.broadcastable(t::AbstractTransform) = Ref(t)
 
 """
-`$(FUNCTIONNAME)(t, x)`
+    $(FUNCTIONNAME)(t, x)
 
 Transform `x` using `t`.
 
-`$(FUNCTIONNAME)(t)`.
+    $(FUNCTIONNAME)(t)
 
 Return a callable equivalent to `x -> transform(t, x)` that transforms its argument:
 
@@ -142,11 +146,11 @@ end
 inverse(f::CallableTransform) = Base.Fix1(inverse, f.x)
 
 """
-`$(FUNCTIONNAME)(t, y)`
+    $(FUNCTIONNAME)(t, y)
 
 Return `x` so that `transform(t, x) ≈ y`.
 
-`$(FUNCTIONNAME)(t)`
+    $(FUNCTIONNAME)(t)
 
 Return a callable equivalent to `y -> inverse(t, y)`. `t` can also be a callable created
 with transform, so the following holds:
@@ -171,7 +175,7 @@ end
 inverse(f::CallableInverse) = Base.Fix1(transform, f.x)
 
 """
-`$(FUNCTIONNAME)(t::AbstractTransform, y)`
+    $(FUNCTIONNAME)(t::AbstractTransform, y)
 
 The element type for vector `x` so that `inverse!(x, t, y)` works.
 """
@@ -204,7 +208,7 @@ function transform_logdensity(t::AbstractTransform, f::F, x) where F
 end
 
 """
-`$(FUNCTIONNAME)(t::AbstractTransform)`
+    $(FUNCTIONNAME)(t::AbstractTransform)
 
 The dimension (number of elements) that `t` transforms.
 
@@ -213,7 +217,7 @@ Types should implement this method.
 function dimension end
 
 """
-`$(FUNCTIONNAME)(T, args...)`
+    $(FUNCTIONNAME)(T, args...)
 
 Shorthand for constructing transformations with image in `T`. `args` determines
 or modifies behavior, details depend on `T`.
