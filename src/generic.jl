@@ -107,7 +107,7 @@ The user interface consists of
 - [`dimension`](@ref)
 - [`transform`](@ref)
 - [`transform_and_logjac`](@ref)
-- [`inverse`]@(ref), [`inverse!`](@ref)
+- [`inverse`](@ref), [`inverse!`](@ref)
 - [`inverse_eltype`](@ref).
 """
 abstract type AbstractTransform end
