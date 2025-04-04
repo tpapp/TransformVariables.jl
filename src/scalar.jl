@@ -151,6 +151,11 @@ A composite scalar transformation, i.e. a sequence of scalar transformations.
 """
 struct CompositeScalarTransform{Ts <: Tuple} <: ScalarTransform
     transforms::Ts
+    function CompositeScalarTransform(transforms::Ts) where {Ts <: Tuple}
+        @argcheck length(transforms) > 0 DomainError
+        @argcheck all(t -> t isa ScalarTransform, transforms) DomainError
+        new{Ts}(transforms)
+    end
 end
 
 Base.getindex(t::CompositeScalarTransform, i) = t.transforms[i]
