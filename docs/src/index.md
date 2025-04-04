@@ -109,7 +109,7 @@ TVNeg
 ```
 
 Consistent with common notation, transforms are applied right-to-left; for example, `as(Real, ∞, 3)` is equivalent to `TVShift(3) ∘ TVNeg() ∘ TVExp()`.
-If you are working in an editor where typing Unitful is difficult, `TransformVariables.compose` (not exported) is provided as an alias for `∘`, as in `TransformVariables.compose(TVScale(5.0), TVExp(), TVNeg())`.
+If you are working in an editor where typing Unicode is difficult, `TransformVariables.compose` (not exported) is provided as an alias for `∘`, as in `TransformVariables.compose(TVScale(5.0), TVExp(), TVNeg())`.
 
 This composition works with any scalar transform in any order, so `TVScale(4) ∘ as(Real, 2, ∞) ∘ TVShift(1e3)` is a valid transform.
 This is useful especially for making sure that values near 0, when transformed, yield usefully-scaled values for a given variable.
