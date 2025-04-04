@@ -55,6 +55,7 @@ transform_and_logjac(::Identity, x::Real) = x, zero(x)
 
 inverse(::Identity, x::Number) = x
 
+inverse_and_logjac(::Identity, x::Real) = x, zero(x)
 
 ####
 #### elementary scalar transforms
@@ -74,7 +75,7 @@ function inverse(::TVExp, x::Number)
     @argcheck x > 0 DomainError
     log(x)
 end
-inverse_and_logjac(t::TVExp, x::Number) = inverse(t, x), -x
+inverse_and_logjac(t::TVExp, x::Number) = inverse(t, x), log(1/x)
 
 """
 $(TYPEDEF)
