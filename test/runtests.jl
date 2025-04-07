@@ -730,3 +730,37 @@ end
     end
     @test d1 == d2
 end
+
+@testset "inverse of VectorTransform" begin
+    # Empty `inverse(::VectorTransform, _)`
+    for a in (3, 4.7, [5], 3f0, 4.7f0, [5f0])
+        x = @inferred(inverse(as((; a = Constant(a))), (; a)))
+        @test x isa Vector{Float64}
+        @test isempty(x)
+
+        x = @inferred(inverse(as((Constant(a),)), (a,)))
+        @test x isa Vector{Float64}
+        @test isempty(x)
+
+        x = @inferred(inverse(as(Vector, Constant(a), 1), [a]))
+        @test x isa Vector{Float64}
+        @test isempty(x)
+    end
+
+    # Element type of `inverse(::VectorTransform, _)`
+    for a in (3, 3.0, 3f0)
+        T = float(typeof(a))
+
+        x = @inferred(inverse(as((; a = asℝ)), (; a)))
+        @test x isa Vector{T}
+        @test x == [3]
+
+        x = @inferred(inverse(as((asℝ,)), (a,)))
+        @test x isa Vector{T}
+        @test x == [3]
+
+        x = @inferred(inverse(as(Vector, asℝ, 1), [a]))
+        @test x isa Vector{T}
+        @test x == [3]
+    end
+end
