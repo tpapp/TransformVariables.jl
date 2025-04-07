@@ -153,6 +153,12 @@ with transform, so the following holds:
 ```julia
 inverse(t)(y) == inverse(t, y) == inverse(transform(t))(y)
 ```
+
+!!! note
+    `eltype(inverse(t, transform(t, x)))` is not necessarily equal to `eltype(x)`,
+    it is not guaranteed to be the narrowest possible type, and may change without
+    warning between versions. Some effort is made to come up with a reasonable
+    concrete type even in corner cases.
 """
 inverse(t::AbstractTransform) = Base.Fix1(inverse, t)
 
@@ -174,6 +180,11 @@ inverse(f::CallableInverse) = Base.Fix1(transform, f.x)
 `$(FUNCTIONNAME)(t::AbstractTransform, y)`
 
 The element type for vector `x` so that `inverse!(x, t, y)` works.
+
+!!! note
+    It is not guaranteed that the result is the narrowest possible type, and may change
+    without warning between versions. Some effort is made to come up with a reasonable
+    concrete type even in corner cases.
 """
 function inverse_eltype end
 
