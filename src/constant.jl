@@ -5,7 +5,7 @@
 export Constant
 
 """
-    Constant(value)
+`Constant(value)`
 
 Placeholder for inserting a constant. Inverse checks equality with `==`.
 """

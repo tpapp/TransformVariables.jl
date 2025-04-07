@@ -235,8 +235,6 @@ dimension(t::CorrCholeskyFactor) = unit_triangular_dimension(t.n)
 result_size(transformation::CorrCholeskyFactor) = transformation.n
 
 """
-$(TYPEDEF)
-
 Static version of cholesky correlation factor.
 """
 struct StaticCorrCholeskyFactor{D,S} <: VectorTransform end

@@ -57,7 +57,7 @@ logjac_zero(::NoLogJac, _) = NOLOGJAC
 ###
 
 """
-    $(FUNCTIONNAME)(flag::LogJacFlag, transformation, x::AbstractVector, index)
+`$(FUNCTIONNAME)(flag::LogJacFlag, transformation, x::AbstractVector, index)`
 
 Transform elements of `x` from `index`, using `transformation`.
 
@@ -79,7 +79,7 @@ Return `(y, logjac), index′`, where
 function transform_with end
 
 """
-    $(FUNCTIONNAME)(x, index, transformation, y)
+`$(FUNCTIONNAME)(x, index, transformation, y)`
 
 Invert transformation at `y` and put the result in `x` starting at `index`.
 
