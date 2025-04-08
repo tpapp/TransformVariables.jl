@@ -111,22 +111,18 @@ end
 @testset "composite scalar transformations" begin
     all_transforms = [TVShift(3.0), TVScale(2.0), TVExp(), TVLogistic(), TVNeg(), 
         ScaledShiftedLogistic(2.0, 1.0), ShiftedExp(true, -5), ShiftedExp(false, 4.5)]
-    for t1 in all_transforms
-        for t2 in all_transforms
-            for t3 in all_transforms
-                t = t1 ∘ t2 ∘ t3
-                # Basic functionality
-                @test t isa TransformVariables.CompositeScalarTransform{Tuple{typeof(t1), typeof(t2), typeof(t3)}}
-                # Other constructions
-                @test t ∘ t isa TransformVariables.CompositeScalarTransform{Tuple{typeof(t1), typeof(t2), typeof(t3), typeof(t1), typeof(t2), typeof(t3)}}
-                @test t == t1 ∘ (t2 ∘ t3)
-                @test t == ∘(t1, t2, t3)
-                @test t == TransformVariables.compose(t1, t2, t3)
-                @test all([t[1] == t1, t[2] == t2, t[3] == t3])
-                @test all([t[begin] == t1, t[end] == t3])
-                @test t[begin:end] == t[:]
-            end
-        end
+    for t1 in all_transforms, t2 in all_transforms, t3 in all_transforms
+        t = t1 ∘ t2 ∘ t3
+        # Basic functionality
+        @test t isa TransformVariables.CompositeScalarTransform{Tuple{typeof(t1), typeof(t2), typeof(t3)}}
+        # Other constructions
+        @test t ∘ t isa TransformVariables.CompositeScalarTransform{Tuple{typeof(t1), typeof(t2), typeof(t3), typeof(t1), typeof(t2), typeof(t3)}}
+        @test t == t1 ∘ (t2 ∘ t3)
+        @test t == ∘(t1, t2, t3)
+        @test t == TransformVariables.compose(t1, t2, t3)
+        @test all([t[1] == t1, t[2] == t2, t[3] == t3])
+        @test all([t[begin] == t1, t[end] == t3])
+        @test t[begin:end] == t[:]
     end
 end
 
@@ -136,7 +132,7 @@ end
     for s1 in same_domain_transforms, s2 in same_domain_transforms, n in new_domain_transforms
         for s3 in same_domain_transforms, s4 in same_domain_transforms
             # don't worry about valid output here, let inverse check that
-            test_transformation(s1 ∘ s2 ∘ n ∘ s3 ∘ s4, _ -> true; N=5) 
+            test_transformation(s1 ∘ s2 ∘ n ∘ s3 ∘ s4, _ -> true; N=100) 
         end
     end
 end
