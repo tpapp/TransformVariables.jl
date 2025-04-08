@@ -197,6 +197,13 @@ end
         x2, lj2 = TransformVariables.inverse_and_logjac(t, y)
         @test x2 ≈ x
         @test lj2 ≈ -lj
+
+        # For completeness sake,
+        t = as(Real, -∞, ∞)
+        y, lj = transform_and_logjac(t, x)
+        x2, lj2 = TransformVariables.inverse_and_logjac(t, y)
+        @test x2 ≈ x
+        @test lj2 ≈ -lj
     end
 end
 
