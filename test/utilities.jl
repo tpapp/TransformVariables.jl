@@ -29,6 +29,9 @@ Test transformation `t` with random values, `N` times.
 automatic differentiation.
 
 `test_inverse` determines whether the inverse is tested.
+
+`jac` determines whether `transform_and_logjac` is tested against the log 
+Jacobian from AD, true by default. The Jacobian is not defined for Unitful scaling.
 """
 function test_transformation(t::AbstractTransform, is_valid_y;
                              vec_y = identity, N = 1000, test_inverse = true, jac=true)
