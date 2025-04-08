@@ -24,7 +24,7 @@ function tanh_helpers(x)
 end
 
 """
-    (y, log_r, ℓ) = $SIGNATURES
+    (y, log_r, ℓ) = $(FUNCTIONNAME)(flag, x, log_r)
 
 Given ``x ∈ ℝ`` and ``0 ≤ r ≤ 1``, we define `(y, r′)` such that
 
@@ -45,7 +45,7 @@ but use `log(r)` for actual calculations so that large `y`s still give nonsingul
 end
 
 """
-    (x, r′) = $SIGNATURES
+    (x, r′) = $(FUNCTIONNAME)(y, log_r)
 
 Inverse of [`l2_remainder_transform`](@ref) in `x` and `y`.
 """
@@ -234,7 +234,9 @@ dimension(t::CorrCholeskyFactor) = unit_triangular_dimension(t.n)
 
 result_size(transformation::CorrCholeskyFactor) = transformation.n
 
-"Static version of cholesky correlation factor."
+"""
+Static version of cholesky correlation factor.
+"""
 struct StaticCorrCholeskyFactor{D,S} <: VectorTransform end
 
 function _summary_rows(transformation::StaticCorrCholeskyFactor{D,S}, mime) where {D,S}
