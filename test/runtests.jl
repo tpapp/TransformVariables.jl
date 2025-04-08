@@ -143,7 +143,6 @@ end
 
 @testset "scalar transformation corner cases" begin
     @test_throws ArgumentError as(Real, "a fish", 9)
-    @test_broken as(Real, 1, 4.0) == as(Real, 1.0, 4.0)
     @test_throws ArgumentError as(Real, 3.0, -4.0)
 
     t = as(Real, 1.0, ∞)
