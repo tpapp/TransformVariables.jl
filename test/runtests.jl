@@ -98,6 +98,13 @@ end
         test_transformation(t1, y -> y > a*2u"m", jac=false)
         t2 = TVScale(1u"s") ∘ TVShift(a) ∘ TVScale(b-a) ∘ TVLogistic()
         test_transformation(t2, y -> (a*u"s" < y < b*u"s"), jac=false)
+
+        @test_throws MethodError transform_and_logjac(t1, 0.5)
+        @test_throws MethodError transform_and_logjac(t2, 0.5)
+        y1 = transform(t1, 0.5)
+        y2 = transform(t1, 0.5)
+        @test_throws MethodError inverse_and_logjac(t1, y1)
+        @test_throws MethodError inverse_and_logjac(t2, y2)
     end
 end
 
@@ -150,11 +157,6 @@ end
     @test_throws DomainError inverse(t, 11.0)
     @test_throws DomainError inverse_and_logjac(t, 0.5)
     @test_throws DomainError inverse_and_logjac(t, 11.0)
-
-    t = TVScale(5.0u"m") ∘ as(Real, 1.0, 10.0)
-    @test_throws MethodError transform_and_logjac(t, 0.5)
-    y = transform(t, 0.5)
-    @test_throws MethodError inverse_and_logjac(t, y)
 
     @test_throws DomainError TransformVariables.compose(TVExp(), 5)
     @test_throws DomainError TransformVariables.compose()
