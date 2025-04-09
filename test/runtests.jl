@@ -150,8 +150,8 @@ end
     @test_throws DomainError inverse_and_logjac(t, 0.5)
     @test_throws DomainError inverse_and_logjac(t, 11.0)
 
-    @test_throws DomainError TransformVariables.compose(TVExp(), 5)
-    @test_throws DomainError TransformVariables.compose()
+    t = TVExp ∘ 5
+    @test_throws MethodError transform(t, 0.5)
 end
 
 @testset "scalar alternatives" begin
