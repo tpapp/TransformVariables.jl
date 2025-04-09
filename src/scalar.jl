@@ -303,7 +303,8 @@ as(::Type{Real}, ::Infinity{false}, right::Real) = TVShift(right) ∘ TVNeg() �
 
 function as(::Type{Real}, left::Real, right::Real)
     @argcheck left < right "the interval ($(left), $(right)) is empty"
-    TVShift(left) ∘ TVScale(right - left) ∘ TVLogistic()
+    shift, scale = promote(left, right - left)
+    TVShift(shift) ∘ TVScale(scale) ∘ TVLogistic()
 end
 
 """
@@ -345,7 +346,7 @@ const as_real = asℝ
 # Fallback method: print all transforms in order
 Base.show(io::IO, ct::CompositeScalarTransform) = join(io, ct.transforms, " ∘ ")
 
-function Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVShift{T}, TVExp}}) where T
+function Base.show(io::IO, ct::CompositeScalarTransform{Tuple{<:TVShift, TVExp}})
     print(io, "as(Real, ", ct[1].shift, ", ∞)")
 end
 # If equivalent to asℝ₊, print as such.
