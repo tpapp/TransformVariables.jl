@@ -55,7 +55,7 @@ transform_and_logjac(::Identity, x::Real) = x, zero(x)
 
 inverse(::Identity, x::Number) = x
 
-inverse_and_logjac(::Identity, x::Real) = x, zero(x)
+inverse_and_logjac(::Identity, x::Real) = x, logjac_zero(LogJac(), typeof(x))
 
 ####
 #### elementary scalar transforms
@@ -74,7 +74,7 @@ transform_and_logjac(t::TVExp, x::Real) = transform(t, x), x
 function inverse(::TVExp, x::Number)
     log(x)
 end
-inverse_and_logjac(t::TVExp, x::Number) = inverse(t, x), log(1/x)
+inverse_and_logjac(t::TVExp, x::Number) = inverse(t, x), -log(x)
 
 """
 $(TYPEDEF)
@@ -100,10 +100,10 @@ struct TVShift{T <: Real} <: ScalarTransform
     shift::T
 end
 transform(t::TVShift, x::Real) = x + t.shift
-transform_and_logjac(t::TVShift, x::Real) = transform(t, x), zero(x)
+transform_and_logjac(t::TVShift, x::Real) = transform(t, x), logjac_zero(LogJac(), typeof(x))
 
 inverse(t::TVShift, x::Number) = x - t.shift
-inverse_and_logjac(t::TVShift, x::Number) = inverse(t, x), zero(x)
+inverse_and_logjac(t::TVShift, x::Number) = inverse(t, x), logjac_zero(LogJac(), typeof(x))
 
 """
 $(TYPEDEF)
@@ -162,7 +162,7 @@ Base.lastindex(t::CompositeScalarTransform) = lastindex(t.transforms)
 
 transform(t::CompositeScalarTransform, x) = foldr((t, y) -> transform(t, y), t.transforms, init=x)
 function transform_and_logjac(ts::CompositeScalarTransform, x) 
-    foldr(ts.transforms, init=(x, zero(x))) do t, (x, logjac)
+    foldr(ts.transforms, init=(x, logjac_zero(LogJac(), typeof(x)))) do t, (x, logjac)
         nx, nlogjac = transform_and_logjac(t, x)
         x = nx
         logjac += nlogjac
@@ -172,7 +172,7 @@ end
 
 inverse(ts::CompositeScalarTransform, x) = foldl((y, t) -> inverse(t, y), ts.transforms, init=x)
 function inverse_and_logjac(ts::CompositeScalarTransform, x) 
-    foldl(ts.transforms, init=(x, zero(x))) do (x, logjac), t
+    foldl(ts.transforms, init=(x, logjac_zero(LogJac(), typeof(x)))) do (x, logjac), t
         nx, nlogjac = inverse_and_logjac(t, x)
         x = nx
         logjac += nlogjac
