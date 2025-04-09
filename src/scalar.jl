@@ -72,7 +72,6 @@ transform(::TVExp, x::Real) = exp(x)
 transform_and_logjac(t::TVExp, x::Real) = transform(t, x), x
 
 function inverse(::TVExp, x::Number)
-    @argcheck x > 0 DomainError
     log(x)
 end
 inverse_and_logjac(t::TVExp, x::Number) = inverse(t, x), log(1/x)
