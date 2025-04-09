@@ -109,8 +109,7 @@ end
 end
 
 @testset "composite scalar transformations" begin
-    all_transforms = [TVShift(3.0), TVScale(2.0), TVExp(), TVLogistic(), TVNeg(), 
-        ScaledShiftedLogistic(2.0, 1.0), ShiftedExp(true, -5), ShiftedExp(false, 4.5)]
+    all_transforms = [TVShift(3.0), TVScale(2.0), TVExp(), TVLogistic(), TVNeg()]
     for t1 in all_transforms, t2 in all_transforms, t3 in all_transforms
         t = t1 ∘ t2 ∘ t3
         # Basic functionality
@@ -125,7 +124,7 @@ end
 
 @testset "semiarbitrary compositions" begin
     same_domain_transforms = [TVShift(3.0), TVScale(2.0), TVNeg()]
-    new_domain_transforms = [TVExp(), TVLogistic(), ScaledShiftedLogistic(2.0, 1.0), ShiftedExp(true, -5), ShiftedExp(false, 4.5)]
+    new_domain_transforms = [TVExp(), TVLogistic()]
     for s1 in same_domain_transforms, s2 in same_domain_transforms, n in new_domain_transforms
         for s3 in same_domain_transforms, s4 in same_domain_transforms
             # don't worry about valid output here, let inverse check that

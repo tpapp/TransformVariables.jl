@@ -176,7 +176,6 @@ Base.:∘(ct::CompositeScalarTransform, t::ScalarTransform) = CompositeScalarTra
 Base.:∘(ct1::CompositeScalarTransform, ct2::CompositeScalarTransform) = CompositeScalarTransform((ct1.transforms..., ct2.transforms...))
 Base.:∘(t::ScalarTransform, tt::Vararg{ScalarTransform}) = CompositeScalarTransform((t, tt...))
 
-
 ####
 #### shifted exponential
 ####
