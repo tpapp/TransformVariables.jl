@@ -146,8 +146,6 @@ inverse_and_logjac(::TVNeg, x::Number) = -x, logjac_zero(LogJac(), typeof(x))
 $(TYPEDEF)
 
 A composite scalar transformation, i.e. a sequence of scalar transformations.
-The component transforms can be accessed indexing into the `CompositeScalarTransform`, 
-as in `ct[i]` or `ct[end]`.
 """
 struct CompositeScalarTransform{Ts <: Tuple} <: ScalarTransform
     transforms::Ts
@@ -155,10 +153,6 @@ struct CompositeScalarTransform{Ts <: Tuple} <: ScalarTransform
         new{Ts}(transforms)
     end
 end
-
-Base.getindex(t::CompositeScalarTransform, i) = t.transforms[i]
-Base.firstindex(t::CompositeScalarTransform) = firstindex(t.transforms)
-Base.lastindex(t::CompositeScalarTransform) = lastindex(t.transforms)
 
 transform(t::CompositeScalarTransform, x) = foldr((t, y) -> transform(t, y), t.transforms, init=x)
 function transform_and_logjac(ts::CompositeScalarTransform, x) 

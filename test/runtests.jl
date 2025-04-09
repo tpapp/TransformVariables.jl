@@ -120,9 +120,6 @@ end
         @test t == t1 ∘ (t2 ∘ t3)
         @test t == ∘(t1, t2, t3)
         @test t == TransformVariables.compose(t1, t2, t3)
-        @test all([t[1] == t1, t[2] == t2, t[3] == t3])
-        @test all([t[begin] == t1, t[end] == t3])
-        @test t[begin:end] == t[:]
     end
 end
 
