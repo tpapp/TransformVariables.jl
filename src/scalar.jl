@@ -51,7 +51,7 @@ struct Identity <: ScalarTransform end
 
 transform(::Identity, x::Real) = x
 
-transform_and_logjac(::Identity, x::Real) = x, zero(x)
+transform_and_logjac(::Identity, x::Real) = x, logjac_zero(LogJac(), typeof(x))
 
 inverse(::Identity, x::Number) = x
 
@@ -134,10 +134,10 @@ struct TVNeg <: ScalarTransform
 end
 
 transform(::TVNeg, x::Real) = -x
-transform_and_logjac(t::TVNeg, x::Real) = transform(t, x), zero(x)
+transform_and_logjac(t::TVNeg, x::Real) = transform(t, x), logjac_zero(LogJac(), typeof(x))
 
 inverse(::TVNeg, x::Number) = -x
-inverse_and_logjac(::TVNeg, x::Number) = -x, zero(x)
+inverse_and_logjac(::TVNeg, x::Number) = -x, logjac_zero(LogJac(), typeof(x))
 
 ####
 #### composite scalar transforms
