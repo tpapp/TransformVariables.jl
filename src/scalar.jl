@@ -87,7 +87,6 @@ transform(::TVLogistic, x::Real) = logistic(x)
 transform_and_logjac(t::TVLogistic, x::Real) = transform(t, x), logistic_logjac(x)
 
 function inverse(::TVLogistic, x::Number)
-    @argcheck 0 < x < 1 DomainError
     logit(x)
 end
 inverse_and_logjac(t::TVLogistic, x::Number) = inverse(t, x), logit_logjac(x)
