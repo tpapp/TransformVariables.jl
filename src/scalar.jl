@@ -158,9 +158,7 @@ transform(t::CompositeScalarTransform, x) = foldr((t, y) -> transform(t, y), t.t
 function transform_and_logjac(ts::CompositeScalarTransform, x) 
     foldr(ts.transforms, init=(x, logjac_zero(LogJac(), typeof(x)))) do t, (x, logjac)
         nx, nlogjac = transform_and_logjac(t, x)
-        x = nx
-        logjac += nlogjac
-        (x, logjac)
+        (nx, logjac + nlogjac)
     end
 end
 
@@ -168,9 +166,7 @@ inverse(ts::CompositeScalarTransform, x) = foldl((y, t) -> inverse(t, y), ts.tra
 function inverse_and_logjac(ts::CompositeScalarTransform, x) 
     foldl(ts.transforms, init=(x, logjac_zero(LogJac(), typeof(x)))) do (x, logjac), t
         nx, nlogjac = inverse_and_logjac(t, x)
-        x = nx
-        logjac += nlogjac
-        (x, logjac)
+        (nx, logjac + nlogjac)
     end
 end
 
