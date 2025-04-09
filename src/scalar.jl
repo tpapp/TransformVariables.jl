@@ -154,7 +154,7 @@ struct CompositeScalarTransform{Ts <: Tuple} <: ScalarTransform
     end
 end
 
-transform(t::CompositeScalarTransform, x) = foldr((t, y) -> transform(t, y), t.transforms, init=x)
+transform(t::CompositeScalarTransform, x) = foldr(transform, t.transforms, init=x)
 function transform_and_logjac(ts::CompositeScalarTransform, x) 
     foldr(ts.transforms, init=(x, logjac_zero(LogJac(), typeof(x)))) do t, (x, logjac)
         nx, nlogjac = transform_and_logjac(t, x)
