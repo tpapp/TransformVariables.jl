@@ -343,43 +343,25 @@ const asℝ = as(Real, -∞, ∞)
 const as_real = asℝ
 
 # Fallback method: print all transforms in order
-function Base.show(io::IO, ct::CompositeScalarTransform)
-    str = string(ct.transforms[1])
-    for ti in ct.transforms[begin+1:end]
-        str *= " ∘ "*string(ti)
-    end
-    print(io, str)
-end
+Base.show(io::IO, ct::CompositeScalarTransform) = join(io, ct.transforms, " ∘ ")
 
-# If equivalent to asℝ₊, print as such. Two ways to achieve this
 function Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVShift{T}, TVExp}}) where T
-    if ct[1].shift == 0
-        print(io, "asℝ₊")
-    else
-        print(io, "as(Real, ", ct[1].shift, ", ∞)")
-    end
+    print(io, "as(Real, ", ct[1].shift, ", ∞)")
 end
-Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVExp}}) = print(io, "asℝ₊")
+# If equivalent to asℝ₊, print as such.
+Base.show(io::IO, ::CompositeScalarTransform{Tuple{TVExp}}) = print(io, "asℝ₊")
 
-# If equivalent to asℝ₋, print as such. Two ways to achieve this
+# If equivalent to asℝ₋, print as such.
 function Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVShift{T}, TVNeg, TVExp}}) where T
-    if ct[1].shift == 0
-        print(io, "asℝ₋")
-    else
-        print(io, "as(Real, -∞, ", ct[1].shift, ")")
-    end
+    print(io, "as(Real, -∞, ", ct[1].shift, ")")
 end
-Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVNeg, TVExp}}) = print(io, "asℝ₋")
+Base.show(io::IO, ::CompositeScalarTransform{Tuple{TVNeg, TVExp}}) = print(io, "asℝ₋")
 
 # If equivalent to as𝕀, print as such. Two ways to achieve this
 function Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVShift{T1}, TVScale{T2}, TVLogistic}}) where {T1, T2}
-    if ct[1].shift == 0 && ct[2].scale == 1
-        print(io, "as𝕀")
-    else
-        print(io, "as(Real, ", ct[1].shift, ", ", ct[1].shift + ct[2].scale, ")")
-    end
+    print(io, "as(Real, ", ct[1].shift, ", ", ct[1].shift + ct[2].scale, ")")
 end
-Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVLogistic}}) = print(io, "as𝕀")
+Base.show(io::IO, ::CompositeScalarTransform{Tuple{TVLogistic}}) = print(io, "as𝕀")
 
 function Base.show(io::IO, t::TVScale)
     print(io, "TVScale(", t.scale, ")")
