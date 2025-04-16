@@ -6,7 +6,7 @@ using LogDensityProblemsAD
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransformation,
     unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac,
-    NOLOGJAC, transform_with, ShiftedExp, ScaledShiftedLogistic
+    NOLOGJAC, transform_with 
 import ChangesOfVariables, InverseFunctions
 using Enzyme: autodiff, ReverseWithPrimal, Active, Const
 using Unitful: @u_str, ustrip, uconvert
@@ -74,13 +74,6 @@ end
         test_transformation(as(Real, a, ∞), y -> y > a)
         b = a + 0.5 + rand(Float64) + exp(randn() * 10)
         test_transformation(as(Real, a, b), y -> a < y < b)
-
-        posexp = TVShift(a) ∘ TVExp()
-        negexp = TVShift(a) ∘ TVNeg() ∘ TVExp()
-        finite = TVShift(a) ∘ TVScale(b-a) ∘ TVLogistic()
-        test_transformation(posexp, y -> y > a)
-        test_transformation(negexp, y -> y < a)
-        test_transformation(finite, y -> a < y < b)
     end
     test_transformation(as(Real, -∞, ∞), _ -> true)
 end
@@ -634,14 +627,14 @@ end
 ####
 
 @testset "sum dimensions allocations" begin
-    shifted = TransformVariables.ShiftedExp{true,Float64}(0.0)
+    shifted = TVShift(0.0) ∘ TVExp()
     tr = (a = shifted, b = TransformVariables.Identity(), c = shifted, d = shifted, e = shifted, f = shifted)
     @test iszero(@allocated TransformVariables._sum_dimensions(tr))
 end
 
 if VERSION >= v"1.7"
 @testset "inverse_eltype allocations" begin
-    trf = as((x0 = TransformVariables.ShiftedExp{true, Float32}(0f0), x1 = TransformVariables.Identity(), x2 = UnitSimplex(7), x3 = TransformVariables.CorrCholeskyFactor(5), x4 = as(Real, -∞, 1), x5 = as(Array, 10, 2), x6 = as(Array, as𝕀, 10), x7 = as((a = asℝ₊, b = as𝕀)), x8 = TransformVariables.UnitVector(10), x9 = TransformVariables.ShiftedExp{true, Float32}(0f0), x10 = TransformVariables.ShiftedExp{true, Float32}(0f0), x11 = TransformVariables.ShiftedExp{true, Float32}(0f0), x12 = TransformVariables.ShiftedExp{true, Float32}(0f0), x13 = TransformVariables.Identity(), x14 = TransformVariables.ShiftedExp{true, Float32}(0f0), x15 = TransformVariables.ShiftedExp{true, Float32}(0f0), x16 = TransformVariables.ShiftedExp{true, Float32}(0f0), x17 = TransformVariables.ShiftedExp{true, Float64}(0.0)));
+    trf = as((x0 = TVShift(0f0) ∘ TVExp(), x1 = TransformVariables.Identity(), x2 = UnitSimplex(7), x3 = TransformVariables.CorrCholeskyFactor(5), x4 = as(Real, -∞, 1), x5 = as(Array, 10, 2), x6 = as(Array, as𝕀, 10), x7 = as((a = asℝ₊, b = as𝕀)), x8 = TransformVariables.UnitVector(10), x9 = TVShift(0f0) ∘ TVExp(), x10 = TVShift(0f0) ∘ TVExp(), x11 = TVShift(0f0) ∘ TVExp(), x12 = TVShift(0f0) ∘ TVExp(), x13 = TransformVariables.Identity(), x14 = TVShift(0f0) ∘ TVExp(), x15 = TVShift(0f0) ∘ TVExp(), x16 = TVShift(0f0) ∘ TVExp(), x17 = TVShift(0.0) ∘ TVExp()));
 
     vx = randn(@inferred(TransformVariables.dimension(trf)));
     x = TransformVariables.transform(trf, vx);
