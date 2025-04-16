@@ -6,9 +6,10 @@ using LogDensityProblemsAD
 using TransformVariables:
     AbstractTransform, ScalarTransform, VectorTransform, ArrayTransformation,
     unit_triangular_dimension, logistic, logistic_logjac, logit, inverse_and_logjac,
-    NOLOGJAC, transform_with
+    NOLOGJAC, transform_with 
 import ChangesOfVariables, InverseFunctions
 using Enzyme: autodiff, ReverseWithPrimal, Active, Const
+using Unitful: @u_str, ustrip, uconvert
 
 const CIENV = get(ENV, "CI", "") == "true"
 
@@ -46,6 +47,26 @@ end
 #### scalar transformations correctness checks
 ####
 
+@testset "scalar show" begin
+    @test string(asℝ) == "asℝ"
+    @test string(asℝ₊) == "asℝ₊"
+    @test string(asℝ₋) == "asℝ₋"
+    @test string(as𝕀) == "as𝕀"
+    @test string(TVNeg() ∘ TVExp()) == "asℝ₋" 
+    @test string(as(Real, 0.0, 2.0)) == "as(Real, 0.0, 2.0)"
+    @test string(as(Real, 1.0, ∞)) == "as(Real, 1.0, ∞)"
+    @test string(as(Real, -∞, 1.0)) == "as(Real, -∞, 1.0)"
+
+    @test string(TVExp()) == "asℝ₊" 
+    @test string(TVLogistic()) == "as𝕀" 
+    @test string(TVShift(4.0)) == "TVShift(4.0)"
+    @test string(TVScale(4.0)) == "TVScale(4.0)"
+    @test string(TVNeg()) == "TVNeg()"
+
+    @test string(TVScale(2.0) ∘ TVNeg() ∘ TVExp()) == "TVScale(2.0) ∘ TVNeg() ∘ asℝ₊" 
+    @test string(TVScale(5.0u"m") ∘ TVLogistic()) == "TVScale(5.0 m) ∘ as𝕀" 
+end
+
 @testset "scalar transformations consistency" begin
     for _ in 1:100
         a = randn() * 100
@@ -57,9 +78,51 @@ end
     test_transformation(as(Real, -∞, ∞), _ -> true)
 end
 
+@testset "scalar non-Real (Unitful) consistency" begin
+    for _ in 1:10    
+        a = randn() * 100
+        b = a + 0.5 + rand(Float64) + exp(randn() * 10)
+        t1 = TVScale(2u"m") ∘ TVShift(a) ∘ TVExp() 
+        test_transformation(t1, y -> y > a*2u"m", jac=false)
+        t2 = TVScale(1u"s") ∘ TVShift(a) ∘ TVScale(b-a) ∘ TVLogistic()
+        test_transformation(t2, y -> (a*u"s" < y < b*u"s"), jac=false)
+
+        @test_throws MethodError transform_and_logjac(t1, 0.5)
+        @test_throws MethodError transform_and_logjac(t2, 0.5)
+        y1 = transform(t1, 0.5)
+        y2 = transform(t1, 0.5)
+        @test_throws MethodError inverse_and_logjac(t1, y1)
+        @test_throws MethodError inverse_and_logjac(t2, y2)
+    end
+end
+
+@testset "composite scalar transformations" begin
+    all_transforms = [TVShift(3.0), TVScale(2.0), TVExp(), TVLogistic(), TVNeg()]
+    for t1 in all_transforms, t2 in all_transforms, t3 in all_transforms
+        t = t1 ∘ t2 ∘ t3
+        # Basic functionality
+        @test t isa TransformVariables.CompositeScalarTransform{Tuple{typeof(t1), typeof(t2), typeof(t3)}}
+        # Other constructions
+        @test t ∘ t isa TransformVariables.CompositeScalarTransform{Tuple{typeof(t1), typeof(t2), typeof(t3), typeof(t1), typeof(t2), typeof(t3)}}
+        @test t == t1 ∘ (t2 ∘ t3)
+        @test t == ∘(t1, t2, t3)
+        @test t == TransformVariables.compose(t1, t2, t3)
+    end
+end
+
+@testset "semiarbitrary compositions" begin
+    same_domain_transforms = [TVShift(3.0), TVScale(2.0), TVNeg()]
+    new_domain_transforms = [TVExp(), TVLogistic()]
+    for s1 in same_domain_transforms, s2 in same_domain_transforms, n in new_domain_transforms
+        for s3 in same_domain_transforms, s4 in same_domain_transforms
+            # don't worry about valid output here, let inverse check that
+            test_transformation(s1 ∘ s2 ∘ n ∘ s3 ∘ s4, _ -> true; N=100) 
+        end
+    end
+end
+
 @testset "scalar transformation corner cases" begin
     @test_throws ArgumentError as(Real, "a fish", 9)
-    @test as(Real, 1, 4.0) == as(Real, 1.0, 4.0)
     @test_throws ArgumentError as(Real, 3.0, -4.0)
 
     t = as(Real, 1.0, ∞)
@@ -73,6 +136,9 @@ end
     @test_throws DomainError inverse(t, 11.0)
     @test_throws DomainError inverse_and_logjac(t, 0.5)
     @test_throws DomainError inverse_and_logjac(t, 11.0)
+
+    t = TVExp ∘ 5
+    @test_throws MethodError transform(t, 0.5)
 end
 
 @testset "scalar alternatives" begin
@@ -88,6 +154,37 @@ end
     @test transform(asℝ₊, a) isa Float32
     @test transform(asℝ₋, a) isa Float32
     @test transform(as𝕀, a) isa Float32
+end
+
+@testset "inverse_and_logjac" begin
+    for _ in 1:100
+        x = randn()
+        a = randn()
+        t = as(Real, a, a + abs(randn()) + 0.1)
+        y, lj = transform_and_logjac(t, x)
+        x2, lj2 = TransformVariables.inverse_and_logjac(t, y)
+        @test x2 ≈ x
+        @test lj2 ≈ -lj
+
+        t = as(Real, a, ∞)
+        y, lj = transform_and_logjac(t, x)
+        x2, lj2 = TransformVariables.inverse_and_logjac(t, y)
+        @test x2 ≈ x
+        @test lj2 ≈ -lj
+
+        t = as(Real, -∞, a)
+        y, lj = transform_and_logjac(t, x)
+        x2, lj2 = TransformVariables.inverse_and_logjac(t, y)
+        @test x2 ≈ x
+        @test lj2 ≈ -lj
+
+        # For completeness sake,
+        t = as(Real, -∞, ∞)
+        y, lj = transform_and_logjac(t, x)
+        x2, lj2 = TransformVariables.inverse_and_logjac(t, y)
+        @test x2 ≈ x
+        @test lj2 ≈ -lj
+    end
 end
 
 ####
@@ -465,18 +562,6 @@ end
 #     end
 # end
 
-@testset "inverse_and_logjac" begin
-    # WIP, test separately until integrated
-    for _ in 1:100
-        x = randn()
-        a = randn()
-        t = as(Real, a, a + abs(randn()) + 0.1)
-        y, lj = transform_and_logjac(t, x)
-        x2, lj2 = TransformVariables.inverse_and_logjac(t, y)
-        @test x2 ≈ x
-        @test lj2 ≈ -lj
-    end
-end
 
 @testset "inference of nested tuples" begin
     # An MWE adapted from a real-life problem
@@ -541,25 +626,15 @@ end
 #### show
 ####
 
-@testset "scalar show" begin
-    @test string(asℝ) == "asℝ"
-    @test string(asℝ₊) == "asℝ₊"
-    @test string(asℝ₋) == "asℝ₋"
-    @test string(as𝕀) == "as𝕀"
-    @test string(as(Real, 0.0, 2.0)) == "as(Real, 0.0, 2.0)"
-    @test string(as(Real, 1.0, ∞)) == "as(Real, 1.0, ∞)"
-    @test string(as(Real, -∞, 1.0)) == "as(Real, -∞, 1.0)"
-end
-
 @testset "sum dimensions allocations" begin
-    shifted = TransformVariables.ShiftedExp{true,Float64}(0.0)
+    shifted = TVShift(0.0) ∘ TVExp()
     tr = (a = shifted, b = TransformVariables.Identity(), c = shifted, d = shifted, e = shifted, f = shifted)
     @test iszero(@allocated TransformVariables._sum_dimensions(tr))
 end
 
 if VERSION >= v"1.7"
 @testset "inverse_eltype allocations" begin
-    trf = as((x0 = TransformVariables.ShiftedExp{true, Float32}(0f0), x1 = TransformVariables.Identity(), x2 = UnitSimplex(7), x3 = TransformVariables.CorrCholeskyFactor(5), x4 = as(Real, -∞, 1), x5 = as(Array, 10, 2), x6 = as(Array, as𝕀, 10), x7 = as((a = asℝ₊, b = as𝕀)), x8 = TransformVariables.UnitVector(10), x9 = TransformVariables.ShiftedExp{true, Float32}(0f0), x10 = TransformVariables.ShiftedExp{true, Float32}(0f0), x11 = TransformVariables.ShiftedExp{true, Float32}(0f0), x12 = TransformVariables.ShiftedExp{true, Float32}(0f0), x13 = TransformVariables.Identity(), x14 = TransformVariables.ShiftedExp{true, Float32}(0f0), x15 = TransformVariables.ShiftedExp{true, Float32}(0f0), x16 = TransformVariables.ShiftedExp{true, Float32}(0f0), x17 = TransformVariables.ShiftedExp{true, Float64}(0.0)));
+    trf = as((x0 = TVShift(0f0) ∘ TVExp(), x1 = TransformVariables.Identity(), x2 = UnitSimplex(7), x3 = TransformVariables.CorrCholeskyFactor(5), x4 = as(Real, -∞, 1), x5 = as(Array, 10, 2), x6 = as(Array, as𝕀, 10), x7 = as((a = asℝ₊, b = as𝕀)), x8 = TransformVariables.UnitVector(10), x9 = TVShift(0f0) ∘ TVExp(), x10 = TVShift(0f0) ∘ TVExp(), x11 = TVShift(0f0) ∘ TVExp(), x12 = TVShift(0f0) ∘ TVExp(), x13 = TransformVariables.Identity(), x14 = TVShift(0f0) ∘ TVExp(), x15 = TVShift(0f0) ∘ TVExp(), x16 = TVShift(0f0) ∘ TVExp(), x17 = TVShift(0.0) ∘ TVExp()));
 
     vx = randn(@inferred(TransformVariables.dimension(trf)));
     x = TransformVariables.transform(trf, vx);
