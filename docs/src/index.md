@@ -125,6 +125,11 @@ produces positive quantities with the dimension of length.
 !!! note
     Because the log-Jacobian of a transform that adds units is not defined, `transform_and_logjac` and `inverse_and_logjac`
     only have methods defined for `TVScale{T} where {T<:Real}`. 
+!!! note
+    The inverse transform of `TVScale(scale)` divides by `scale`, which is the correct inverse for adding units to a number, but may be inappropriate for other custom number types. A transform that doesn't just multiply or an inverse that extracts a float from an exotic number type could be defined by adding methods to `transform` and `inverse` like the following:
+    ```
+    transform(t::TVScale{T}, x) where T<:MyCustomNumberType = MyCustomNumberType(x)
+    inverse(t::TVScale{T}, x) where T<:MyCustomNumberType = get_the_float_part(x)```
 
 ## Special arrays
 
