@@ -52,24 +52,19 @@ end
     @test string(asℝ₊) == "asℝ₊"
     @test string(asℝ₋) == "asℝ₋"
     @test string(as𝕀) == "as𝕀"
-    # @test string(TVShift(0) ∘ TVNeg() ∘ TVExp()) == "asℝ₋" 
-    # @test string(TVShift(0) ∘ TVExp()) == "asℝ₊" 
-    # @test string(TVShift(0) ∘ TVScale(1) ∘ TVLogistic()) == "as𝕀" 
     @test string(TVNeg() ∘ TVExp()) == "asℝ₋" 
-    @test string(∘(TVExp())) == "asℝ₊" 
-    @test string(∘(TVLogistic())) == "as𝕀" 
     @test string(as(Real, 0.0, 2.0)) == "as(Real, 0.0, 2.0)"
     @test string(as(Real, 1.0, ∞)) == "as(Real, 1.0, ∞)"
     @test string(as(Real, -∞, 1.0)) == "as(Real, -∞, 1.0)"
 
+    @test string(TVExp()) == "asℝ₊" 
+    @test string(TVLogistic()) == "as𝕀" 
     @test string(TVShift(4.0)) == "TVShift(4.0)"
     @test string(TVScale(4.0)) == "TVScale(4.0)"
-    @test string(TVExp()) == "TVExp()"
-    @test string(TVLogistic()) == "TVLogistic()"
     @test string(TVNeg()) == "TVNeg()"
 
-    @test string(TVScale(2.0) ∘ TVNeg() ∘ TVExp()) == "TVScale(2.0) ∘ TVNeg() ∘ TVExp()" 
-    @test string(TVScale(5.0u"m") ∘ TVExp()) == "TVScale(5.0 m) ∘ TVExp()" 
+    @test string(TVScale(2.0) ∘ TVNeg() ∘ TVExp()) == "TVScale(2.0) ∘ TVNeg() ∘ asℝ₊" 
+    @test string(TVScale(5.0u"m") ∘ TVLogistic()) == "TVScale(5.0 m) ∘ as𝕀" 
 end
 
 @testset "scalar transformations consistency" begin
