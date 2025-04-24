@@ -106,7 +106,7 @@ end
         @test t ∘ t isa TransformVariables.CompositeScalarTransform{Tuple{typeof(t1), typeof(t2), typeof(t3), typeof(t1), typeof(t2), typeof(t3)}}
         @test t == t1 ∘ (t2 ∘ t3)
         @test t == ∘(t1, t2, t3)
-        @test t == TransformVariables.compose(t1, t2, t3)
+        @test t == TransformVariables.compose( ∘(t1), ∘(t2), ∘(t3))
     end
 end
 
@@ -117,6 +117,7 @@ end
         for s3 in same_domain_transforms, s4 in same_domain_transforms
             # don't worry about valid output here, let inverse check that
             test_transformation(s1 ∘ s2 ∘ n ∘ s3 ∘ s4, _ -> true; N=100) 
+            @test TransformVariables.compose(s1, ∘(s2), n, ∘(s3), s4) == s1 ∘ s2 ∘ n ∘ s3 ∘ s4
         end
     end
 end
