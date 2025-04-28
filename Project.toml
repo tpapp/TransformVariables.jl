@@ -5,6 +5,7 @@ version = "0.8.16"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
+CompositionsBase = "a33af91c-f02d-484b-be07-31d278c5ca2b"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -23,6 +24,7 @@ InverseFunctionsExt = "InverseFunctions"
 [compat]
 ArgCheck = "1, 2"
 ChangesOfVariables = "0.1"
+CompositionsBase = "0.1.2"
 DocStringExtensions = "0.8, 0.9"
 ForwardDiff = "0.10, 1"
 InverseFunctions = "0.1"

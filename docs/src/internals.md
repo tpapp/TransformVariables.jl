@@ -8,8 +8,6 @@ These are not part of the API, use the `as` constructor or one of the predefined
 
 ```@docs
 TransformVariables.Identity
-TransformVariables.ScaledShiftedLogistic
-TransformVariables.ShiftedExp
 ```
 
 ### Aggregating transformations

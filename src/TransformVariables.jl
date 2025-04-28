@@ -7,6 +7,7 @@ using LogExpFunctions
 using LinearAlgebra: UpperTriangular, logabsdet
 using Random: AbstractRNG, GLOBAL_RNG
 using StaticArrays: MMatrix, SMatrix, SArray, SVector, pushfirst
+using CompositionsBase
 
 include("utilities.jl")
 include("generic.jl")

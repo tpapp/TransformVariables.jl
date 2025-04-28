@@ -98,6 +98,41 @@ asℝ₋
 as𝕀
 ```
 
+For more granular control than the `as(Real, a, b)`, scalar transformations can be built from individual elements with the composition operator `∘` (typed as `\circ<tab>`):
+
+```@docs
+TVExp
+TVLogistic
+TVScale
+TVShift
+TVNeg
+```
+
+Consistent with common notation, transforms are applied right-to-left; for example, `as(Real, ∞, 3)` is equivalent to `TVShift(3) ∘ TVNeg() ∘ TVExp()`.
+If you are working in an editor where typing Unicode is difficult, `TransformVariables.compose` is also available, as in `TransformVariables.compose(TVScale(5.0), TVNeg(), TVExp())`.
+
+This composition works with any scalar transform in any order, so `TVScale(4) ∘ as(Real, 2, ∞) ∘ TVShift(1e3)` is a valid transform.
+This is useful especially for making sure that values near 0, when transformed, yield usefully-scaled values for a given variable.
+
+In addition, the `TVScale` transform accepts arbitrary types. It can be used as the outermost transform (so leftmost in the composition) to add, for example, `Unitful` units to a number (or to create other exotic number types which can be constructed by multiplying, such as a `ForwardDiff.Dual`).
+
+However, note that calculating log Jacobian determinants may error for types that are not real numbers.
+For example, 
+
+```julia
+using Unitful
+t = TVScale(5u"m") ∘ TVExp()
+```
+produces positive quantities with the dimension of length. 
+!!! note
+    Because the log-Jacobian of a transform that adds units is not defined, `transform_and_logjac` and `inverse_and_logjac`
+    only have methods defined for `TVScale{T} where {T<:Real}`. 
+!!! note
+    The inverse transform of `TVScale(scale)` divides by `scale`, which is the correct inverse for adding units to a number, but may be inappropriate for other custom number types. A transform that doesn't just multiply or an inverse that extracts a float from an exotic number type could be defined by adding methods to `transform` and `inverse` like the following:
+    ```
+    transform(t::TVScale{T}, x) where T<:MyCustomNumberType = MyCustomNumberType(x)
+    inverse(t::TVScale{T}, x) where T<:MyCustomNumberType = get_the_float_part(x)```
+
 ## Special arrays
 
 ```@docs
