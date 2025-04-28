@@ -203,6 +203,10 @@ function inverse_eltype(t::AbstractTransform, y::T) where T
     inverse_eltype(t, T)
 end
 
+function inverse_eltype(t::AbstractTransform, T::Type)
+    throw(MethodError(inverse_eltype, (typeof(t), T)))
+end
+
 """
 $(SIGNATURES)
 

@@ -644,13 +644,16 @@ end
 
 if VERSION >= v"1.7"
 @testset "inverse_eltype allocations" begin
-    trf = as((x0 = TVShift(0f0) ∘ TVExp(), x1 = TransformVariables.Identity(), x2 = UnitSimplex(7), x3 = TransformVariables.CorrCholeskyFactor(5), x4 = as(Real, -∞, 1), x5 = as(Array, 10, 2), x6 = as(Array, as𝕀, 10), x7 = as((a = asℝ₊, b = as𝕀)), x8 = TransformVariables.UnitVector(10), x9 = TVShift(0f0) ∘ TVExp(), x10 = TVShift(0f0) ∘ TVExp(), x11 = TVShift(0f0) ∘ TVExp(), x12 = TVShift(0f0) ∘ TVExp(), x13 = TransformVariables.Identity(), x14 = TVShift(0f0) ∘ TVExp(), x15 = TVShift(0f0) ∘ TVExp(), x16 = TVShift(0f0) ∘ TVExp(), x17 = TVShift(0.0) ∘ TVExp()));
-
-    vx = randn(@inferred(TransformVariables.dimension(trf)));
-    x = TransformVariables.transform(trf, vx);
-    @test @inferred(TransformVariables.inverse_eltype(trf, x)) === Float64
-
-end
+    t0 = TVShift(0f0) ∘ TVExp()
+    t = as((x0 = TVShift(0f0) ∘ TVExp(), x1 = TransformVariables.Identity(),
+            x2 = UnitSimplex(7), x3 = TransformVariables.CorrCholeskyFactor(5),
+            x4 = as(Real, -∞, 1), x5 = as(Array, 10, 2), x6 = as(Array, as𝕀, 10),
+            x7 = as((a = asℝ₊, b = as𝕀)), x8 = TransformVariables.UnitVector(10),
+            x9 = z, x10 = t0, x11 = t0, x12 = t0, x13 = TransformVariables.Identity(),
+            x14 = t0, x15 = t0, x16 = t0, x17  = t0))
+    x = randn(@inferred(TransformVariables.dimension(t)))
+    y = TransformVariables.transform(t, x)
+    @test @inferred(TransformVariables.inverse_eltype(t, y)) === Float64
 end
 
 ####
