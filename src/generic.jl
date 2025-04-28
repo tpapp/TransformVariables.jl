@@ -204,7 +204,7 @@ function inverse_eltype(t::AbstractTransform, y::T) where T
 end
 
 function inverse_eltype(t::AbstractTransform, T::Type)
-    throw(MethodError(inverse_eltype, (typeof(t), T)))
+    throw(MethodError(inverse_eltype, (t, T)))
 end
 
 """

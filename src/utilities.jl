@@ -53,9 +53,15 @@ calculations, we fall back to something sensible. This function implements the
 heuristics for this, and is currently used in inverse element type calculations.
 """
 function _ensure_float(::Type{T}) where T
-    if T !== Union{} && T <: Number # heuristic: it is assumed that every `Number` type defines `float`
+    if T <: Number # heuristic: it is assumed that every `Number` type defines `float`
         return float(T)
     else
         return Float64
     end
 end
+
+# pass through containers
+_ensure_float(::Type{T}) where {T<:AbstractArray} = T
+
+# special case Union{}
+_ensure_float(::Type{Union{}}) = Float64

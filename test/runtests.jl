@@ -703,7 +703,6 @@ end
     @test y isa SArray{S}
     @test y == transform(as(Array, i, 2, 3), x)
     @test inverse(t, y) ≈ x
-
 end
 
 @testset "static corr cholesky factor" begin

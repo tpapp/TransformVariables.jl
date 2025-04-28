@@ -142,7 +142,7 @@ function _domain_label(transformation::ViewTransformation, index::Int)
 end
 
 function inverse_eltype(transformation::ViewTransformation,
-                        ::Type{T}) where T <: AbstractVector
+                        ::Type{T}) where T <: AbstractArray
     _ensure_float(eltype(T))
 end
 
