@@ -648,7 +648,7 @@ end
             x2 = UnitSimplex(7), x3 = TransformVariables.CorrCholeskyFactor(5),
             x4 = as(Real, -∞, 1), x5 = as(Array, 10, 2), x6 = as(Array, as𝕀, 10),
             x7 = as((a = asℝ₊, b = as𝕀)), x8 = TransformVariables.UnitVector(10),
-            x9 = z, x10 = t0, x11 = t0, x12 = t0, x13 = TransformVariables.Identity(),
+            x9 = t0, x10 = t0, x11 = t0, x12 = t0, x13 = TransformVariables.Identity(),
             x14 = t0, x15 = t0, x16 = t0, x17  = t0))
     x = randn(@inferred(TransformVariables.dimension(t)))
     y = TransformVariables.transform(t, x)
