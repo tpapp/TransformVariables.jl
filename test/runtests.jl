@@ -849,3 +849,10 @@ end
         @test x == [3]
     end
 end
+
+####
+#### static analysis with JET
+####
+
+import JET
+@test isempty(JET.get_reports(JET.report_package(TransformVariables; target_modules = (TransformVariables,))))
