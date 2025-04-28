@@ -642,7 +642,6 @@ end
     @test iszero(@allocated TransformVariables._sum_dimensions(tr))
 end
 
-if VERSION >= v"1.7"
 @testset "inverse_eltype allocations" begin
     t0 = TVShift(0f0) ∘ TVExp()
     t = as((x0 = TVShift(0f0) ∘ TVExp(), x1 = TransformVariables.Identity(),
@@ -858,4 +857,5 @@ end
 ####
 
 import JET
-@test isempty(JET.get_reports(JET.report_package(TransformVariables; target_modules = (TransformVariables,))))
+@test isempty(JET.get_reports(JET.report_package(TransformVariables;
+                                                 target_modules = (TransformVariables,))))

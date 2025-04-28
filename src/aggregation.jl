@@ -352,7 +352,7 @@ internally.
     quote
         A = ts
         B = fieldtypes(T)
-        @assert N == length(B)
+        @argcheck N == length(B) "Incompatible input length."
         $(ex)
     end
 end
