@@ -95,7 +95,10 @@ function transform_with(flag::LogJacFlag, t::UnitVector, x::AbstractVector, inde
     y, ℓ, index
 end
 
-inverse_eltype(t::UnitVector, y::AbstractVector) = robust_eltype(y)
+function inverse_eltype(t::UnitVector,
+                        ::Type{T}) where T <: AbstractVector
+    _ensure_float(eltype(T))
+end
 
 function inverse_at!(x::AbstractVector, index, t::UnitVector, y::AbstractVector)
     (; n) = t
@@ -157,7 +160,10 @@ function transform_with(flag::LogJacFlag, t::UnitSimplex, x::AbstractVector, ind
     y, ℓ, index
 end
 
-inverse_eltype(t::UnitSimplex, y::AbstractVector) = robust_eltype(y)
+function inverse_eltype(t::UnitSimplex,
+                        ::Type{T}) where T <: AbstractVector
+    _ensure_float(eltype(T))
+end
 
 function inverse_at!(x::AbstractVector, index, t::UnitSimplex, y::AbstractVector)
     (; n) = t
@@ -297,7 +303,10 @@ function transform_with(flag::LogJacFlag, transformation::StaticCorrCholeskyFact
     UpperTriangular(SMatrix{S,S}(U)), ℓ, index′
 end
 
-inverse_eltype(t::Union{CorrCholeskyFactor,StaticCorrCholeskyFactor}, U::UpperTriangular) = robust_eltype(U)
+function inverse_eltype(t::Union{CorrCholeskyFactor,StaticCorrCholeskyFactor},
+                        ::Type{T}) where {T<:UpperTriangular}
+    _ensure_float(eltype(T))
+end
 
 function inverse_at!(x::AbstractVector, index,
                      t::Union{CorrCholeskyFactor,StaticCorrCholeskyFactor}, U::UpperTriangular)

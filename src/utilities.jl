@@ -37,3 +37,25 @@ function robust_eltype(::Type{S}) where S
 end
 
 robust_eltype(x::T) where T = robust_eltype(T)
+
+"""
+$(SIGNATURES)
+
+Regularize input type, preferring a floating point, falling back to `Float64`.
+
+Internal, not exported.
+
+# Motivation
+
+Type calculations occasionally give types that are too narrow (eg `Union{}` for empty
+vectors) or broad. Since this package is primarily intended for *numerical*
+calculations, we fall back to something sensible. This function implements the
+heuristics for this, and is currently used in inverse element type calculations.
+"""
+function _ensure_float(::Type{T}) where T
+    if T !== Union{} && T <: Number # heuristic: it is assumed that every `Number` type defines `float`
+        return float(T)
+    else
+        return Float64
+    end
+end

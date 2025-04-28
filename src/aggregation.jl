@@ -141,7 +141,10 @@ function _domain_label(transformation::ViewTransformation, index::Int)
     _array_domain_label(asℝ, dims, index)
 end
 
-inverse_eltype(transformation::ViewTransformation, y) = eltype(y)
+function inverse_eltype(transformation::ViewTransformation,
+                        ::Type{T}) where T <: AbstractVector
+    _ensure_float(eltype(T))
+end
 
 function inverse_at!(x::AbstractVector, index, transformation::ViewTransformation,
                      y::AbstractArray)
@@ -210,8 +213,9 @@ function transform_with(flag::LogJacFlag, transformation::StaticArrayTransformat
 end
 
 function inverse_eltype(transformation::Union{ArrayTransformation,StaticArrayTransformation},
-                        x::AbstractArray)
-    inverse_eltype(transformation.inner_transformation, first(x)) # FIXME shortcut
+                        ::Type{T}) where T <: AbstractArray
+    inverse_eltype(transformation.inner_transformation,
+                   _ensure_float(eltype(T)))
 end
 
 function inverse_at!(x::AbstractVector, index,
@@ -341,8 +345,9 @@ internally.
 
 *Performs no argument validation, caller should do this.*
 """
-_inverse_eltype_tuple(ts::NTransforms, ys::Tuple) =
-    reduce(promote_type, map(inverse_eltype, ts, ys))
+function _inverse_eltype_tuple(ts::NTransforms, ::Type{T}) where T
+    reduce(promote_type, map(inverse_eltype, ts, fieldtypes(T)))
+end
 # NOTE: See https://github.com/tpapp/TransformVariables.jl/pull/80
 #       `map` and `reduce` both have specializations on `Tuple`s that make them type stable
 #       even when the `Tuple` is heterogenous, but that is not currently the case with
@@ -366,10 +371,9 @@ function transform_with(flag::LogJacFlag, tt::TransformTuple{<:Tuple}, x, index)
     transform_tuple(flag, tt.transformations, x, index)
 end
 
-function inverse_eltype(tt::TransformTuple{<:Tuple}, y::Tuple)
+function inverse_eltype(tt::TransformTuple{<:Tuple}, ::Type{T}) where T <: Tuple
     (; transformations) = tt
-    @argcheck length(transformations) == length(y)
-    _inverse_eltype_tuple(transformations, y)
+    _inverse_eltype_tuple(transformations, T)
 end
 
 function inverse_at!(x::AbstractVector, index, tt::TransformTuple{<:Tuple}, y::Tuple)
@@ -387,10 +391,9 @@ function transform_with(flag::LogJacFlag, tt::TransformTuple{<:NamedTuple}, x, i
     NamedTuple{keys(transformations)}(y), ℓ, index′
 end
 
-function inverse_eltype(tt::TransformTuple{<:NamedTuple}, y::NamedTuple)
+function inverse_eltype(tt::TransformTuple{<:NamedTuple}, ::Type{T}) where T <: NamedTuple
     (; transformations) = tt
-    @argcheck _same_set_of_names(transformations, y)
-    _inverse_eltype_tuple(values(transformations), values(NamedTuple{keys(transformations)}(y)))
+    _inverse_eltype_tuple(values(transformations), T)
 end
 
 function inverse_at!(x::AbstractVector, index, tt::TransformTuple{<:NamedTuple}, y::NamedTuple)

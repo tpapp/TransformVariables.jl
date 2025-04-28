@@ -52,19 +52,19 @@ end
     @test string(asℝ₊) == "asℝ₊"
     @test string(asℝ₋) == "asℝ₋"
     @test string(as𝕀) == "as𝕀"
-    @test string(TVNeg() ∘ TVExp()) == "asℝ₋" 
+    @test string(TVNeg() ∘ TVExp()) == "asℝ₋"
     @test string(as(Real, 0.0, 2.0)) == "as(Real, 0.0, 2.0)"
     @test string(as(Real, 1.0, ∞)) == "as(Real, 1.0, ∞)"
     @test string(as(Real, -∞, 1.0)) == "as(Real, -∞, 1.0)"
 
-    @test string(TVExp()) == "asℝ₊" 
-    @test string(TVLogistic()) == "as𝕀" 
+    @test string(TVExp()) == "asℝ₊"
+    @test string(TVLogistic()) == "as𝕀"
     @test string(TVShift(4.0)) == "TVShift(4.0)"
     @test string(TVScale(4.0)) == "TVScale(4.0)"
     @test string(TVNeg()) == "TVNeg()"
 
-    @test string(TVScale(2.0) ∘ TVNeg() ∘ TVExp()) == "TVScale(2.0) ∘ TVNeg() ∘ asℝ₊" 
-    @test string(TVScale(5.0u"m") ∘ TVLogistic()) == "TVScale(5.0 m) ∘ as𝕀" 
+    @test string(TVScale(2.0) ∘ TVNeg() ∘ TVExp()) == "TVScale(2.0) ∘ TVNeg() ∘ asℝ₊"
+    @test string(TVScale(5.0u"m") ∘ TVLogistic()) == "TVScale(5.0 m) ∘ as𝕀"
 end
 
 @testset "scalar transformations consistency" begin
@@ -79,10 +79,10 @@ end
 end
 
 @testset "scalar non-Real (Unitful) consistency" begin
-    for _ in 1:10    
+    for _ in 1:10
         a = randn() * 100
         b = a + 0.5 + rand(Float64) + exp(randn() * 10)
-        t1 = TVScale(2u"m") ∘ TVShift(a) ∘ TVExp() 
+        t1 = TVScale(2u"m") ∘ TVShift(a) ∘ TVExp()
         test_transformation(t1, y -> y > a*2u"m", jac=false)
         t2 = TVScale(1u"s") ∘ TVShift(a) ∘ TVScale(b-a) ∘ TVLogistic()
         test_transformation(t2, y -> (a*u"s" < y < b*u"s"), jac=false)
@@ -116,7 +116,7 @@ end
     for s1 in same_domain_transforms, s2 in same_domain_transforms, n in new_domain_transforms
         for s3 in same_domain_transforms, s4 in same_domain_transforms
             # don't worry about valid output here, let inverse check that
-            test_transformation(s1 ∘ s2 ∘ n ∘ s3 ∘ s4, _ -> true; N=100) 
+            test_transformation(s1 ∘ s2 ∘ n ∘ s3 ∘ s4, _ -> true; N=100)
             @test TransformVariables.compose(s1, ∘(s2), n, ∘(s3), s4) == s1 ∘ s2 ∘ n ∘ s3 ∘ s4
         end
     end
@@ -313,6 +313,15 @@ end
     y2, lj = transform_and_logjac(t, v)
     @test y1 == y2 == reshape(v, d)
     @test lj == 0
+end
+
+@testset "empty array transformation" begin
+    t = as(Vector, 0)
+    x = Float64[]
+    y = transform(t, x)
+    @test x == inverse(t, y)
+    y, lj = transform_and_logjac(t, x)
+    @test lj == 0.0
 end
 
 ###
