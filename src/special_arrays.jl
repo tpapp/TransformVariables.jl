@@ -73,7 +73,7 @@ struct UnitVector <: VectorTransform
     end
 end
 
-dimension(t::UnitVector) = t.n - 1
+dimension(t::UnitVector) = t.n
 
 function _summary_rows(transformation::UnitVector, mime)
     _summary_row(transformation, "$(transformation.n) element unit vector transformation")
