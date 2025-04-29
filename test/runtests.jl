@@ -529,7 +529,7 @@ end
         -(abs2(μ) + abs2(σ) + abs2(β) + α + δ[1] + δ[2])
     end
     P = TransformedLogDensities.TransformedLogDensity(t, f)
-    x = zeros(dimension(t))
+    x = randn(dimension(t))
     v = logdensity(P, x)
     g = ForwardDiff.gradient(x -> logdensity(P, x), x)
 
@@ -642,7 +642,7 @@ end
 
     t = UnitVector(3)
     d = dimension(t)
-    x = [zeros(d), zeros(d)]
+    x = [randn(d), randn(d)]
     @test transform.(t, x) == map(x -> transform(t, x), x)
 end
 
