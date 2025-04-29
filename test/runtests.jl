@@ -194,7 +194,9 @@ end
 
 @testset "to unit vector" begin
     @testset "dimension checks" begin
-        U = UnitVector(3)
+        @test_throws ArgumentError UnitVector(0)
+        @test_throws ArgumentError UnitVector(1)
+        U = UnitVector(2)
         x = zeros(3)               # incorrect
         @test_throws ArgumentError transform(U, x)
         @test_throws ArgumentError transform_and_logjac(U, x)
