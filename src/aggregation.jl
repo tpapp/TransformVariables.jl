@@ -347,18 +347,15 @@ internally.
 """
 function _inverse_eltype_tuple(ts::NTransforms{N}, ::Type{T}) where {N,T<:Tuple}
     @argcheck T <: NTuple{N,Any} "Incompatible input length."
-    return __inverse_eltype_tuple(ts, T)
+    __inverse_eltype_tuple(ts, T)
 end
-function __inverse_eltype_tuple(ts::NTransform, ::Type{Tuple{}})
-   return Union{}
+function __inverse_eltype_tuple(ts::NTransforms, ::Type{Tuple{}})
+    Union{}
 end
-function __inverse_eltype_tuple(ts::NTransform, ::Type{T}) where {T<:Tuple}
-   return promote_type(inverse_eltype(Base.first(ts), fieldtype(T, 1)), __inverse_eltype_tuple(Base.tail(ts), Tuple{Base.tail(fieldtypes(T))...}))
+function __inverse_eltype_tuple(ts::NTransforms, ::Type{T}) where {T<:Tuple}
+    promote_type(inverse_eltype(Base.first(ts), fieldtype(T, 1)),
+                 __inverse_eltype_tuple(Base.tail(ts), Tuple{Base.tail(fieldtypes(T))...}))
 end
-# NOTE: See https://github.com/tpapp/TransformVariables.jl/pull/80
-#       `map` and `reduce` both have specializations on `Tuple`s that make them type stable
-#       even when the `Tuple` is heterogenous, but that is not currently the case with
-#       `mapreduce`, therefore separate `reduce` and `map` are preferred as a workaround.
 
 """
 $(SIGNATURES)
@@ -389,8 +386,9 @@ function inverse_at!(x::AbstractVector, index, tt::TransformTuple{<:Tuple}, y::T
     _inverse!_tuple(x, index, tt.transformations, y)
 end
 
-as(transformations::NamedTuple{N,<:NTransforms}) where N =
+function as(transformations::NamedTuple{N,<:NTransforms}) where N
     TransformTuple(transformations)
+end
 
 function transform_with(flag::LogJacFlag, tt::TransformTuple{<:NamedTuple}, x, index)
     (; transformations) = tt
@@ -398,7 +396,7 @@ function transform_with(flag::LogJacFlag, tt::TransformTuple{<:NamedTuple}, x, i
     NamedTuple{keys(transformations)}(y), ℓ, index′
 end
 
-function inverse_eltype(tt::TransformTuple{<:NamedTuple}, ::Type{T}) where T <: NamedTuple
+function inverse_eltype(tt::TransformTuple{<:NamedTuple}, ::Type{NamedTuple{N,T}}) where {N,T}
     (; transformations) = tt
     _inverse_eltype_tuple(values(transformations), T)
 end
