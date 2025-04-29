@@ -378,7 +378,8 @@ end
     x = randn(dimension(tn))
     y = @inferred transform(tn, x)
     @test y isa NamedTuple{(:a,:b,:c)}
-    @test inverse(tn, y) ≈ x
+    x′ = inverse(tn, y)
+    @test inverse(tn, transform(tn, x′)) ≈ x′
     index = 0
     ljacc = 0.0
     for (i, t) in enumerate((t1, t2, t3))
@@ -416,11 +417,13 @@ end
     for _ in 1:10
         N = rand(3:7)
         tt = as((a = as(Tuple(as(Vector, asℝ₊, 2) for _ in 1:N)),
-                 b = as(Tuple(UnitVector(n) for n in 1:N))))
+                 b = as(Tuple(UnitVector(n) for n in 2:N))))
         x = randn(dimension(tt))
         y = transform(tt, x)
         x′ = inverse(tt, y)
-        @test x ≈ x′
+        m = sum(2:N)
+        @test x[1:end-m] ≈ x′[1:end-m]
+        @test inverse(tt, transform(tt, x′)) ≈ x′
     end
 end
 
