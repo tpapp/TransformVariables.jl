@@ -756,7 +756,7 @@ end
     [98:98] 1 → asℝ
     [108:110] 2 → SMatrix{3,3} correlation cholesky factor
     [120:121] 3 → 3 element unit simplex transformation
-    [131:133] 4 → 4 element unit vector transformation"""
+    [131:134] 4 → 4 element unit vector transformation"""
     repr(MIME("text/plain"), t) == repr_t
 end
 
