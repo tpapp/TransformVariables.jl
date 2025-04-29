@@ -201,13 +201,31 @@ end
     end
 
     @testset "consistency checks" begin
-        for K in 1:10
+        for K in 2:11
             t = UnitVector(K)
-            @test dimension(t) == K - 1
-            if K > 1
-                test_transformation(t, y -> sum(abs2, y) ≈ 1,
-                                    vec_y = y -> y[1:(end-1)])
-            end
+            @test dimension(t) == K
+            test_transformation(t, y -> sum(abs2, y) ≈ 1, test_inverse=false, jac=false)
+
+            # because transform is non-bijective, we need to manually test inverse and jac
+            x = normalize(randn(K))  # if already normalized, inverse is the identity
+            y = transform(t, x)
+            @test inverse(t, y) ≈ y ≈ x
+
+            # test "jacobian", here lj is the sum of the log jacobian of the transform and
+            # the log-density of the prior on the discarded parameter (the norm of the vector)
+            x = randn(K)
+            r = norm(x)
+            _, lj = transform_and_logjac(t, x)
+            J = ForwardDiff.jacobian(x -> vcat(normalize(x), norm(x)), x)
+            # log of generalized Jacobian determinant:
+            # - https://encyclopediaofmath.org/wiki/Jacobian#Generalizations_of_the_Jacobian_determinant
+            # - https://en.wikipedia.org/wiki/Area_formula_(geometric_measure_theory)
+            lj_transform = logdet(J' * J) / 2
+            # lp_prior
+            # un-normalized Chi distribution prior on r
+            lp_prior = (K - 1) * log(r) - r^2 / 2
+            lj_manual = lj_transform + lp_prior
+            @test lj ≈ lj_manual
         end
     end
 end
