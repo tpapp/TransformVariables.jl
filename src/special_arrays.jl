@@ -88,9 +88,8 @@ function transform_with(flag::LogJacFlag, t::UnitVector, x::AbstractVector, inde
     (; n) = t
     T = robust_eltype(x)
     y = Vector{T}(undef, n)
-    z = view(x, index:index+n-1)
-    r = norm(z)
-    copyto!(y, z)
+    copyto!(y, 1, x, index, n)
+    r = norm(y)
     __normalize!(y, r)
     ℓ = flag isa NoLogJac ? flag : -r^2 / 2
     index += n
@@ -119,8 +118,7 @@ inverse_eltype(t::UnitVector, y::AbstractVector) = robust_eltype(y)
 function inverse_at!(x::AbstractVector, index, t::UnitVector, y::AbstractVector)
     (; n) = t
     @argcheck length(y) == n
-    z = view(x, index:index+n-1)
-    copyto!(z, y)
+    copyto!(x, index, y)
     index += n
     return index
 end
