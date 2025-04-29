@@ -4,7 +4,7 @@ using ArgCheck: @argcheck
 using DocStringExtensions: FUNCTIONNAME, SIGNATURES, TYPEDEF
 import ForwardDiff
 using LogExpFunctions
-using LinearAlgebra: UpperTriangular, logabsdet
+using LinearAlgebra: UpperTriangular, logabsdet, norm, rmul!
 using Random: AbstractRNG, GLOBAL_RNG
 using StaticArrays: MMatrix, SMatrix, SArray, SVector, pushfirst
 using CompositionsBase
