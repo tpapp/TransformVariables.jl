@@ -114,12 +114,10 @@ inverse_eltype(t::UnitVector, y::AbstractVector) = robust_eltype(y)
 function inverse_at!(x::AbstractVector, index, t::UnitVector, y::AbstractVector)
     (; n) = t
     @argcheck length(y) == n
-    log_r = zero(eltype(y))
-    @inbounds for yi in axes(y, 1)[1:(end-1)]
-        x[index], log_r = l2_remainder_inverse(y[yi], log_r)
-        index += 1
-    end
-    index
+    z = view(x, index:index+n-1)
+    copyto!(z, y)
+    index += n
+    return index
 end
 
 
