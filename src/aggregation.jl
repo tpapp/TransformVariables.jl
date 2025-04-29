@@ -345,16 +345,15 @@ internally.
 
 *Performs no argument validation, caller should do this.*
 """
-@generated function _inverse_eltype_tuple(ts::NTransforms{N}, ::Type{T}) where {N,T}
-    ex = mapreduce((i, T) -> :(inverse_eltype(ts[$i], $T)),
-                   (a, b) -> :(promote_type($a, $b)),
-                   1:N, fieldtypes(T))
-    quote
-        A = ts
-        B = fieldtypes(T)
-        @argcheck N == length(B) "Incompatible input length."
-        $(ex)
-    end
+function _inverse_eltype_tuple(ts::NTransforms{N}, ::Type{T}) where {N,T<:Tuple}
+    @argcheck T <: NTuple{N,Any} "Incompatible input length."
+    return __inverse_eltype_tuple(ts, T)
+end
+function __inverse_eltype_tuple(ts::NTransform, ::Type{Tuple{}})
+   return Union{}
+end
+function __inverse_eltype_tuple(ts::NTransform, ::Type{T}) where {T<:Tuple}
+   return promote_type(inverse_eltype(Base.first(ts), fieldtype(T, 1)), __inverse_eltype_tuple(Base.tail(ts), Tuple{Base.tail(fieldtypes(T))...}))
 end
 # NOTE: See https://github.com/tpapp/TransformVariables.jl/pull/80
 #       `map` and `reduce` both have specializations on `Tuple`s that make them type stable
