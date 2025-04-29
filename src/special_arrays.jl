@@ -68,7 +68,7 @@ Euclidean norm.
 struct UnitVector <: VectorTransform
     n::Int
     function UnitVector(n::Int)
-        @argcheck n ≥ 1 "Dimension should be positive."
+        @argcheck n ≥ 2 "Dimension should be at least 2."
         new(n)
     end
 end
