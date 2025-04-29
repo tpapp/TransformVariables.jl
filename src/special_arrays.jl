@@ -62,8 +62,13 @@ end
 """
     UnitVector(n)
 
-Transform `n-1` real numbers to a unit vector of length `n`, under the
+Transform `n` real numbers to a unit vector of length `n`, under the
 Euclidean norm.
+
+!!! note
+    This transform is non-bijective and is undefined at the origin.
+    If maximizing a target distribution whose density is constant for the unit vector,
+    then the maximizer is at the origin, and behavior is undefined.
 """
 struct UnitVector <: VectorTransform
     n::Int
