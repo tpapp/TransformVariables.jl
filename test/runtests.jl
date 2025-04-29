@@ -856,5 +856,4 @@ end
 ####
 
 import JET
-@test isempty(JET.get_reports(JET.report_package(TransformVariables;
-                                                 target_modules = (TransformVariables,))))
+JET.test_package(TransformVariables; target_modules = (TransformVariables,))
