@@ -181,16 +181,31 @@ end
 inverse(f::CallableInverse) = Base.Fix1(transform, f.x)
 
 """
-    $(FUNCTIONNAME)(t::AbstractTransform, y)
+```
+$(FUNCTIONNAME)(t::AbstractTransform, y)
+$(FUNCTIONNAME)(t::AbstractTransform, ::Type{T})
+```
 
-The element type for vector `x` so that `inverse!(x, t, y)` works.
+The element type for vector `x` so that `inverse!(x, t, y::T)` works.
 
-!!! note
-    It is not guaranteed that the result is the narrowest possible type, and may change
-    without warning between versions. Some effort is made to come up with a reasonable
-    concrete type even in corner cases.
+# Notes
+
+1. It is not guaranteed that the result is the narrowest possible type, and may change
+   without warning between versions. Some effort is made to come up with a reasonable
+   concrete type even in corner cases.
+
+2. Transformations should provide a method for *types*, not values.
+
+3. No dimension or input compatibility checks are guaranteed to be performed, even for
+   values.
 """
-function inverse_eltype end
+function inverse_eltype(t::AbstractTransform, y::T) where T
+    inverse_eltype(t, T)
+end
+
+function inverse_eltype(t::AbstractTransform, T::Type)
+    throw(MethodError(inverse_eltype, (t, T)))
+end
 
 """
 $(SIGNATURES)
@@ -283,15 +298,8 @@ end
 
 # We want to avoid vectors with non-numerical element types
 # Ref https://github.com/tpapp/TransformVariables.jl/issues/132
-function inverse(t::VectorTransform, y)
-    inverse!(Vector{_float_or_Float64(inverse_eltype(t, y))}(undef, dimension(t)), t, y)
-end
-function _float_or_Float64(::Type{T}) where T
-    if T !== Union{} && T <: Number # heuristic: it is assumed that every `Number` type defines `float`
-        return float(T)
-    else
-        return Float64
-    end
+function inverse(t::VectorTransform, y::T) where T
+    inverse!(Vector{_ensure_float(inverse_eltype(t, T))}(undef, dimension(t)), t, y)
 end
 
 """

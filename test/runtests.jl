@@ -52,19 +52,19 @@ end
     @test string(asℝ₊) == "asℝ₊"
     @test string(asℝ₋) == "asℝ₋"
     @test string(as𝕀) == "as𝕀"
-    @test string(TVNeg() ∘ TVExp()) == "asℝ₋" 
+    @test string(TVNeg() ∘ TVExp()) == "asℝ₋"
     @test string(as(Real, 0.0, 2.0)) == "as(Real, 0.0, 2.0)"
     @test string(as(Real, 1.0, ∞)) == "as(Real, 1.0, ∞)"
     @test string(as(Real, -∞, 1.0)) == "as(Real, -∞, 1.0)"
 
-    @test string(TVExp()) == "asℝ₊" 
-    @test string(TVLogistic()) == "as𝕀" 
+    @test string(TVExp()) == "asℝ₊"
+    @test string(TVLogistic()) == "as𝕀"
     @test string(TVShift(4.0)) == "TVShift(4.0)"
     @test string(TVScale(4.0)) == "TVScale(4.0)"
     @test string(TVNeg()) == "TVNeg()"
 
-    @test string(TVScale(2.0) ∘ TVNeg() ∘ TVExp()) == "TVScale(2.0) ∘ TVNeg() ∘ asℝ₊" 
-    @test string(TVScale(5.0u"m") ∘ TVLogistic()) == "TVScale(5.0 m) ∘ as𝕀" 
+    @test string(TVScale(2.0) ∘ TVNeg() ∘ TVExp()) == "TVScale(2.0) ∘ TVNeg() ∘ asℝ₊"
+    @test string(TVScale(5.0u"m") ∘ TVLogistic()) == "TVScale(5.0 m) ∘ as𝕀"
 end
 
 @testset "scalar transformations consistency" begin
@@ -79,10 +79,10 @@ end
 end
 
 @testset "scalar non-Real (Unitful) consistency" begin
-    for _ in 1:10    
+    for _ in 1:10
         a = randn() * 100
         b = a + 0.5 + rand(Float64) + exp(randn() * 10)
-        t1 = TVScale(2u"m") ∘ TVShift(a) ∘ TVExp() 
+        t1 = TVScale(2u"m") ∘ TVShift(a) ∘ TVExp()
         test_transformation(t1, y -> y > a*2u"m", jac=false)
         t2 = TVScale(1u"s") ∘ TVShift(a) ∘ TVScale(b-a) ∘ TVLogistic()
         test_transformation(t2, y -> (a*u"s" < y < b*u"s"), jac=false)
@@ -116,7 +116,7 @@ end
     for s1 in same_domain_transforms, s2 in same_domain_transforms, n in new_domain_transforms
         for s3 in same_domain_transforms, s4 in same_domain_transforms
             # don't worry about valid output here, let inverse check that
-            test_transformation(s1 ∘ s2 ∘ n ∘ s3 ∘ s4, _ -> true; N=100) 
+            test_transformation(s1 ∘ s2 ∘ n ∘ s3 ∘ s4, _ -> true; N=100)
             @test TransformVariables.compose(s1, ∘(s2), n, ∘(s3), s4) == s1 ∘ s2 ∘ n ∘ s3 ∘ s4
         end
     end
@@ -313,6 +313,15 @@ end
     y2, lj = transform_and_logjac(t, v)
     @test y1 == y2 == reshape(v, d)
     @test lj == 0
+end
+
+@testset "empty array transformation" begin
+    t = as(Vector, 0)
+    x = Float64[]
+    y = transform(t, x)
+    @test x == inverse(t, y)
+    y, lj = transform_and_logjac(t, x)
+    @test lj == 0.0
 end
 
 ###
@@ -633,15 +642,17 @@ end
     @test iszero(@allocated TransformVariables._sum_dimensions(tr))
 end
 
-if VERSION >= v"1.7"
 @testset "inverse_eltype allocations" begin
-    trf = as((x0 = TVShift(0f0) ∘ TVExp(), x1 = TransformVariables.Identity(), x2 = UnitSimplex(7), x3 = TransformVariables.CorrCholeskyFactor(5), x4 = as(Real, -∞, 1), x5 = as(Array, 10, 2), x6 = as(Array, as𝕀, 10), x7 = as((a = asℝ₊, b = as𝕀)), x8 = TransformVariables.UnitVector(10), x9 = TVShift(0f0) ∘ TVExp(), x10 = TVShift(0f0) ∘ TVExp(), x11 = TVShift(0f0) ∘ TVExp(), x12 = TVShift(0f0) ∘ TVExp(), x13 = TransformVariables.Identity(), x14 = TVShift(0f0) ∘ TVExp(), x15 = TVShift(0f0) ∘ TVExp(), x16 = TVShift(0f0) ∘ TVExp(), x17 = TVShift(0.0) ∘ TVExp()));
-
-    vx = randn(@inferred(TransformVariables.dimension(trf)));
-    x = TransformVariables.transform(trf, vx);
-    @test @inferred(TransformVariables.inverse_eltype(trf, x)) === Float64
-
-end
+    t0 = TVShift(0f0) ∘ TVExp()
+    t = as((x0 = TVShift(0f0) ∘ TVExp(), x1 = TransformVariables.Identity(),
+            x2 = UnitSimplex(7), x3 = TransformVariables.CorrCholeskyFactor(5),
+            x4 = as(Real, -∞, 1), x5 = as(Array, 10, 2), x6 = as(Array, as𝕀, 10),
+            x7 = as((a = asℝ₊, b = as𝕀)), x8 = TransformVariables.UnitVector(10),
+            x9 = t0, x10 = t0, x11 = t0, x12 = t0, x13 = TransformVariables.Identity(),
+            x14 = t0, x15 = t0, x16 = t0, x17  = t0))
+    x = randn(@inferred(TransformVariables.dimension(t)))
+    y = TransformVariables.transform(t, x)
+    @test @inferred(TransformVariables.inverse_eltype(t, y)) === Float64
 end
 
 ####
@@ -692,7 +703,6 @@ end
     @test y isa SArray{S}
     @test y == transform(as(Array, i, 2, 3), x)
     @test inverse(t, y) ≈ x
-
 end
 
 @testset "static corr cholesky factor" begin
@@ -840,3 +850,10 @@ end
         @test x == [3]
     end
 end
+
+####
+#### static analysis with JET
+####
+
+import JET
+JET.test_package(TransformVariables; target_modules = (TransformVariables,))

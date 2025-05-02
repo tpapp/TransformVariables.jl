@@ -19,7 +19,7 @@ function transform_with(logjac_flag::LogJacFlag, t::Constant, x::AbstractVector,
     t.value, logjac_zero(logjac_flag, eltype(x)), index
 end
 
-inverse_eltype(t::Constant, _) = Union{}
+inverse_eltype(t::Constant, ::Type) = Union{}
 
 function inverse_at!(x::AbstractVector, index, t::Constant, y)
     @argcheck t.value == y
