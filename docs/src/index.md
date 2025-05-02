@@ -146,6 +146,7 @@ produces positive quantities with the dimension of length.
 ## Special arrays
 
 ```@docs
+unit_vector_norm
 UnitVector
 UnitSimplex
 CorrCholeskyFactor
