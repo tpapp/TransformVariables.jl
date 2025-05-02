@@ -134,7 +134,7 @@ Euclidean norm.
 When `chi_prior = true`, a prior correction is applied to the radius, which only
 affects the log Jacobian determinant. The purpose of this is to make the
 distribution proper. If you wish to use another prior, set this to `false` and use
-manual correction, see also [`logprior`](@ref).
+a manual correction, see also [`logprior`](@ref).
 
 !!! note
     At the origin, this transform is non-bijective and non-differentiable. If
