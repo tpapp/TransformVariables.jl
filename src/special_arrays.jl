@@ -139,7 +139,7 @@ manual correction, see also [`logprior`](@ref).
 !!! note
     At the origin, this transform is non-bijective and non-differentiable. If
     maximizing a target distribution whose density is constant for the unit vector,
-    then the maximizer is at the origin, and behavior is undefined.
+    then the maximizer using the Chi prior is at the origin, and behavior is undefined.
 
 !!! note
     While ``n = 1`` would be technically possible, for practical purposes it would
