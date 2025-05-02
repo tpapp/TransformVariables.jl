@@ -128,7 +128,7 @@ end
 """
 $(SIGNATURES)
 
-Transform `n` real numbers to a unit vector of length `n` and a radius, under the
+Transform `n ≥ 2` real numbers to a unit vector of length `n` and a radius, under the
 Euclidean norm.
 
 When `chi_prior = true`, a prior correction is applied to the radius, which only
@@ -140,6 +140,13 @@ manual correction, see also [`logprior`](@ref).
     At the origin, this transform is non-bijective and non-differentiable. If
     maximizing a target distribution whose density is constant for the unit vector,
     then the maximizer is at the origin, and behavior is undefined.
+
+!!! note
+    While ``n = 1`` would be technically possible, for practical purposes it would
+    likely suffer from numerical issues, since the transform is undefined at ``x = 0``,
+    and for a Markov chain to travel from ``y=[-1]`` to ``y=[1]``, it would have to leap
+    over the origin, which is only even possible due to discretization and likely will
+    often not work. Because of this, it is disallowed.
 """
 unit_vector_norm(n::Int; chi_prior::Bool = true) = UnitVectorNorm(n; chi_prior)
 
