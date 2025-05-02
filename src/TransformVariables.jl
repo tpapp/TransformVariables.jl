@@ -1,6 +1,7 @@
 module TransformVariables
 
 using ArgCheck: @argcheck
+import Compat
 using DocStringExtensions: FUNCTIONNAME, SIGNATURES, TYPEDEF
 import ForwardDiff
 using LogExpFunctions

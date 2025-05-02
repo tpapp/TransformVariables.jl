@@ -1,7 +1,7 @@
 export dimension, transform, transform_and_logjac, transform_logdensity, inverse, inverse!,
     inverse_eltype, as, domain_label
 
-public logprior, nonzero_logprior
+Compat.@compat public logprior, nonzero_logprior
 
 ###
 ### log absolute Jacobian determinant
