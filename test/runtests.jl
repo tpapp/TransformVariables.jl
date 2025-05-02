@@ -233,6 +233,7 @@ end
             test_transformation(t, _is_valid_yr; vec_y = _vec_yr)
 
             @test all(isnan, transform(t, zeros(dimension(t)))[1][1:(end-1)])
+            @test inverse(t, (zeros(K), 0.0)) == zeros(K)
 
             # no chi prior
             t = unit_vector_norm(K; chi_prior = false)
@@ -294,6 +295,12 @@ end
             end
         end
     end
+end
+
+@testset "logprior fallbacks" begin
+    struct DummyTransformation <: AbstractTransform end
+    @test !TransformVariables.nonzero_logprior(DummyTransformation())
+    @test TransformVariables.logprior(DummyTransformation(), 2.0) == 0.0
 end
 
 ####
