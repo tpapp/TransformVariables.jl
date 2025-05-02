@@ -68,7 +68,7 @@ Euclidean norm.
 struct UnitVector <: VectorTransform
     n::Int
     function UnitVector(n::Int)
-        Base.depwarn("UnitVector is deprecated. See `unit_vector_norm`.", UnitVector)
+        Base.depwarn("UnitVector is deprecated. See `unit_vector_norm`.", :UnitVector)
         @argcheck n ≥ 1 "Dimension should be positive."
         new(n)
     end
