@@ -20,6 +20,24 @@ Number of elements (strictly) above the diagonal in an ``n×n`` matrix.
 """
 unit_triangular_dimension(n::Int) = n * (n-1) ÷ 2
 
+
+# Adapted from LinearAlgebra.__normalize!
+# MIT license
+# Copyright (c) 2018-2024 LinearAlgebra.jl contributors: https://github.com/JuliaLang/LinearAlgebra.jl/contributors
+@inline function __normalize!(a::AbstractArray, nrm)
+    # The largest positive floating point number whose inverse is less than infinity
+    δ = inv(prevfloat(typemax(nrm)))
+    if nrm ≥ δ # Safe to multiply with inverse
+        invnrm = inv(nrm)
+        rmul!(a, invnrm)
+    else # scale elements to avoid overflow
+        εδ = eps(one(nrm))/δ
+        rmul!(a, εδ)
+        rmul!(a, inv(nrm*εδ))
+    end
+    return a
+end
+
 ###
 ### type calculations
 ###

@@ -5,8 +5,19 @@ Log jacobian abs determinant via automatic differentiation. For testing.
 """
 AD_logjac(f, x) = log(abs(ForwardDiff.derivative(f, x)))
 
-AD_logjac(t::VectorTransform, x, vec_y) =
-    logabsdet(ForwardDiff.jacobian(x -> vec_y(transform(t, x)), x))[1]
+function AD_logjac(t::VectorTransform, x, vec_y)
+    J = ForwardDiff.jacobian(x -> vec_y(transform(t, x)), x)
+    n, n2 = size(J)
+    if n == n2
+        logabsdet(J)[1]
+    else
+        # for generalized Jacobian determinant, see
+        # - https://encyclopediaofmath.org/wiki/Jacobian#Generalizations_of_the_Jacobian_determinant
+        # - https://en.wikipedia.org/wiki/Area_formula_(geometric_measure_theory)
+        logabsdet(J' * J)[1] / 2
+    end
+end
+
 
 AD_logjac(t::ScalarTransform, x) = AD_logjac(x -> transform(t, x), x)
 
@@ -25,13 +36,15 @@ Test transformation `t` with random values, `N` times.
 
 `is_valid_y` checks the result of the transformation.
 
-`vec_y` converts the result to a vector, for checking the log Jacobian with
-automatic differentiation.
+# Keyword arguments
+
+`vec_y` converts the result to a vector, for checking the log Jacobian with automatic
+differentiation.
 
 `test_inverse` determines whether the inverse is tested.
 
-`jac` determines whether `transform_and_logjac` is tested against the log 
-Jacobian from AD, true by default. The Jacobian is not defined for Unitful scaling.
+`jac` determines whether `transform_and_logjac` is tested against the log Jacobian from
+AD, true by default. The Jacobian is not defined for Unitful scaling.
 """
 function test_transformation(t::AbstractTransform, is_valid_y;
                              vec_y = identity, N = 1000, test_inverse = true, jac=true)
@@ -44,10 +57,14 @@ function test_transformation(t::AbstractTransform, is_valid_y;
         if jac
             y2, lj = @inferred transform_and_logjac(t, x)
             @test y2 == y
+            jc = TransformVariables.logprior(t, y)
+            if !iszero(jc)
+                @test TransformVariables.nonzero_logprior(t) == true
+            end
             if t isa ScalarTransform
-                @test lj ≈ AD_logjac(t, x)
+                @test lj ≈ AD_logjac(t, x) + jc
             else
-                @test lj ≈ AD_logjac(t, x, vec_y)
+                @test lj ≈ AD_logjac(t, x, vec_y) + jc
             end
         end
         if test_inverse

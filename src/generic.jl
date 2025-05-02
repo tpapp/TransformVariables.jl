@@ -1,6 +1,8 @@
 export dimension, transform, transform_and_logjac, transform_logdensity, inverse, inverse!,
     inverse_eltype, as, domain_label
 
+public logprior, nonzero_logprior
+
 ###
 ### log absolute Jacobian determinant
 ###
@@ -109,6 +111,8 @@ The user interface consists of
 - [`transform_and_logjac`](@ref)
 - [`inverse`](@ref), [`inverse!`](@ref)
 - [`inverse_eltype`](@ref).
+- [`nonzero_logprior`](@ref).
+- [`logprior`](@ref)
 """
 abstract type AbstractTransform end
 
@@ -165,6 +169,30 @@ inverse(t)(y) == inverse(t, y) == inverse(transform(t))(y)
     concrete type even in corner cases.
 """
 inverse(t::AbstractTransform) = Base.Fix1(inverse, t)
+
+"""
+$(SIGNATURES)
+
+Return the log prior correction used in [`transform_and_logjac`](@ref). The second
+argument is the output of a transformation.
+
+The log jacobian determinant is corrected by this value, usually for the purpose of
+making a distribution proper. Can only be nonzero when [`nonzero_logprior`](@ref) is
+true.
+"""
+logprior(t::AbstractTransform, y) = 0.0
+
+"""
+$(SIGNATURES)
+
+Return `true` only if there are potential inputs for which [`logprior`](@ref) is
+nonzero.
+
+!!! note
+    Currently the only transformation that has a log prior correction is
+    [`unit_vector_norm`](@ref).
+"""
+nonzero_logprior(t::AbstractTransform) = false
 
 """
 $(TYPEDEF)

@@ -1,4 +1,4 @@
-export UnitVector, UnitSimplex, CorrCholeskyFactor, corr_cholesky_factor
+export UnitVector, unit_vector_norm, UnitSimplex, CorrCholeskyFactor, corr_cholesky_factor
 
 ####
 #### building blocks
@@ -68,6 +68,7 @@ Euclidean norm.
 struct UnitVector <: VectorTransform
     n::Int
     function UnitVector(n::Int)
+        Base.depwarn("UnitVector is deprecated. See `unit_vector_norm`.", UnitVector)
         @argcheck n ≥ 1 "Dimension should be positive."
         new(n)
     end
@@ -111,6 +112,88 @@ function inverse_at!(x::AbstractVector, index, t::UnitVector, y::AbstractVector)
     index
 end
 
+####
+#### unit_vector_norm
+####
+
+struct UnitVectorNorm <: VectorTransform
+    n::Int
+    chi_prior::Bool
+    function UnitVectorNorm(n::Int; chi_prior::Bool = true)
+        @argcheck n ≥ 2 "Dimension should be at least 2."
+        new(n, chi_prior)
+    end
+end
+
+"""
+$(SIGNATURES)
+
+Transform `n` real numbers to a unit vector of length `n` and a radius, under the
+Euclidean norm.
+
+When `chi_prior = true`, a prior correction is applied to the radius, which only
+affects the log Jacobian determinant. The purpose of this is to make the
+distribution proper. If you wish to use another prior, set this to `false` and use
+manual correction, see also [`logprior`](@ref).
+
+!!! note
+    At the origin, this transform is non-bijective and non-differentiable. If
+    maximizing a target distribution whose density is constant for the unit vector,
+    then the maximizer is at the origin, and behavior is undefined.
+"""
+unit_vector_norm(n::Int; chi_prior::Bool = true) = UnitVectorNorm(n; chi_prior)
+
+nonzero_logprior(t::UnitVectorNorm) = t.chi_prior
+
+function logprior(t::UnitVectorNorm, (y, r))
+    (; n, chi_prior) = t
+    if chi_prior
+        (t.n - 1) * log(r) - r^2 / 2
+    else
+        zero(r)
+    end
+end
+
+dimension(t::UnitVectorNorm) = t.n
+
+function _summary_rows(t::UnitVectorNorm, mime)
+    _summary_row(t, "$(t.n) element (unit vector, norm) transformation")
+end
+
+function transform_with(flag::LogJacFlag, t::UnitVectorNorm, x::AbstractVector, index)
+    (; n, chi_prior) = t
+    T = robust_eltype(x)
+    log_r = zero(T)
+    y = Vector{T}(undef, n)
+    copyto!(y, 1, x, index, n)
+    r = norm(y, 2)
+    __normalize!(y, r)
+    ℓ = flag isa NoLogJac ? flag : (chi_prior ? -r^2 / 2 : -(t.n - 1) * log(r))
+    index += n
+    (y, r), ℓ, index
+end
+
+function inverse_eltype(t::UnitVectorNorm,
+                        ::Type{Tuple{V,T}}) where {V <: AbstractVector,T}
+    _ensure_float(eltype(T))
+end
+
+function inverse_at!(x::AbstractVector, index, t::UnitVectorNorm,
+                     (y, r)::Tuple{AbstractVector,Real})
+    (; n) = t
+    @argcheck length(y) == n
+    @argcheck r ≥ 0
+    _x = @view x[index:(index + n - 1)]
+    if r == 0
+        _x .= zero(eltype(x))
+    else
+        copyto!(_x, y)
+        yN = norm(y, 2)
+        @argcheck isapprox(yN, 1; atol = √eps(r) * n) # somewhat generous tolerance
+        __normalize!(_x, yN / r)
+    end
+    index + n
+end
 
 ####
 #### UnitSimplex
@@ -219,7 +302,6 @@ function _summary_rows(transformation::CorrCholeskyFactor, mime)
     (; n) = transformation
     _summary_row(transformation, "$(n)×$(n) correlation cholesky factor")
 end
-
 
 """
 $(SIGNATURES)
