@@ -129,7 +129,7 @@ end
 $(SIGNATURES)
 
 Transform `n ≥ 2` real numbers to a unit vector of length `n` and a radius, under the
-Euclidean norm.
+Euclidean norm. Returns the tuple `(normalized_vector, radius)`.
 
 When `chi_prior = true`, a prior correction is applied to the radius, which only
 affects the log Jacobian determinant. The purpose of this is to make the

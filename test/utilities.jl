@@ -14,6 +14,8 @@ function AD_logjac(t::VectorTransform, x, vec_y)
         # for generalized Jacobian determinant, see
         # - https://encyclopediaofmath.org/wiki/Jacobian#Generalizations_of_the_Jacobian_determinant
         # - https://en.wikipedia.org/wiki/Area_formula_(geometric_measure_theory)
+        # NOTE code below only works when the density is written wrt the Hausdorff measure.
+        # see https://github.com/tpapp/TransformVariables.jl/pull/139#discussion_r2071715166
         logabsdet(J' * J)[1] / 2
     end
 end
