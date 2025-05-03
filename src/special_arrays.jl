@@ -134,12 +134,12 @@ Euclidean norm. Returns the tuple `(normalized_vector, radius)`.
 When `chi_prior = true`, a prior correction is applied to the radius, which only
 affects the log Jacobian determinant. The purpose of this is to make the
 distribution proper. If you wish to use another prior, set this to `false` and use
-manual correction, see also [`logprior`](@ref).
+a manual correction, see also [`logprior`](@ref).
 
 !!! note
     At the origin, this transform is non-bijective and non-differentiable. If
     maximizing a target distribution whose density is constant for the unit vector,
-    then the maximizer is at the origin, and behavior is undefined.
+    then the maximizer using the Chi prior is at the origin, and behavior is undefined.
 
 !!! note
     While ``n = 1`` would be technically possible, for practical purposes it would
