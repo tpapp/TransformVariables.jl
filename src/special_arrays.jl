@@ -152,7 +152,7 @@ unit_vector_norm(n::Int; chi_prior::Bool = true) = UnitVectorNorm(n; chi_prior)
 
 nonzero_logprior(t::UnitVectorNorm) = t.chi_prior
 
-function logprior(t::UnitVectorNorm, (y, r))
+function logprior(t::UnitVectorNorm, (y, r)::Tuple{AbstractVector,Real})
     (; n, chi_prior) = t
     if chi_prior
         (t.n - 1) * log(r) - r^2 / 2
