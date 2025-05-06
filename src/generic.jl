@@ -180,7 +180,7 @@ The log jacobian determinant is corrected by this value, usually for the purpose
 making a distribution proper. Can only be nonzero when [`nonzero_logprior`](@ref) is
 true.
 """
-logprior(t::AbstractTransform, y) = 0.0
+logprior(t::AbstractTransform, y) = false # =0, to avoid unnecessary promotions
 
 """
 $(SIGNATURES)
