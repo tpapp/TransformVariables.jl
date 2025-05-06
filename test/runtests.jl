@@ -192,6 +192,7 @@ end
 #### special array transformation correctness checks
 ####
 
+# NOTE deprecated, remove in 0.9
 @testset "to unit vector" begin
     @testset "dimension checks" begin
         U = UnitVector(3)
@@ -208,6 +209,37 @@ end
                 test_transformation(t, y -> sum(abs2, y) ≈ 1,
                                     vec_y = y -> y[1:(end-1)])
             end
+        end
+    end
+end
+
+@testset "to unit vector & norm" begin
+    @testset "dimension checks" begin
+        U = unit_vector_norm(3)
+        x = zeros(4)               # incorrect
+        @test_throws ArgumentError transform(U, x)
+        @test_throws ArgumentError transform_and_logjac(U, x)
+    end
+
+    @testset "consistency checks" begin
+        _is_valid_yr((y, r)) = sum(abs2, y) ≈ 1 && r ≥ 0
+        _vec_yr((y, r)) = vcat(y, r)
+
+        for K in 2:10
+            # default
+            t = unit_vector_norm(K)
+            @test dimension(t) == K
+            @test TransformVariables.nonzero_logprior(t)
+            test_transformation(t, _is_valid_yr; vec_y = _vec_yr)
+
+            @test all(isnan, transform(t, zeros(dimension(t)))[1][1:(end-1)])
+            @test inverse(t, (zeros(K), 0.0)) == zeros(K)
+
+            # no chi prior
+            t = unit_vector_norm(K; chi_prior = false)
+            @test dimension(t) == K
+            @test !TransformVariables.nonzero_logprior(t)
+            test_transformation(t, _is_valid_yr; vec_y = _vec_yr)
         end
     end
 end
@@ -263,6 +295,12 @@ end
             end
         end
     end
+end
+
+@testset "logprior fallbacks" begin
+    struct DummyTransformation <: AbstractTransform end
+    @test !TransformVariables.nonzero_logprior(DummyTransformation())
+    @test TransformVariables.logprior(DummyTransformation(), 2.0) == 0.0
 end
 
 ####
@@ -361,7 +399,7 @@ end
 @testset "to named tuple" begin
     t1 = asℝ
     t2 = CorrCholeskyFactor(7)
-    t3 = UnitVector(3)
+    t3 = unit_vector_norm(3)
     tn = as((a = t1, b = t2, c = t3))
     @test dimension(tn) == dimension(t1) + dimension(t2) + dimension(t3)
     x = randn(dimension(tn))
@@ -405,7 +443,7 @@ end
     for _ in 1:10
         N = rand(3:7)
         tt = as((a = as(Tuple(as(Vector, asℝ₊, 2) for _ in 1:N)),
-                 b = as(Tuple(UnitVector(n) for n in 1:N))))
+                 b = as(Tuple(unit_vector_norm(n) for n in 2:N))))
         x = randn(dimension(tt))
         y = transform(tt, x)
         x′ = inverse(tt, y)
@@ -450,10 +488,10 @@ end
 end
 
 @testset "transform logdensity: type inference" begin
-    t = as((a = asℝ₋, b = as𝕀, c = as((d = UnitVector(7), e = CorrCholeskyFactor(3))),
+    t = as((a = asℝ₋, b = as𝕀, c = as((d = unit_vector_norm(7), e = CorrCholeskyFactor(3))),
             f = as(Array, 9)))
     z = zeros(dimension(t))
-    f(θ) = θ.a + θ.b + sum(abs2, θ.c.d) + sum(abs2, θ.c.e)
+    f(θ) = θ.a + θ.b + sum(abs2, θ.c.d[1]) + sum(abs2, θ.c.e)
     @test (@inferred f(transform(t, z))) isa Float64
     @test (@inferred transform_logdensity(t, f, z)) isa Float64
 end
@@ -495,7 +533,7 @@ end
 
 @testset "offset arrays" begin
     t = as((λ = asℝ₊, a = CorrCholeskyFactor(4),
-            θ = as((as(Array, as𝕀, 2, 3), UnitVector(4)))))
+            θ = as((as(Array, as𝕀, 2, 3), unit_vector_norm(4)))))
     x = random_arg(t)
     xo = OffsetVector(x, axes(x, 1) .- 7)
     @test transform(t, x) == transform(t, xo)
@@ -508,14 +546,14 @@ end
 
 @testset "AD tests" begin
     t = as((μ = asℝ, σ = asℝ₊, β = asℝ₋, α = as(Real, 0.0, 1.0),
-            u = UnitVector(3), L = CorrCholeskyFactor(4),
+            u = unit_vector_norm(3), L = CorrCholeskyFactor(4),
             δ = as((asℝ₋, as𝕀))))
     function f(θ)
-        (; μ, σ, β, α, δ) = θ
-        -(abs2(μ) + abs2(σ) + abs2(β) + α + δ[1] + δ[2])
+        (; μ, σ, β, α, δ, u) = θ
+        -(abs2(μ) + abs2(σ) + abs2(β) + α + δ[1] + δ[2] + u[2])
     end
     P = TransformedLogDensities.TransformedLogDensity(t, f)
-    x = zeros(dimension(t))
+    x = randn(dimension(t))
     v = logdensity(P, x)
     g = ForwardDiff.gradient(x -> logdensity(P, x), x)
 
@@ -626,9 +664,9 @@ end
 @testset "broadcasting" begin
     @test transform.(as𝕀, [0, 0]) == [0.5, 0.5]
 
-    t = UnitVector(3)
+    t = unit_vector_norm(3)
     d = dimension(t)
-    x = [zeros(d), zeros(d)]
+    x = [randn(d), randn(d)]
     @test transform.(t, x) == map(x -> transform(t, x), x)
 end
 
@@ -647,7 +685,7 @@ end
     t = as((x0 = TVShift(0f0) ∘ TVExp(), x1 = TransformVariables.Identity(),
             x2 = UnitSimplex(7), x3 = TransformVariables.CorrCholeskyFactor(5),
             x4 = as(Real, -∞, 1), x5 = as(Array, 10, 2), x6 = as(Array, as𝕀, 10),
-            x7 = as((a = asℝ₊, b = as𝕀)), x8 = TransformVariables.UnitVector(10),
+            x7 = as((a = asℝ₊, b = as𝕀)), x8 = unit_vector_norm(10),
             x9 = t0, x10 = t0, x11 = t0, x12 = t0, x13 = TransformVariables.Identity(),
             x14 = t0, x15 = t0, x16 = t0, x17  = t0))
     x = randn(@inferred(TransformVariables.dimension(t)))
@@ -733,7 +771,7 @@ end
     t = as((a = asℝ₊,
             b = as(Array, asℝ₋, 3, 3),
             c = corr_cholesky_factor(13),
-            d = as((asℝ, corr_cholesky_factor(SMatrix{3,3}), UnitSimplex(3), UnitVector(4)))))
+            d = as((asℝ, corr_cholesky_factor(SMatrix{3,3}), UnitSimplex(3), unit_vector_norm(4)))))
     repr_t = """
 [1:97] NamedTuple of transformations
   [1:1] :a → asℝ₊
@@ -743,7 +781,7 @@ end
     [98:98] 1 → asℝ
     [108:110] 2 → SMatrix{3,3} correlation cholesky factor
     [120:121] 3 → 3 element unit simplex transformation
-    [131:133] 4 → 4 element unit vector transformation"""
+    [131:133] 4 → 4 element (unit vector, norm) transformation"""
     repr(MIME("text/plain"), t) == repr_t
 end
 

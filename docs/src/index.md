@@ -41,11 +41,15 @@ Further worked examples of using this package can be found in the [DynamicHMCExa
 
 # General interface
 
+## Transformations
+
 ```@docs
 dimension
 transform
 transform_and_logjac
 ```
+
+## Inverses
 
 ```@docs
 inverse
@@ -53,9 +57,15 @@ inverse!
 inverse_eltype
 ```
 
+## Integration into Bayesian inference
+
 ```@docs
 transform_logdensity
+TransformVariables.logprior
+TransformVariables.nonzero_logprior
 ```
+
+## Miscellaneous
 
 ```@docs
 domain_label
@@ -136,6 +146,7 @@ produces positive quantities with the dimension of length.
 ## Special arrays
 
 ```@docs
+unit_vector_norm
 UnitVector
 UnitSimplex
 CorrCholeskyFactor
