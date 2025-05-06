@@ -157,7 +157,7 @@ function logprior(t::UnitVectorNorm, (y, r)::Tuple{AbstractVector,Real})
     if chi_prior
         (t.n - 1) * log(r) - r^2 / 2
     else
-        zero(r)
+        float(zero(r))
     end
 end
 
