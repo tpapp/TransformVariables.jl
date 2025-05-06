@@ -192,7 +192,7 @@ function inverse_at!(x::AbstractVector, index, t::UnitVectorNorm,
     @argcheck r ≥ 0
     _x = @view x[index:(index + n - 1)]
     if r == 0
-        _x .= zero(eltype(x))
+        fill!(_x, zero(eltype(x))
     else
         copyto!(_x, y)
         yN = norm(y, 2)
