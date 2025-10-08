@@ -328,6 +328,7 @@ julia> dimension(t2)
 
 julia> transform(t2, zeros(dimension(t2)))
 (σ = 1.0, u = [0.0, 0.0, 1.0])
+```
 
 ## Element access and modification
 
