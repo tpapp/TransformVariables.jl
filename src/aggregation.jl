@@ -257,23 +257,42 @@ $(TYPEDEF)
 Transform consecutive groups of real numbers to a tuple, using the given transformations.
 """
 struct TransformTuple{T} <: VectorTransform
-    transformations::T
+    inner::T
     dimension::Int
-    function TransformTuple(transformations::T) where {T <: NTransforms}
-        new{T}(transformations, _sum_dimensions(transformations))
+    function TransformTuple(inner::T) where {T <: NTransforms}
+        new{T}(inner, _sum_dimensions(inner))
     end
-    function TransformTuple(transformations::T
+    function TransformTuple(inner::T
                             ) where {N, S <: NTransforms, T <: NamedTuple{N, S}}
-        new{T}(transformations, _sum_dimensions(transformations))
+        new{T}(inner, _sum_dimensions(inner))
     end
 end
 
+
+"""
+$(SIGNATURES)
+
+Helper function for accessing the `inner` field, as we define `getproperty` which masks
+this. Internal.
+"""
+@inline _inner(t) = getfield(t, :inner)
+
+###
+### expose inner tuple via indices and properties
+###
+
+@inline Base.length(t::TransformTuple) = length(_inner(t))
+Base.getindex(t::TransformTuple, i::Int) = getindex(_inner(t), i)
+@inline Base.propertynames(t::TransformTuple) = propertynames(_inner(t))
+@inline Base.getproperty(t::TransformTuple, i::Int) = getproperty(_inner(t), i)
+@inline Base.getproperty(t::TransformTuple{<:NamedTuple}, i::Symbol) = getproperty(_inner(t), i)
+
 function _summary_rows(transformation::TransformTuple, mime)
-    (; transformations) = transformation
-    repr1 = (transformations isa NamedTuple ? "NamedTuple" : "Tuple" ) * " of transformations"
+    inner = _inner(transformation)
+    repr1 = (inner isa NamedTuple ? "NamedTuple" : "Tuple" ) * " of transformations"
     rows = _summary_row(transformation, repr1)
     _index = 0
-    for (key, t) in pairs(transformations)
+    for (key, t) in pairs(inner)
         for row in _summary_rows(t, mime)
             _repr = row.level == 1 ? (repr(key) * " → " * row.repr) : row.repr
             push!(rows, (level = row.level + 1, indices = _offset(row.indices, _index),
@@ -284,7 +303,7 @@ function _summary_rows(transformation::TransformTuple, mime)
     rows
 end
 
-dimension(tt::TransformTuple) = tt.dimension
+dimension(tt::TransformTuple) = getfield(tt, :dimension)
 
 """
     as(tuple)
@@ -309,6 +328,42 @@ julia> dimension(t2)
 
 julia> transform(t2, zeros(dimension(t2)))
 (σ = 1.0, u = [0.0, 0.0, 1.0])
+
+## Element access and modification
+
+The resulting objects support `getindex` (`transformation[i]`), `getproperty`
+(`transformation.key`)`, and `length`:
+
+```jldoctest
+julia> t = as((a = asℝ₊, b = asℝ))
+[1:2] NamedTuple of transformations
+  [1:1] :a → asℝ₊
+  [2:2] :b → asℝ
+
+julia> t.a
+asℝ₊ (dimension 1)
+
+julia> t[2]
+asℝ (dimension 1)
+
+julia> length(t)
+2
+```
+
+You can also use the API from [Accessors.jl](https://github.com/JuliaObjects/Accessors.jl):
+
+```jldoctest
+julia> using Accessors
+
+julia> t = as((a = asℝ₊, b = asℝ))
+[1:2] NamedTuple of transformations
+  [1:1] :a → asℝ₊
+  [2:2] :b → asℝ
+
+julia> @set t.a = as𝕀
+[1:2] NamedTuple of transformations
+  [1:1] :a → as𝕀
+  [2:2] :b → asℝ
 ```
 """
 as(transformations::NTransforms) = TransformTuple(transformations)
@@ -372,39 +427,38 @@ function _inverse!_tuple(x::AbstractVector, index, ts::NTransforms, ys::Tuple)
 end
 
 function transform_with(flag::LogJacFlag, tt::TransformTuple{<:Tuple}, x, index)
-    transform_tuple(flag, tt.transformations, x, index)
+    transform_tuple(flag, _inner(tt), x, index)
 end
 
 function inverse_eltype(tt::TransformTuple{<:Tuple}, ::Type{T}) where T <: Tuple
-    (; transformations) = tt
-    _inverse_eltype_tuple(transformations, T)
+    _inverse_eltype_tuple(_inner(tt), T)
 end
 
 function inverse_at!(x::AbstractVector, index, tt::TransformTuple{<:Tuple}, y::Tuple)
-    (; transformations) = tt
-    @argcheck length(transformations) == length(y)
-    _inverse!_tuple(x, index, tt.transformations, y)
+    inner = _inner(tt)
+    @argcheck length(inner) == length(y)
+    _inverse!_tuple(x, index, inner, y)
 end
 
-function as(transformations::NamedTuple{N,<:NTransforms}) where N
-    TransformTuple(transformations)
+function as(inner::NamedTuple{N,<:NTransforms}) where N
+    TransformTuple(inner)
 end
 
 function transform_with(flag::LogJacFlag, tt::TransformTuple{<:NamedTuple}, x, index)
-    (; transformations) = tt
-    y, ℓ, index′ = transform_tuple(flag, values(transformations), x, index)
-    NamedTuple{keys(transformations)}(y), ℓ, index′
+    inner = _inner(tt)
+    y, ℓ, index′ = transform_tuple(flag, values(inner), x, index)
+    NamedTuple{keys(inner)}(y), ℓ, index′
 end
 
 function inverse_eltype(tt::TransformTuple{<:NamedTuple}, ::Type{NamedTuple{N,T}}) where {N,T}
-    (; transformations) = tt
-    _inverse_eltype_tuple(values(transformations), T)
+    inner = _inner(tt)
+    _inverse_eltype_tuple(values(inner), T)
 end
 
 function inverse_at!(x::AbstractVector, index, tt::TransformTuple{<:NamedTuple}, y::NamedTuple)
-    (; transformations) = tt
-    @argcheck _same_set_of_names(transformations, y)
-    _inverse!_tuple(x, index, values(transformations), values(NamedTuple{keys(transformations)}(y)))
+    inner = _inner(tt)
+    @argcheck _same_set_of_names(inner, y)
+    _inverse!_tuple(x, index, values(inner), values(NamedTuple{keys(inner)}(y)))
 end
 
 function _same_set_of_names(x::NamedTuple, y::NamedTuple)
@@ -412,7 +466,7 @@ function _same_set_of_names(x::NamedTuple, y::NamedTuple)
 end
 
 function _domain_label(t::TransformTuple, index::Int)
-    for (key, inner_transformation) in pairs(t.transformations)
+    for (key, inner_transformation) in pairs(_inner(t))
         d = dimension(inner_transformation)
         if index ≤ d
             l = key isa Symbol ? key : (key, )

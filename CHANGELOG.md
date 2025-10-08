@@ -1,4 +1,27 @@
-# Unreleased
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## Unreleased
+
+### Added
+
+- `getindex`, `getproperty`, `length`, and support for [Accessors.jl](https://github.com/JuliaObjects/Accessors.jl) API for tuple and named tuple transformations
+
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
+
+## Old changelogs (archive)
+
+# 0.8.17
+
+**Changelogs were not kept** between 0.3.11 and this version. PRs reconstructing them are welcome.
 
 # 0.3.11
 
