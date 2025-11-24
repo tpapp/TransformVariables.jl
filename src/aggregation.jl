@@ -451,19 +451,17 @@ function transform_with(flag::LogJacFlag, tt::TransformTuple{<:NamedTuple}, x, i
     NamedTuple{keys(inner)}(y), ℓ, index′
 end
 
-function inverse_eltype(tt::TransformTuple{<:NamedTuple}, ::Type{NamedTuple{N,T}}) where {N,T}
+function inverse_eltype(tt::TransformTuple{I}, ::Type{NamedTuple{N,T}}) where {I<:NamedTuple,N,T}
     inner = _inner(tt)
+    _check_name_compatibility(NamedTuple{N,T},I)
     _inverse_eltype_tuple(values(inner), T)
 end
 
-function inverse_at!(x::AbstractVector, index, tt::TransformTuple{<:NamedTuple}, y::NamedTuple)
+function inverse_at!(x::AbstractVector, index, tt::TransformTuple{I},
+                     y::NamedTuple) where {I}
     inner = _inner(tt)
-    @argcheck _same_set_of_names(inner, y)
+    _check_name_compatibility(typeof(y), I)
     _inverse!_tuple(x, index, values(inner), values(NamedTuple{keys(inner)}(y)))
-end
-
-function _same_set_of_names(x::NamedTuple, y::NamedTuple)
-    return length(x) == length(y) && Base.structdiff(x, y) === (;)
 end
 
 function _domain_label(t::TransformTuple, index::Int)
