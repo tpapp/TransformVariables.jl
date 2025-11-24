@@ -103,3 +103,29 @@ function _check_name_compatibility(::Type{<:NamedTuple{A}},
     length(A) == length(B) || throw(ArgumentError(LazyString("Names ", A, " has extras compared to ", B, ".")))
     nothing
 end
+
+"""
+$(SIGNATURES)
+
+Return the reordered fieldtypes of the second argument (a `NamedTuple` type) according
+to to the names in the first, for which specifying `NamedTuple{N}` is sufficient.
+
+An error is thrown if an name is not found, but otherwise no comparison is done. Caller
+should check with [`_check_name_compatibility`](@ref) first to throw an informative
+error message.
+
+```jldoctest
+julia> TransformVariables._reshuffle_namedtuple_fieldtypes(NamedTuple{(:a,:b)},NamedTuple{(:b,:a),Tuple{Int64,Float64}})
+Tuple{Float64, Int64}
+```
+"""
+@generated function _reshuffle_namedtuple_fieldtypes(::Type{<:NamedTuple{N}},
+                                                     ::Type{<:NamedTuple{M,K}}) where {N,M,K}
+    _K = fieldtypes(K)
+    S = map(N) do n
+        i = findfirst(m -> m ≡ n, M)
+        @assert i ≢ nothing
+        _K[i]
+    end
+    :(Tuple{$(S...)})
+end

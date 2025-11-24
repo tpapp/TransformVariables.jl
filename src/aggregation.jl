@@ -451,10 +451,11 @@ function transform_with(flag::LogJacFlag, tt::TransformTuple{<:NamedTuple}, x, i
     NamedTuple{keys(inner)}(y), ℓ, index′
 end
 
-function inverse_eltype(tt::TransformTuple{I}, ::Type{NamedTuple{N,T}}) where {I<:NamedTuple,N,T}
+function inverse_eltype(tt::TransformTuple{I},
+                        ::Type{NT}) where {I<:NamedTuple,NT<:NamedTuple}
     inner = _inner(tt)
-    _check_name_compatibility(NamedTuple{N,T},I)
-    _inverse_eltype_tuple(values(inner), T)
+    _check_name_compatibility(NT,I)
+    _inverse_eltype_tuple(values(inner), _reshuffle_namedtuple_fieldtypes(I, NT))
 end
 
 function inverse_at!(x::AbstractVector, index, tt::TransformTuple{I},
