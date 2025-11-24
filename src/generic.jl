@@ -102,6 +102,9 @@ $(TYPEDEF)
 
 Supertype for all transformations in this package.
 
+Used for internal code organization and documenting the interface. Transformations
+(potentially defined outside this package) do not need to be a subtype.
+
 # Interface
 
 The user interface consists of
