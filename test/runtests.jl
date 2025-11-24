@@ -499,9 +499,9 @@ end
     t = as((a = asℝ, b = asℝ))
     @test @inferred(inverse(t, (a = 1.0, b = 2.0))) == [1.0, 2.0]
     @test @inferred(inverse(t, (b = 2.0, a = 1.0))) == [1.0, 2.0]
-    @test_throws ArgumentError inverse(t, (; a = 1.0))
-    @test_throws ArgumentError inverse(t, (a = 1.0, b = 2.0, c = 3.0))
-    @test_throws ArgumentError inverse(t, (a = 1.0, c = 2.0))
+    @test_throws ArgumentError("Property :b not in (:a,).") inverse(t, (; a = 1.0))
+    @test_throws ArgumentError("Names (:a, :b, :c) has extras compared to (:a, :b).") inverse(t, (a = 1.0, b = 2.0, c = 3.0))
+    @test_throws ArgumentError("Property :b not in (:a, :c).") inverse(t, (a = 1.0, c = 2.0))
 end
 
 ####

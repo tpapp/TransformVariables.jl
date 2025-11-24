@@ -20,7 +20,6 @@ Number of elements (strictly) above the diagonal in an ``n×n`` matrix.
 """
 unit_triangular_dimension(n::Int) = n * (n-1) ÷ 2
 
-
 # Adapted from LinearAlgebra.__normalize!
 # MIT license
 # Copyright (c) 2018-2024 LinearAlgebra.jl contributors: https://github.com/JuliaLang/LinearAlgebra.jl/contributors
@@ -83,3 +82,24 @@ _ensure_float(::Type{T}) where {T<:AbstractArray} = T
 
 # special case Union{}
 _ensure_float(::Type{Union{}}) = Float64
+
+"""
+$(SIGNATURES)
+
+Check that the *first* argument has all the names required to instantiate a `NamedTuple`
+specified in the second argument.
+
+Currently it only supports `NamedTuple`s for its first argument, and checks there are no
+extra fields. Both requirements may be relaxed in the future.
+
+If the requirements are not met, throw error with an informative message, otherwise
+return `nothing`.
+"""
+function _check_name_compatibility(::Type{<:NamedTuple{A}},
+                                   ::Type{<:NamedTuple{B}}) where {A,B}
+    for b in B
+        b ∈ A || throw(ArgumentError(LazyString("Property :", b, " not in ", A, ".")))
+    end
+    length(A) == length(B) || throw(ArgumentError(LazyString("Names ", A, " has extras compared to ", B, ".")))
+    nothing
+end
