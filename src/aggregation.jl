@@ -281,11 +281,11 @@ _inner(t) = getfield(t, :inner)
 ### expose inner tuple via indices and properties
 ###
 
-@inline Base.length(t::TransformTuple) = length(_inner(t))
+Base.length(t::TransformTuple) = length(_inner(t))
 Base.getindex(t::TransformTuple, i::Int) = getindex(_inner(t), i)
-@inline Base.propertynames(t::TransformTuple) = propertynames(_inner(t))
-@inline Base.getproperty(t::TransformTuple, i::Int) = getproperty(_inner(t), i)
-@inline Base.getproperty(t::TransformTuple{<:NamedTuple}, i::Symbol) = getproperty(_inner(t), i)
+Base.propertynames(t::TransformTuple) = propertynames(_inner(t))
+Base.getproperty(t::TransformTuple, i::Int) = getproperty(_inner(t), i)
+Base.getproperty(t::TransformTuple{<:NamedTuple}, i::Symbol) = getproperty(_inner(t), i)
 
 function _summary_rows(transformation::TransformTuple, mime)
     inner = _inner(transformation)

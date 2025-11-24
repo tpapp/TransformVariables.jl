@@ -819,6 +819,11 @@ end
     repr(MIME("text/plain"), t) == repr_t
 end
 
+@testset "print ∞" begin
+    @test repr(MIME("text/plain"), ∞) == "∞"
+    @test repr(MIME("text/plain"), -∞) == "-∞"
+end
+
 @testset "domain labels" begin
     t = as((a = asℝ₊,
             b = as(Array, asℝ₋, 1, 1),
