@@ -1,7 +1,7 @@
-using Documenter, TransformVariables
+using Documenter, TransformVariables, Accessors
 
 DocMeta.setdocmeta!(TransformVariables, :DocTestSetup,
-                    :(using TransformVariables); recursive=true)
+                    :(using TransformVariables, Accessors); recursive=true)
 
 makedocs(
     modules = [TransformVariables],

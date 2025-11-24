@@ -1,5 +1,6 @@
 using DocStringExtensions, LinearAlgebra, LogDensityProblems, OffsetArrays, Random, Test,
-    TransformVariables, StaticArrays, TransformedLogDensities, LogDensityProblemsAD
+    TransformVariables, StaticArrays, TransformedLogDensities, LogDensityProblemsAD,
+    Accessors
 import ForwardDiff
 using LogDensityProblems: logdensity, logdensity_and_gradient
 using LogDensityProblemsAD
@@ -370,26 +371,42 @@ end
     t1 = asℝ
     t2 = as𝕀
     t3 = CorrCholeskyFactor(7)
-    tt = as((t1, t2, t3))
-    @test dimension(tt) == dimension(t1) + dimension(t2) + dimension(t3)
-    x = random_arg(tt)
-    y = @inferred transform(tt, x)
-    @test inverse(tt, y) ≈ x
-    @test @inferred(TransformVariables.inverse_eltype(tt, y)) === Float64
-    index = 0
-    ljacc = 0.0
-    for (i, t) in enumerate((t1, t2, t3))
-        d = dimension(t)
-        xpart = t isa ScalarTransform ? x[index + 1] : x[index .+ (1:d)]
-        @test y[i] == transform(t, xpart)
-        ypart, ljpart = transform_and_logjac(t, xpart)
-        @test ypart == y[i]
-        ljacc += ljpart
-        index += d
+    inner = (t1, t2, t3)
+    tt = as(inner)
+    @test dimension(tt) == mapreduce(dimension, +, inner)
+
+    @testset "transformation correctness check" begin
+        x = random_arg(tt)
+        y = @inferred transform(tt, x)
+        @test inverse(tt, y) ≈ x
+        @test @inferred(TransformVariables.inverse_eltype(tt, y)) === Float64
+        index = 0
+        ljacc = 0.0
+        for (i, t) in enumerate((t1, t2, t3))
+            d = dimension(t)
+            xpart = t isa ScalarTransform ? x[index + 1] : x[index .+ (1:d)]
+            @test y[i] == transform(t, xpart)
+            ypart, ljpart = transform_and_logjac(t, xpart)
+            @test ypart == y[i]
+            ljacc += ljpart
+            index += d
+        end
+        y2, lj2 = transform_and_logjac(tt, x)
+        @test y == y2
+        @test lj2 ≈ ljacc
     end
-    y2, lj2 = transform_and_logjac(tt, x)
-    @test y == y2
-    @test lj2 ≈ ljacc
+
+    @testset "tuple elements access with indexing and Accessors.jl" begin
+        @test length(tt) == 3
+        @test tt[1] == inner[1]
+        @test tt[2] == inner[2]
+        @test tt[3] == inner[3]
+        @test_throws BoundsError tt[4]
+        @test propertynames(tt) == propertynames(inner)
+        @test (@set tt[3] = t2) == as((t1, t2, t2))
+        @test (@delete tt[3]) == as((t1, t2))
+        @test (@insert tt[2] = t3) == as((t1, t3, t2, t3))
+    end
 end
 
 ###
@@ -400,26 +417,43 @@ end
     t1 = asℝ
     t2 = CorrCholeskyFactor(7)
     t3 = unit_vector_norm(3)
-    tn = as((a = t1, b = t2, c = t3))
+    inner = (a = t1, b = t2, c = t3)
+    tn = as(inner)
     @test dimension(tn) == dimension(t1) + dimension(t2) + dimension(t3)
-    x = randn(dimension(tn))
-    y = @inferred transform(tn, x)
-    @test y isa NamedTuple{(:a,:b,:c)}
-    @test inverse(tn, y) ≈ x
-    index = 0
-    ljacc = 0.0
-    for (i, t) in enumerate((t1, t2, t3))
-        d = dimension(t)
-        xpart = t isa ScalarTransform ? x[index + 1] : x[index .+ (1:d)]
-        @test y[i] == transform(t, xpart)
-        ypart, ljpart = transform_and_logjac(t, xpart)
-        @test ypart == y[i]
-        ljacc += ljpart
-        index += d
+
+    @testset "transformation correctness check" begin
+        x = randn(dimension(tn))
+        y = @inferred transform(tn, x)
+        @test y isa NamedTuple{(:a,:b,:c)}
+        @test inverse(tn, y) ≈ x
+        index = 0
+        ljacc = 0.0
+        for (i, t) in enumerate((t1, t2, t3))
+            d = dimension(t)
+            xpart = t isa ScalarTransform ? x[index + 1] : x[index .+ (1:d)]
+            @test y[i] == transform(t, xpart)
+            ypart, ljpart = transform_and_logjac(t, xpart)
+            @test ypart == y[i]
+            ljacc += ljpart
+            index += d
+        end
+        y2, lj2 = transform_and_logjac(tn, x)
+        @test y == y2
+        @test lj2 ≈ ljacc
     end
-    y2, lj2 = transform_and_logjac(tn, x)
-    @test y == y2
-    @test lj2 ≈ ljacc
+
+    @testset "tuple elements access with indexing and Accessors.jl" begin
+        @test length(tn) == 3
+        @test tn[1] == tn.a == inner[1]
+        @test tn[2] == tn.b == inner[2]
+        @test tn[3] == tn.c == inner[3]
+        @test_throws ErrorException tn.d
+        @test_throws BoundsError tn[4]
+        @test propertynames(tn) == propertynames(inner)
+        @test (@set tn[3] = t2) == (@set tn.c = t2) == as((a = t1, b = t2, c = t2))
+        @test (@delete tn[3]) == (@delete tn.c) == as((a = t1, b = t2))
+        @test (@insert tn.d = t3) == as((a = t1, b = t2, c = t3, d = t3))
+    end
 end
 
 @testset "empty Tuple, NamedTuple aggregators" begin
@@ -783,6 +817,11 @@ end
     [120:121] 3 → 3 element unit simplex transformation
     [131:133] 4 → 4 element (unit vector, norm) transformation"""
     repr(MIME("text/plain"), t) == repr_t
+end
+
+@testset "print ∞" begin
+    @test repr(MIME("text/plain"), ∞) == "∞"
+    @test repr(MIME("text/plain"), -∞) == "-∞"
 end
 
 @testset "domain labels" begin

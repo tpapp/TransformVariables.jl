@@ -1,4 +1,5 @@
 [deps]
+Accessors = "7d9f7c33-5ae7-4f3b-8dc6-eff91059b697"
 ChangesOfVariables = "9e997f8a-9a97-42d5-a9f1-ce6bfc15e2c0"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
@@ -13,5 +14,6 @@ Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+TransformVariables = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 TransformedLogDensities = "f9bc47f6-f3f8-4f3b-ab21-f8bc73906f26"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"

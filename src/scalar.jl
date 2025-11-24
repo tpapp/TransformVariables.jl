@@ -200,7 +200,7 @@ the `-` operator, ie `-∞`.
 """
 const ∞ = Infinity{true}()
 
-Base.show(::Infinity{T}) where T = print(io, T ? "∞" : "-∞")
+Base.show(io::IO, ::Infinity{T}) where T = print(io, T ? "∞" : "-∞")
 
 Base.:(-)(::Infinity{T}) where T = Infinity{!T}()
 
