@@ -100,6 +100,6 @@ function _check_name_compatibility(::Type{<:NamedTuple{A}},
     for b in B
         b ∈ A || throw(ArgumentError("Property :$(b) not in $(A)."))
     end
-    length(A) == length(B) || throw(ArgumentError("Names $(A) has extras compared to $(B)."))
+    length(A) == length(B) || throw(ArgumentError(LazyString("Names ", A, " has extras compared to ", B, ".")))
     nothing
 end
