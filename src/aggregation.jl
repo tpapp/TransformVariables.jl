@@ -275,7 +275,7 @@ $(SIGNATURES)
 Helper function for accessing the `inner` field, as we define `getproperty` which masks
 this. Internal.
 """
-@inline _inner(t) = getfield(t, :inner)
+_inner(t) = getfield(t, :inner)
 
 ###
 ### expose inner tuple via indices and properties
