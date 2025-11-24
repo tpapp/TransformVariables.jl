@@ -12,7 +12,7 @@ equal length.
 
 When `handleNaN = true` (the default), `NaN` log Jacobians are converted to `-Inf`.
 """
-function logjac_forwarddiff(f, x; handleNaN = true,
+function logjac_forwarddiff(f, x::AbstractVector; handleNaN = true,
                             chunk = ForwardDiff.Chunk(x),
                             cfg = ForwardDiff.JacobianConfig(f, x, chunk))
     lj = first(logabsdet(ForwardDiff.jacobian(f, x, cfg)))
@@ -26,7 +26,8 @@ $(SIGNATURES)
 Calculate the value and the log Jacobian determinant of `f` at `x`. `flatten` is
 used to get a vector out of the result that makes `f` a bijection.
 """
-function value_and_logjac_forwarddiff(f, x; flatten = identity, handleNaN = true,
+function value_and_logjac_forwarddiff(f, x::AbstractVector;
+                                      flatten = identity, handleNaN = true,
                                       chunk = ForwardDiff.Chunk(x),
                                       cfg = ForwardDiff.JacobianConfig(flatten ∘ f, x, chunk))
     f(x), logjac_forwarddiff(flatten ∘ f, x; handleNaN = handleNaN, cfg = cfg)
