@@ -289,7 +289,7 @@ Base.getindex(t::TransformTuple, i::Int) = getindex(_inner(t), i)
 
 function _summary_rows(transformation::TransformTuple, mime)
     inner = _inner(transformation)
-    repr1 = (inner isa NamedTuple ? "NamedTuple" : "Tuple" ) * " of transformations"
+    repr1 = string(nameof(typeof(inner)), " of transformations")
     rows = _summary_row(transformation, repr1)
     _index = 0
     for (key, t) in pairs(inner)
