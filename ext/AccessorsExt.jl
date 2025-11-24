@@ -4,8 +4,6 @@ import Accessors: set, insert, delete
 using Accessors: IndexLens, PropertyLens
 using TransformVariables: TransformTuple, _inner
 
-const LENSES = Union{IndexLens,PropertyLens}
-
 set(t::TransformTuple, ::typeof(_inner), inner) = TransformTuple(inner)
 set(t::TransformTuple, lens::IndexLens, val) = set(t, lens ∘ _inner, val)
 insert(t::TransformTuple{<:Tuple}, lens::IndexLens, val) = insert(t, lens ∘ _inner, val)
