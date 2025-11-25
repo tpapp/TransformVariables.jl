@@ -44,44 +44,29 @@ end
 """
 $(SIGNATURES)
 
-Extend element type of argument so that it is closed under the algebra used by this package.
+Regularize scalar (element) types to a floating point, falling back to `Float64`.
 
-Pessimistic default for non-real types.
+It serves two purposes:
+
+1. broaden non-float type (eg `Int`) so that they can accommodate the algebraic results,
+   eg mapping with `log`,
+
+2. assign a sensible fallback type (currently `Float64`) for non-numerical element
+   types; for example, if the input is `Vector{Any}`, `_ensure_float(Any)` will return
+   `Float64`,
+
+It is implicitly assumed that the input type is such that it can hold numerical values.
+This is typically harmless, since containes for other types (eg `Union{}`, `Nothing`)
+will fail anyway.
 """
-function robust_eltype(::Type{S}) where S
-    T = eltype(S)
-    T <: Real ? typeof(√(one(T))) : Any
-end
+_ensure_float(::Type) = Float64
 
-robust_eltype(x::T) where T = robust_eltype(T)
-
-"""
-$(SIGNATURES)
-
-Regularize input type, preferring a floating point, falling back to `Float64`.
-
-Internal, not exported.
-
-# Motivation
-
-Type calculations occasionally give types that are too narrow (eg `Union{}` for empty
-vectors) or broad. Since this package is primarily intended for *numerical*
-calculations, we fall back to something sensible. This function implements the
-heuristics for this, and is currently used in inverse element type calculations.
-"""
-function _ensure_float(::Type{T}) where T
-    if T <: Number # heuristic: it is assumed that every `Number` type defines `float`
-        return float(T)
-    else
-        return Float64
-    end
-end
-
-# pass through containers
-_ensure_float(::Type{T}) where {T<:AbstractArray} = T
+# heuristic: it is assumed that every `Number` type defines `float`.
+# In case this does not hold, define the relevant method.
+_ensure_float(::Type{T}) where {T<:Real} = float(T)
 
 # special case Union{}
-_ensure_float(::Type{Union{}}) = Float64
+# _ensure_float(::Type{Union{}}) = Float64
 
 """
 $(SIGNATURES)

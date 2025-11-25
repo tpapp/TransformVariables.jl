@@ -82,7 +82,7 @@ end
 
 function transform_with(flag::LogJacFlag, t::UnitVector, x::AbstractVector, index)
     (; n) = t
-    T = robust_eltype(x)
+    T = _ensure_float(eltype(x))
     log_r = zero(T)
     y = Vector{T}(undef, n)
     ℓ = logjac_zero(flag, T)
@@ -169,7 +169,7 @@ end
 
 function transform_with(flag::LogJacFlag, t::UnitVectorNorm, x::AbstractVector, index)
     (; n, chi_prior) = t
-    T = robust_eltype(x)
+    T = _ensure_float(eltype(x))
     log_r = zero(T)
     y = Vector{T}(undef, n)
     copyto!(y, 1, x, index, n)
@@ -227,8 +227,7 @@ dimension(t::UnitSimplex) = t.n - 1
 
 function transform_with(flag::LogJacFlag, t::UnitSimplex, x::AbstractVector, index)
     (; n) = t
-    T = robust_eltype(x)
-
+    T = _ensure_float(eltype(x))
     ℓ = logjac_zero(flag, T)
     stick = one(T)
     y = Vector{T}(undef, n)
@@ -370,20 +369,20 @@ function calculate_corr_cholesky_factor!(U::AbstractMatrix{T}, flag::LogJacFlag,
     U, ℓ, index
 end
 
-function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor, x::AbstractVector{T},
-                        index) where T
+function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor, x::AbstractVector, index)
     n = result_size(t)
-    U, ℓ, index′ = calculate_corr_cholesky_factor!(Matrix{robust_eltype(x)}(undef, n, n),
-                                                    flag, x, index)
+    T = _ensure_float(eltype(x))
+    U, ℓ, index′ = calculate_corr_cholesky_factor!(Matrix{T}(undef, n, n),
+                                                   flag, x, index)
     UpperTriangular(U), ℓ, index′
 end
 
 function transform_with(flag::LogJacFlag, transformation::StaticCorrCholeskyFactor{D,S},
                         x::AbstractVector{T}, index) where {D,S,T}
     # NOTE: add an unrolled version for small sizes
-    E = robust_eltype(x)
+    E = _ensure_float(eltype(x))
     U = if isbitstype(E)
-        zero(MMatrix{S,S,robust_eltype(x)})
+        zero(MMatrix{S,S,E})
     else
         # NOTE: currently allocating because non-bitstype based AD (eg ReverseDiff) does not work with MMatrix
         zeros(E, S, S)
