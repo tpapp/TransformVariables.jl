@@ -900,34 +900,50 @@ end
     # Empty `inverse(::VectorTransform, _)`
     for a in (3, 4.7, [5], 3f0, 4.7f0, [5f0])
         x = @inferred(inverse(as((; a = Constant(a))), (; a)))
-        @test x isa Vector{Float64}
+        @test x isa Vector{Bool}
         @test isempty(x)
 
         x = @inferred(inverse(as((Constant(a),)), (a,)))
-        @test x isa Vector{Float64}
+        @test x isa Vector{Bool}
         @test isempty(x)
 
         x = @inferred(inverse(as(Vector, Constant(a), 1), [a]))
-        @test x isa Vector{Float64}
+        @test x isa Vector{Bool}
         @test isempty(x)
     end
 
     # Element type of `inverse(::VectorTransform, _)`
-    for a in (3, 3.0, 3f0)
-        T = float(typeof(a))
+    for t in (asℝ, asℝ₊)
+        for a in (3, 3.0, 3f0)
+            z = inverse(t, a)
+            T = typeof(z)
 
-        x = @inferred(inverse(as((; a = asℝ)), (; a)))
-        @test x isa Vector{T}
-        @test x == [3]
+            x = @inferred(inverse(as((; a = t)), (; a)))
+            @test x isa Vector{T}
+            @test x == [z]
 
-        x = @inferred(inverse(as((asℝ,)), (a,)))
-        @test x isa Vector{T}
-        @test x == [3]
+            x = @inferred(inverse(as((t,)), (a,)))
+            @test x isa Vector{T}
+            @test x == [z]
 
-        x = @inferred(inverse(as(Vector, asℝ, 1), [a]))
-        @test x isa Vector{T}
-        @test x == [3]
+            x = @inferred(inverse(as(Vector, t, 1), [a]))
+            @test x isa Vector{T}
+            @test x == [z]
+        end
     end
+end
+
+@testset "nested transformations element type" begin
+    t = as(Vector, as((a = asℝ,)), 4)
+    x = zeros(dimension(t))
+    y = transform(t, x)
+    @test @inferred(inverse(t, y)) == x
+    @test inverse_eltype(t, typeof(y)) ≡ eltype(x)
+
+    t0 = as(Vector, as((a = asℝ,)), 0)
+    y0 = @inferred(transform(t0, Float64[]))
+    @test @inferred(transform(t0, Float64[])) == y0
+    @test inverse_eltype(t, typeof(y0)) ≡ Float64
 end
 
 ####

@@ -77,7 +77,7 @@ function transform_with(flag::LogJacFlag, transformation::ArrayTransformation, x
     len = prod(dims)              # number of elements
     𝐼 = reshape(range(index; length = len, step = d), dims)
     yℓ = map(index -> ((y, ℓ, _) = transform_with(flag, inner_transformation, x, index); (y, ℓ)), 𝐼)
-    ℓz = logjac_zero(flag, robust_eltype(x))
+    ℓz = logjac_zero(flag, _ensure_float(eltype(x)))
     index′ = index + d * len
     first.(yℓ), isempty(yℓ) ? ℓz : ℓz + sum(last, yℓ), index′
 end
@@ -85,7 +85,7 @@ end
 function transform_with(flag::LogJacFlag, t::ArrayTransformation{Identity}, x, index)
     index′ = index+dimension(t)
     y = reshape(x[index:(index′-1)], t.dims)
-    y, logjac_zero(flag, robust_eltype(x)), index′
+    y, logjac_zero(flag, _ensure_float(eltype(x))), index′
 end
 
 """
@@ -133,7 +133,7 @@ dimension(transformation::ViewTransformation) = prod(transformation.dims)
 function transform_with(flag::LogJacFlag, t::ViewTransformation, x, index)
     index′ = index + dimension(t)
     y = reshape(@view(x[index:(index′-1)]), t.dims)
-    y, logjac_zero(flag, robust_eltype(x)), index′
+    y, logjac_zero(flag, _ensure_float(eltype(x))), index′
 end
 
 function _domain_label(transformation::ViewTransformation, index::Int)
@@ -141,10 +141,7 @@ function _domain_label(transformation::ViewTransformation, index::Int)
     _array_domain_label(asℝ, dims, index)
 end
 
-function inverse_eltype(transformation::ViewTransformation,
-                        ::Type{T}) where T <: AbstractArray
-    _ensure_float(eltype(T))
-end
+inverse_eltype(transformation::ViewTransformation, ::Type{<:AbstractArray{T}}) where T = T
 
 function inverse_at!(x::AbstractVector, index, transformation::ViewTransformation,
                      y::AbstractArray)
@@ -214,8 +211,7 @@ end
 
 function inverse_eltype(transformation::Union{ArrayTransformation,StaticArrayTransformation},
                         ::Type{T}) where T <: AbstractArray
-    inverse_eltype(transformation.inner_transformation,
-                   _ensure_float(eltype(T)))
+    inverse_eltype(transformation.inner_transformation, eltype(T))
 end
 
 function inverse_at!(x::AbstractVector, index,
@@ -376,7 +372,7 @@ Helper function for transforming tuples. Used internally, to help type inference
 `transfom_tuple`.
 """
 _transform_tuple(flag::LogJacFlag, x::AbstractVector, index, ::Tuple{}) =
-    (), logjac_zero(flag, robust_eltype(x)), index
+    (), logjac_zero(flag, _ensure_float(eltype(x))), index
 
 function _transform_tuple(flag::LogJacFlag, x::AbstractVector, index, ts)
     tfirst = first(ts)
@@ -406,7 +402,7 @@ function _inverse_eltype_tuple(ts::NTransforms{N}, ::Type{T}) where {N,T<:Tuple}
     __inverse_eltype_tuple(ts, T)
 end
 function __inverse_eltype_tuple(ts::NTransforms, ::Type{Tuple{}})
-    Union{}
+    Bool
 end
 function __inverse_eltype_tuple(ts::NTransforms, ::Type{T}) where {T<:Tuple}
     promote_type(inverse_eltype(Base.first(ts), fieldtype(T, 1)),
