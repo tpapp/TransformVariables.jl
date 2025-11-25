@@ -30,12 +30,6 @@ function inverse_at!(x::AbstractVector, index::Int, t::ScalarTransform, y::Real)
     index + 1
 end
 
-function inverse_eltype(t::ScalarTransform, ::Type{T}) where T <: Real
-    # NOTE this is a shortcut to get sensible types for all subtypes of ScalarTransform, which
-    # we test for. If it breaks it should be extended accordingly.
-    return Base.promote_typejoin_union(Base.promote_op(inverse, typeof(t), T))
-end
-
 _domain_label(::ScalarTransform, index::Int) = ()
 
 ####
@@ -52,6 +46,8 @@ struct Identity <: ScalarTransform end
 transform(::Identity, x::Real) = x
 
 transform_and_logjac(::Identity, x::Real) = x, logjac_zero(LogJac(), typeof(x))
+
+inverse_eltype(t::Identity, ::Type{T}) where T = T
 
 inverse(::Identity, x::Number) = x
 
@@ -72,6 +68,8 @@ transform(::TVExp, x::Real) = exp(x)
 
 transform_and_logjac(t::TVExp, x::Real) = transform(t, x), x
 
+inverse_eltype(t::TVExp, ::Type{T}) where T = _ensure_float(T)
+
 function inverse(::TVExp, x::Number)
     log(x)
 end
@@ -88,6 +86,8 @@ struct TVLogistic <: ScalarTransform end
 transform(::TVLogistic, x::Real) = logistic(x)
 
 transform_and_logjac(t::TVLogistic, x::Real) = transform(t, x), logistic_logjac(x)
+
+inverse_eltype(t::TVLogistic, ::Type{T}) where T = _ensure_float(T)
 
 function inverse(::TVLogistic, x::Number)
     logit(x)
@@ -107,6 +107,8 @@ end
 transform(t::TVShift, x::Real) = x + t.shift
 
 transform_and_logjac(t::TVShift, x::Real) = transform(t, x), logjac_zero(LogJac(), typeof(x))
+
+inverse_eltype(t::TVShift{S}, ::Type{T}) where {S,T} = typeof(one(_ensure_float(T)) - one(S))
 
 inverse(t::TVShift, x::Number) = x - t.shift
 
@@ -131,6 +133,8 @@ transform(t::TVScale, x::Real) = t.scale * x
 
 transform_and_logjac(t::TVScale{<:Real}, x::Real) = transform(t, x), log(t.scale)
 
+inverse_eltype(t::TVScale{S}, ::Type{T}) where {S,T} = typeof(one(_ensure_float(T)) / one(S))
+
 inverse(t::TVScale, x::Number) = x / t.scale
 
 inverse_and_logjac(t::TVScale{<:Real}, x::Number) = inverse(t, x), -log(t.scale)
@@ -146,12 +150,14 @@ end
 transform(::TVNeg, x::Real) = -x
 transform_and_logjac(t::TVNeg, x::Real) = transform(t, x), logjac_zero(LogJac(), typeof(x))
 
+inverse_eltype(::TVNeg, ::Type{T}) where T = typeof(-one(T))
 inverse(::TVNeg, x::Number) = -x
 inverse_and_logjac(::TVNeg, x::Number) = -x, logjac_zero(LogJac(), typeof(x))
 
 ####
 #### composite scalar transforms
 ####
+
 """
 $(TYPEDEF)
 
@@ -172,7 +178,14 @@ function transform_and_logjac(ts::CompositeScalarTransform, x)
     end
 end
 
-inverse(ts::CompositeScalarTransform, x) = foldl((y, t) -> inverse(t, y), ts.transforms, init=x)
+function inverse_eltype(ts::CompositeScalarTransform, ::Type{T}) where T
+    foldl((T, t) -> inverse_eltype(t, T), ts.transforms; init = T)
+end
+
+function inverse(ts::CompositeScalarTransform, x)
+    foldl((y, t) -> inverse(t, y), ts.transforms, init = x)
+end
+
 function inverse_and_logjac(ts::CompositeScalarTransform, x)
     foldl(ts.transforms, init=(x, logjac_zero(LogJac(), typeof(x)))) do (x, logjac), t
         nx, nlogjac = inverse_and_logjac(t, x)
