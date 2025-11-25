@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 ### Removed
 ### Fixed
+
+- made nicer error messages for mismatching `NamedTuple`s in `inverse`
+- `inverse_eltype` did not reshuffle mismatching `NamedTuple`s, fixed
+
 ### Security
 
 ## Old changelogs (archive)
