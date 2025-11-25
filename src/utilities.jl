@@ -120,6 +120,6 @@ Tuple{Float64, Int64}
 ```
 """
 @generated function _reshuffle_namedtuple_fieldtypes(::Type{<:NamedTuple{N}}, ::Type{NT}) where {N,M,K,NT<:NamedTuple{M,K}}
-    S = map(n -> fieldtype(NT, N))
+    S = map(n -> fieldtype(NT, n), N)
     return :(Tuple{$(S...)})
 end
