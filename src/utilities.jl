@@ -119,7 +119,7 @@ julia> TransformVariables._reshuffle_namedtuple_fieldtypes(NamedTuple{(:a,:b)},N
 Tuple{Float64, Int64}
 ```
 """
-@generated function _reshuffle_namedtuple_fieldtypes(::Type{<:NamedTuple{N}}, ::Type{NT}) where {N,M,K,NT<:NamedTuple{M,K}}
+@generated function _reshuffle_namedtuple_fieldtypes(::Type{<:NamedTuple{N}}, ::Type{NT}) where {N,NT<:NamedTuple}
     S = map(n -> fieldtype(NT, n), N)
     return :(Tuple{$(S...)})
 end
