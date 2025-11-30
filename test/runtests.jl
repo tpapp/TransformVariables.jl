@@ -510,11 +510,11 @@ end
     t1 = as((a = asℝ, b = as𝕀))
     t2 = as((c = CorrCholeskyFactor(3), d = unit_vector_norm(4)))
     t3 = as((e = asℝ₊, f = as𝕀))
-    tm = merge(t1)
+    tm = @inferred(merge(t1))
     @test tm == t1
-    tm = merge(t1, t2)
+    tm = @inferred(merge(t1, t2))
     @test tm == as((a = asℝ, b = as𝕀, c = CorrCholeskyFactor(3), d = unit_vector_norm(4)))
-    tm = merge(t1, t2, t3)
+    tm = @inferred(merge(t1, t2, t3))
     @test tm == as((a = asℝ, b = as𝕀, c = CorrCholeskyFactor(3), d = unit_vector_norm(4),
                     e = asℝ₊, f = as𝕀))
     x = randn(dimension(tm))
