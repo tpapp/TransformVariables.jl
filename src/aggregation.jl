@@ -293,7 +293,7 @@ Merge multiple `TransformTuple{<:NamedTuple}` by merging the underlying `NamedTu
 """
 function Base.merge(t1::TransformTuple{<:NamedTuple}, 
                     ts::Vararg{TransformTuple{<:NamedTuple}})
-    TransformTuple(merge(_inner(t1), [_inner(t) for t in ts]...))
+    TransformTuple(merge(_inner(t1), map(_inner, ts)...))
 end
 
 function _summary_rows(transformation::TransformTuple, mime)
