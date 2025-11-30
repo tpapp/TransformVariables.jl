@@ -86,7 +86,7 @@ as
 ```
 
 Transforms which produce `NamedTuple`s can be `merge`d, which uses the semantics of `Base.merge` (by internally calling `Base.merge`) for handling name collisions.
-When using e.g. [ConstructionBase.setproperties](https://juliaobjects.github.io/ConstructionBase.jl/stable/#ConstructionBase.setproperties) to map a vector onto a subset of parameters stored in a struct, this functionality allows transforms for different parameter subsets to be constructed for use separately or together:
+When using e.g. [`ConstructionBase.setproperties`](https://juliaobjects.github.io/ConstructionBase.jl/stable/#ConstructionBase.setproperties) to map a vector onto a subset of parameters stored in a struct, this functionality allows transforms for different parameter subsets to be constructed for use separately or together:
 
 ```julia
 t_a = as((;a = asℝ₊))
