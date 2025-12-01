@@ -55,11 +55,10 @@ function test_transformation(t::AbstractTransform, is_valid_y;
         x isa ScalarTransform && @test dimension(x) == 1
         y = @inferred transform(t, x)
         @test is_valid_y(y)
-        @test transform(t, x) == y
         if jac
             y2, lj = @inferred transform_and_logjac(t, x)
             @test y2 == y
-            jc = TransformVariables.logprior(t, y)
+            jc = @inferred TransformVariables.logprior(t, y)
             if !iszero(jc)
                 @test TransformVariables.nonzero_logprior(t) == true
             end
@@ -70,9 +69,9 @@ function test_transformation(t::AbstractTransform, is_valid_y;
             end
         end
         if test_inverse
-            x2 = inverse(t, y)
+            x2 = @inferred inverse(t, y)
             @test x ≈ x2 atol = 1e-6
-            ι = inverse(t)
+            ι = @inferred inverse(t)
             @test x2 == ι(y)
         end
     end
