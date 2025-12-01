@@ -133,7 +133,7 @@ transform(t::TVScale, x::Real) = t.scale * x
 
 transform_and_logjac(t::TVScale{<:Real}, x::Real) = transform(t, x), log(t.scale)
 
-inverse_eltype(t::TVScale{S}, ::Type{T}) where {S,T} = typeof(one(_ensure_float(T)) / one(S))
+inverse_eltype(t::TVScale{S}, ::Type{T}) where {S,T} = typeof(oneunit(_ensure_float(T)) / oneunit(S))
 
 inverse(t::TVScale, x::Number) = x / t.scale
 
