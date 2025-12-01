@@ -956,6 +956,11 @@ end
     @test eltype(x) ≡ Float64
 end
 
+@testset "inverse error on complex elements" begin
+    t = as(Vector, asℝ₊, 3)
+    @test_throws InexactError inverse(t, fill(Complex(0, 1), 3))
+end
+
 ####
 #### static analysis with JET
 ####
