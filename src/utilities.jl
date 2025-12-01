@@ -61,12 +61,9 @@ will fail anyway.
 """
 _ensure_float(::Type) = Float64
 
-# heuristic: it is assumed that every `Number` type defines `float`.
-# In case this does not hold, define the relevant method.
+# heuristic: it is assumed that every `Real` type defines `float`.
+# In case this does not hold, the package that defined `T` define `float(::Type{T})`.
 _ensure_float(::Type{T}) where {T<:Real} = float(T)
-
-# special case Union{}
-# _ensure_float(::Type{Union{}}) = Float64
 
 """
 $(SIGNATURES)
