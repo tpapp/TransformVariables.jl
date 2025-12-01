@@ -97,6 +97,11 @@ end
     end
 end
 
+@testset "vector with TVScale unitful" begin
+    t = as(Vector, TVScale(2u"m"), 4)
+    test_transformation(t, y -> y isa Vector && eltype(y) ≡ typeof(2.0u"m"); jac = false)
+end
+
 @testset "composite scalar transformations" begin
     all_transforms = [TVShift(3.0), TVScale(2.0), TVExp(), TVLogistic(), TVNeg()]
     for t1 in all_transforms, t2 in all_transforms, t3 in all_transforms

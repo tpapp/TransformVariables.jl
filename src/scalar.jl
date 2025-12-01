@@ -25,7 +25,7 @@ function transform_with(::LogJac, t::ScalarTransform, x::AbstractVector, index::
     transform_and_logjac(t, @inbounds x[index])..., index + 1
 end
 
-function inverse_at!(x::AbstractVector, index::Int, t::ScalarTransform, y::Real)
+function inverse_at!(x::AbstractVector, index::Int, t::ScalarTransform, y)
     x[index] = inverse(t, y)
     index + 1
 end
@@ -133,7 +133,7 @@ transform(t::TVScale, x::Real) = t.scale * x
 
 transform_and_logjac(t::TVScale{<:Real}, x::Real) = transform(t, x), log(t.scale)
 
-inverse_eltype(t::TVScale{S}, ::Type{T}) where {S,T} = typeof(oneunit(_ensure_float(T)) / oneunit(S))
+inverse_eltype(t::TVScale{S}, ::Type{T}) where {S,T} = typeof(oneunit(T) / oneunit(S))
 
 inverse(t::TVScale, x::Number) = x / t.scale
 

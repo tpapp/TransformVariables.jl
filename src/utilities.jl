@@ -58,8 +58,12 @@ It serves two purposes:
 It is implicitly assumed that the input type is such that it can hold numerical values.
 This is typically harmless, since containes for other types (eg `Union{}`, `Nothing`)
 will fail anyway.
+
+!!! NOTE
+    Call this function *after* stripping units and similar, so that the input is a
+    subtype of `Real` in most cases.
 """
-_ensure_float(::Type) = Float64
+_ensure_float(::Type) = Float64 # fallback for Any etc.
 
 # heuristic: it is assumed that every `Real` type defines `float`.
 # In case this does not hold, the package that defined `T` define `float(::Type{T})`.
