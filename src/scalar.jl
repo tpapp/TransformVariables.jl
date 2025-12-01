@@ -150,7 +150,7 @@ end
 transform(::TVNeg, x::Real) = -x
 transform_and_logjac(t::TVNeg, x::Real) = transform(t, x), logjac_zero(LogJac(), typeof(x))
 
-inverse_eltype(::TVNeg, ::Type{T}) where T = typeof(-one(T))
+inverse_eltype(::TVNeg, ::Type{T}) where T = typeof(-oneunit(T))
 inverse(::TVNeg, x::Number) = -x
 inverse_and_logjac(::TVNeg, x::Number) = -x, logjac_zero(LogJac(), typeof(x))
 
