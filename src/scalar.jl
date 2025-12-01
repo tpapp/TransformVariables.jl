@@ -108,7 +108,7 @@ transform(t::TVShift, x::Real) = x + t.shift
 
 transform_and_logjac(t::TVShift, x::Real) = transform(t, x), logjac_zero(LogJac(), typeof(x))
 
-inverse_eltype(t::TVShift{S}, ::Type{T}) where {S,T} = typeof(one(_ensure_float(T)) - one(S))
+inverse_eltype(t::TVShift{S}, ::Type{T}) where {S,T} = typeof(zero(_ensure_float(T)) - zero(S))
 
 inverse(t::TVShift, x::Number) = x - t.shift
 
