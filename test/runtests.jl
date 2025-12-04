@@ -521,6 +521,14 @@ end
     y = transform(tm, x)
     x′ = inverse(tm, y)
     @test x ≈ x′
+    # Check merge collision behavior: rightmost gets kept
+    t4 = as((b = asℝ₋, c = TVScale(2.0)))
+    tm = @inferred(merge(t1, t4))
+    @test tm == as((a = asℝ, b = asℝ₋, c = TVScale(2.0)))
+    @test tm != as((a = asℝ, b = as𝕀, c = TVScale(2.0)))
+    tm = @inferred(merge(t1, t4, t2))
+    @test tm == as((a = asℝ, b = asℝ₋, c = CorrCholeskyFactor(3), d = unit_vector_norm(4)))
+
 end
 
 ####
