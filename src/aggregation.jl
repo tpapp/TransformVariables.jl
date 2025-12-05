@@ -286,6 +286,15 @@ Base.getindex(t::TransformTuple, i::Int) = getindex(_inner(t), i)
 Base.propertynames(t::TransformTuple) = propertynames(_inner(t))
 Base.getproperty(t::TransformTuple, i::Int) = getproperty(_inner(t), i)
 Base.getproperty(t::TransformTuple{<:NamedTuple}, i::Symbol) = getproperty(_inner(t), i)
+"""
+$(SIGNATURES)
+
+Merge multiple `TransformTuple{<:NamedTuple}` by merging the underlying `NamedTuple`s.
+"""
+function Base.merge(t1::TransformTuple{<:NamedTuple}, 
+                    ts::Vararg{TransformTuple{<:NamedTuple}})
+    TransformTuple(merge(_inner(t1), map(_inner, ts)...))
+end
 
 function _summary_rows(transformation::TransformTuple, mime)
     inner = _inner(transformation)

@@ -85,6 +85,19 @@ See `methods(as)` for all the constructors, `?as` for their documentation.
 as
 ```
 
+Transforms which produce `NamedTuple`s can be `merge`d, which internally calls `Base.merge`; name collisions will thus follow `Base` behavior, which is that the right-most instance will be kept.
+When using e.g. [`ConstructionBase.setproperties`](https://juliaobjects.github.io/ConstructionBase.jl/stable/#ConstructionBase.setproperties) to map a vector onto a subset of parameters stored in a struct, this functionality allows transforms for different parameter subsets to be constructed for use separately or together:
+
+```julia
+t_a = as((;a = asℝ₊))
+t_b = as((;b = as𝕀))
+t_c = as((;c = TVShift(5) ∘ TVExp()))
+t_ab = merge(t_a, t_b)
+t_abc = merge(t_ab, t_c)
+t_abc = merge(t_a, t_b, t_c)
+t_collision = merge(t_a, as((;a = asℝ₋))) # Will have a = asℝ₋, from rightmost
+```
+
 ## Scalar transforms
 
 The symbol `∞` is a placeholder for infinity. It does not correspond to `Inf`, but acts as a placeholder for the correct dispatch. `-∞` is valid.
