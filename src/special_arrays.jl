@@ -337,7 +337,6 @@ function _summary_rows(transformation::StaticCorrCholeskyFactor{D,S}, mime) wher
     _summary_row(transformation, "SMatrix{$(S),$(S)} correlation cholesky factor")
 end
 
-
 result_size(::StaticCorrCholeskyFactor{D,S}) where {D,S} = S
 
 function corr_cholesky_factor(::Type{SMatrix{S,S}}) where S
@@ -347,48 +346,67 @@ end
 
 dimension(transformation::StaticCorrCholeskyFactor{D}) where D = D
 
-"""
-$(SIGNATURES)
-
-Implementation of Cholesky factor calculation.
-"""
-function calculate_corr_cholesky_factor!(U::AbstractMatrix{T}, flag::LogJacFlag,
-                                          x::AbstractVector, index::Int) where {T<:Real}
-    n = size(U, 1)
-    ℓ = logjac_zero(flag, T)
-    @inbounds for col_index in 1:n
-        log_r = zero(T)
-        for row_index in 1:(col_index-1)
-            xi = x[index]
-            U[row_index, col_index], log_r, ℓi = l2_remainder_transform(flag, xi, log_r)
-            ℓ += ℓi
-            index += 1
-        end
-        U[col_index, col_index] = exp(log_r / 2)
+mutable struct CorrCholeskyUItr{T,F<:LogJacFlag,V<:AbstractVector,L}
+    "log jac calculator flag"
+    const flag::F
+    "vector to transform"
+    const x::V
+    "size of matrix"
+    const K::Int
+    "starting element in x"
+    index::Int
+    "accumulated ℓ"
+    ℓ::L
+    function CorrCholeskyUItr{T}(flag::F, x::V, index::Int, K::Int) where {T,F,V}
+        ℓ = logjac_zero(flag, T)
+        new{T,F,V,typeof(ℓ)}(flag, x, K, index, ℓ)
     end
-    U, ℓ, index
+end
+
+Base.IteratorSize(::Type{<:CorrCholeskyUItr}) = Base.HasShape{2}()
+Base.axes(itr::CorrCholeskyUItr) = (a = Base.OneTo(itr.K); (a, a))
+Base.IteratorEltype(::Type{<:CorrCholeskyUItr}) = Base.HasEltype()
+Base.eltype(::Type{<:CorrCholeskyUItr{T}}) where T = T
+
+function Base.iterate(itr::CorrCholeskyUItr{T}, (row, col, log_r) = (1, 1, zero(T))) where {T}
+    (; flag, x, K) = itr
+    if col > K                  # done
+        return nothing
+    elseif row == col           # diagonal: reset log_r, use remainder
+        u = exp(log_r / 2)
+        log_r = zero(T)
+    elseif row < col # above diagonal: update using element of x with remainder transform
+        u, log_r, Δℓ = l2_remainder_transform(flag, @inbounds(x[itr.index]), log_r)
+        itr.index += 1
+        itr.ℓ += Δℓ
+    else                        # below diagonal: zero
+        u = zero(T)
+    end
+    row += 1
+    if row > K
+        row = 1
+        col += 1
+    end
+    u, (row, col, log_r)
 end
 
 function transform_with(flag::LogJacFlag, t::CorrCholeskyFactor, x::AbstractVector, index)
-    n = result_size(t)
+    K = result_size(t)
     T = _ensure_float(eltype(x))
-    U, ℓ, index′ = calculate_corr_cholesky_factor!(Matrix{T}(undef, n, n),
-                                                   flag, x, index)
-    UpperTriangular(U), ℓ, index′
+    U = Matrix{T}(undef, K, K)
+    itr = CorrCholeskyUItr{T}(flag, x, index, K)
+    U = collect(itr)
+    UpperTriangular(U), itr.ℓ, itr.index
 end
 
 function transform_with(flag::LogJacFlag, transformation::StaticCorrCholeskyFactor{D,S},
-                        x::AbstractVector{T}, index) where {D,S,T}
+                        x::AbstractVector, index) where {D,S}
     # NOTE: add an unrolled version for small sizes
-    E = _ensure_float(eltype(x))
-    U = if isbitstype(E)
-        zero(MMatrix{S,S,E})
-    else
-        # NOTE: currently allocating because non-bitstype based AD (eg ReverseDiff) does not work with MMatrix
-        zeros(E, S, S)
-    end
-    U, ℓ, index′ = calculate_corr_cholesky_factor!(U, flag, x, index)
-    UpperTriangular(SMatrix{S,S}(U)), ℓ, index′
+    T = _ensure_float(eltype(x))
+    K = result_size(transformation)
+    itr = CorrCholeskyUItr{T}(flag, x, index, K)
+    U = SMatrix{S,S}(i for i in itr)
+    UpperTriangular(U), itr.ℓ, itr.index
 end
 
 function inverse_eltype(t::Union{CorrCholeskyFactor,StaticCorrCholeskyFactor},

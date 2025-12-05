@@ -502,13 +502,17 @@ end
 @testset "different order and superset of NamedTuple" begin
     # test for #100
     t2 = corr_cholesky_factor(SMatrix{2,2})
-    b = transform(t2, [0.0])
+    b = @inferred(transform(t2, [0.0]))
     t = as((a = asℝ, b = t2))
     @test @inferred(inverse(t, (a = 1.0, b))) == [1.0, 0.0]
     @test @inferred(inverse(t, (b, a = 1.0))) == [1.0, 0.0]
     @test_throws ArgumentError("Property :b not in (:a,).") inverse(t, (; a = 1.0))
     @test_throws ArgumentError("Names (:a, :b, :c) has extras compared to (:a, :b).") inverse(t, (a = 1.0, b = 2.0, c = 3.0))
     @test_throws ArgumentError("Property :b not in (:a, :c).") inverse(t, (a = 1.0, c = 2.0))
+    # test for #152
+    t7 = corr_cholesky_factor(SMatrix{7,7})
+    z7 = zeros(dimension(t7))
+    # @allocated(transform(t7, z7)) # now 32, still too high
 end
 
 @testset "merging NamedTuple" begin
