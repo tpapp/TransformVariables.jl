@@ -97,6 +97,11 @@ end
     end
 end
 
+@testset "vector with TVScale unitful" begin
+    t = as(Vector, TVScale(2u"m"), 4)
+    test_transformation(t, y -> y isa Vector && eltype(y) ≡ typeof(2.0u"m"); jac = false)
+end
+
 @testset "composite scalar transformations" begin
     all_transforms = [TVShift(3.0), TVScale(2.0), TVExp(), TVLogistic(), TVNeg()]
     for t1 in all_transforms, t2 in all_transforms, t3 in all_transforms
@@ -462,14 +467,14 @@ end
     za = as(Array, asℝ₊, 0)
     @test dimension(zt) == dimension(znt) == 0
     @test @inferred(transform(zt, Float64[])) == ()
-    @test_skip inverse(zt, ()) == []
+    @test inverse(zt, ()) == []
     @test @inferred(transform_and_logjac(zt, Float64[])) == ((), 0.0)
     @test @inferred(transform(znt, Float64[])) == NamedTuple()
     @test @inferred(transform_and_logjac(znt, Float64[])) == (NamedTuple(), 0.0)
-    @test_skip inverse(znt, ()) == []
+    @test inverse(znt, (;)) == []
     @test @inferred(transform(za, Float64[])) == Float64[]
     @test @inferred(transform_and_logjac(za, Float64[])) == (Float64[], 0.0)
-    @test_skip inverse(za, []) == []
+    @test inverse(za, []) == []
 end
 
 @testset "nested combinations" begin
@@ -671,7 +676,6 @@ end
 #     end
 # end
 
-
 @testset "inference of nested tuples" begin
     # An MWE adapted from a real-life problem
     ABOVE1 = as(Real, 1, ∞)   # transformation for μ ≥ 1
@@ -766,7 +770,6 @@ end
     @test inverse(t)(y) == inverse(t, y) == inverse(transform(t))(y) ≈ x
 end
 
-
 @testset "ChangesOfVariables" begin
     t = as(Real, 1.0, 3.0)
     f = transform(t)
@@ -774,7 +777,6 @@ end
     ChangesOfVariables.test_with_logabsdet_jacobian(f, -4.2, ForwardDiff.derivative)
     ChangesOfVariables.test_with_logabsdet_jacobian(inv_f, 1.7, ForwardDiff.derivative)
 end
-
 
 @testset "InverseFunctions" begin
     t = as(Real, 1.0, 3.0)
@@ -855,8 +857,10 @@ end
     t = as((a = asℝ₊,
             b = as(Array, asℝ₋, 1, 1),
             c = corr_cholesky_factor(2),
-            d = as(SVector{2}, asℝ₊)))
-    @test [domain_label(t, i) for i in 1:dimension(t)] == [".a", ".b[1,1]", ".c[1]", ".d[1]", ".d[2]"]
+            d = as(SVector{2}, asℝ₊),
+            v = as(view, 2)))
+    @test [domain_label(t, i) for i in 1:dimension(t)] ==
+        [".a", ".b[1,1]", ".c[1]", ".d[1]", ".d[2]", ".v[1]", ".v[2]"]
 end
 
 @testset "static arrays inference" begin
@@ -925,34 +929,61 @@ end
     # Empty `inverse(::VectorTransform, _)`
     for a in (3, 4.7, [5], 3f0, 4.7f0, [5f0])
         x = @inferred(inverse(as((; a = Constant(a))), (; a)))
-        @test x isa Vector{Float64}
+        @test x isa Vector{Bool}
         @test isempty(x)
 
         x = @inferred(inverse(as((Constant(a),)), (a,)))
-        @test x isa Vector{Float64}
+        @test x isa Vector{Bool}
         @test isempty(x)
 
         x = @inferred(inverse(as(Vector, Constant(a), 1), [a]))
-        @test x isa Vector{Float64}
+        @test x isa Vector{Bool}
         @test isempty(x)
     end
 
     # Element type of `inverse(::VectorTransform, _)`
-    for a in (3, 3.0, 3f0)
-        T = float(typeof(a))
+    for t in (asℝ, asℝ₊)
+        for a in (3, 3.0, 3f0)
+            z = inverse(t, a)
+            T = typeof(z)
 
-        x = @inferred(inverse(as((; a = asℝ)), (; a)))
-        @test x isa Vector{T}
-        @test x == [3]
+            x = @inferred(inverse(as((; a = t)), (; a)))
+            @test x isa Vector{T}
+            @test x == [z]
 
-        x = @inferred(inverse(as((asℝ,)), (a,)))
-        @test x isa Vector{T}
-        @test x == [3]
+            x = @inferred(inverse(as((t,)), (a,)))
+            @test x isa Vector{T}
+            @test x == [z]
 
-        x = @inferred(inverse(as(Vector, asℝ, 1), [a]))
-        @test x isa Vector{T}
-        @test x == [3]
+            x = @inferred(inverse(as(Vector, t, 1), [a]))
+            @test x isa Vector{T}
+            @test x == [z]
+        end
     end
+end
+
+@testset "nested transformations element type" begin
+    t = as(Vector, as((a = asℝ,)), 4)
+    x = zeros(dimension(t))
+    y = transform(t, x)
+    @test @inferred(inverse(t, y)) == x
+    @test inverse_eltype(t, typeof(y)) ≡ eltype(x)
+
+    t0 = as(Vector, as((a = asℝ,)), 0)
+    y0 = @inferred(transform(t0, Float64[]))
+    @test @inferred(transform(t0, Float64[])) == y0
+    @test inverse_eltype(t, typeof(y0)) ≡ Float64
+end
+
+@testset "element type corner cases" begin
+    t = as(Vector, asℝ₊, 3)
+    x = @inferred inverse(t, Any[1, 2.0, 3f0])
+    @test eltype(x) ≡ Float64
+end
+
+@testset "inverse error on complex elements" begin
+    t = as(Vector, asℝ₊, 3)
+    @test_throws InexactError inverse(t, fill(Complex(0, 1), 3))
 end
 
 ####
