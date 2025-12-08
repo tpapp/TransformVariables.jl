@@ -819,6 +819,11 @@ end
             @test inverse(t, y) ≈ x
         end
     end
+
+    # allocations
+    t7 = corr_cholesky_factor(SMatrix{7,7})
+    z7 = zeros(dimension(t7))
+    @test @allocations(transform(t7, z7)) == 0
 end
 
 @testset "corr cholesky factor large inputs" begin
