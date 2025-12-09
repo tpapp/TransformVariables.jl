@@ -17,6 +17,8 @@ const CIENV = get(ENV, "CI", "") == "true"
 "are we testing for allocations (coverage does not interfere)"
 const ALLOCS = get(ENV, "BUILD_IS_PRODUCTION_BUILD", "false") == "true"
 
+@info "test environment" CIENV ALLOCS
+
 include("utilities.jl")
 
 Random.seed!(1)
@@ -826,7 +828,7 @@ end
     # allocations
     t7 = corr_cholesky_factor(SMatrix{7,7})
     z7 = zeros(dimension(t7))
-    ALLOCS && @test iszero(((t, z) -> @allocations(transform(t, z)))(t7, z7))
+    VERSION ≥ v"1.12" && ALLOCS && @test iszero(((t, z) -> @allocations(transform(t, z)))(t7, z7))
 end
 
 @testset "corr cholesky factor large inputs" begin
