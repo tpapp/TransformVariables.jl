@@ -12,7 +12,10 @@ import ChangesOfVariables, InverseFunctions
 using Enzyme: autodiff, ReverseWithPrimal, Active, Const
 using Unitful: @u_str, ustrip, uconvert
 
+"are we in a CI environment (fewer iterations)"
 const CIENV = get(ENV, "CI", "") == "true"
+"are we testing for allocations (coverage does not interfere)"
+const ALLOCS = get(ENV, "BUILD_IS_PRODUCTION_BUILD", "false") == "true"
 
 include("utilities.jl")
 
@@ -742,10 +745,10 @@ end
 @testset "sum dimensions allocations" begin
     shifted = TVShift(0.0) ∘ TVExp()
     tr = (a = shifted, b = TransformVariables.Identity(), c = shifted, d = shifted, e = shifted, f = shifted)
-    @test iszero(@allocated TransformVariables._sum_dimensions(tr))
+    ALLOCS && @test iszero(@allocated TransformVariables._sum_dimensions(tr))
 end
 
-@testset "inverse_eltype allocations" begin
+@testset "inverse_eltype inference" begin
     t0 = TVShift(0f0) ∘ TVExp()
     t = as((x0 = TVShift(0f0) ∘ TVExp(), x1 = TransformVariables.Identity(),
             x2 = UnitSimplex(7), x3 = TransformVariables.CorrCholeskyFactor(5),
@@ -823,7 +826,7 @@ end
     # allocations
     t7 = corr_cholesky_factor(SMatrix{7,7})
     z7 = zeros(dimension(t7))
-    @test iszero(((t, z) -> @allocations(transform(t, z)))(t7, z7))
+    ALLOCS && @test iszero(((t, z) -> @allocations(transform(t, z)))(t7, z7))
 end
 
 @testset "corr cholesky factor large inputs" begin
