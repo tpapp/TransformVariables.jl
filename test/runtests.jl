@@ -996,6 +996,10 @@ end
     @test_throws InexactError inverse(t, fill(Complex(0, 1), 3))
 end
 
+@testset "TVSoftPlus" begin
+    test_transformation(TransformVariables.TVSoftPlus(), y -> y > 0)
+end
+
 ####
 #### static analysis with JET
 ####
