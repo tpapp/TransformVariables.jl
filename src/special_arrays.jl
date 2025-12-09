@@ -352,7 +352,7 @@ $(SIGNATURES)
 
 Implementation of Cholesky factor calculation.
 """
-function calculate_corr_cholesky_factor!(U::AbstractMatrix{T}, flag::LogJacFlag,
+@inline function calculate_corr_cholesky_factor!(U::AbstractMatrix{T}, flag::LogJacFlag,
                                           x::AbstractVector, index::Int) where {T<:Real}
     n = size(U, 1)
     ℓ = logjac_zero(flag, T)
