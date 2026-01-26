@@ -2,7 +2,7 @@
 ### logistic and logit
 ###
 
-function logistic_logjac(x::Real)
+function logistic_logjac(x::Number)
     mx = -abs(x)
     mx - 2*log1pexp(mx)
 end
