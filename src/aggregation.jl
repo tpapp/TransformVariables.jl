@@ -385,8 +385,17 @@ _transform_tuple(flag::LogJacFlag, x::AbstractVector, index, ::Tuple{}) =
 
 function _transform_tuple(flag::LogJacFlag, x::AbstractVector, index, ts)
     tfirst = first(ts)
-    yfirst, ℓfirst, index′ = transform_with(flag, tfirst, x, index)
-    yrest, ℓrest, index′′ = _transform_tuple(flag, x, index′, Base.tail(ts))
+    ofirst = transform_with(flag, tfirst, x, index)
+    # Strange Reactant thing here. It looks like it raises the output to an Array
+    yfirst = tv_getindex(ofirst, 1)
+    ℓfirst = tv_getindex(ofirst, 2)
+    index′ = tv_getindex(ofirst, 3)
+
+    ofrest = _transform_tuple(flag, x, index′, Base.tail(ts))
+    yrest = tv_getindex(ofrest, 1)
+    ℓrest = tv_getindex(ofrest, 2)
+    index′′ = tv_getindex(ofrest, 3)
+    
     (yfirst, yrest...), ℓfirst + ℓrest, index′′
 end
 

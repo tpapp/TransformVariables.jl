@@ -2,6 +2,11 @@
 ### logistic and logit
 ###
 
+# Should I be this conservative?
+Base.@propagate_inbounds function tv_getindex(a::Any, i::Integer)
+    return a[i]
+end
+
 function logistic_logjac(x::Number)
     mx = -abs(x)
     mx - 2*log1pexp(mx)

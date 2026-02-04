@@ -18,11 +18,11 @@ abstract type ScalarTransform <: AbstractTransform end
 dimension(::ScalarTransform) = 1
 
 function transform_with(flag::NoLogJac, t::ScalarTransform, x::AbstractVector, index)
-    transform(t, @inbounds x[index]), flag, index + 1
+    transform(t, @inbounds tv_getindex(x, index)), flag, index + 1
 end
 
 function transform_with(::LogJac, t::ScalarTransform, x::AbstractVector, index)
-    transform_and_logjac(t, @inbounds x[index])..., index + 1
+    transform_and_logjac(t, @inbounds tv_getindex(x, index))..., index + 1
 end
 
 function inverse_at!(x::AbstractVector, index::Int, t::ScalarTransform, y)
