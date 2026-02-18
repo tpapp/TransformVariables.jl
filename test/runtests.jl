@@ -541,6 +541,25 @@ end
 
 end
 
+@testset "transform to custom type" begin
+    struct CustomType
+        a::Float64
+        b::Float64
+    end
+
+    t1 = as((a = asℝ, b = asℝ))
+    t2 = as(CustomType, t1)
+    y = transform(t2, [1.0, 2.0])
+    @test y == CustomType(1.0, 2.0)
+    @test inverse(t2, y) == [1.0, 2.0]
+
+    t3 = as(Vector, asℝ₊, 2)
+    t4 = as(CustomType, t3)
+    y = transform(t4, [0.0, 0.0])
+    @test y == CustomType(1.0, 1.0)
+    @test inverse(t4, y) == [0.0, 0.0]
+end
+
 ####
 #### log density correctness checks
 ####
