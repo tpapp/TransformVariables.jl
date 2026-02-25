@@ -200,6 +200,56 @@ Base.:∘(ct1::CompositeScalarTransform, ct2::CompositeScalarTransform) = Compos
 Base.:∘(t::ScalarTransform, tt::Vararg{ScalarTransform}) = foldl(∘, tt; init=t)
 
 ####
+#### type-wrapped scalar transforms
+####
+
+"""
+$(TYPEDEF)
+"""
+struct ScalarWrapperTransform{T, S} <: ScalarTransform
+    inner::S
+end
+
+# Scalar inner transformation, forward and reverse
+function as(::Type{T}, inner::S) where {T,S<:ScalarTransform}
+    @argcheck isstructtype(T) && length(fieldtypes(T)) == 1
+    ScalarWrapperTransform{T, typeof(inner)}(inner)
+end
+
+function transform(t::ScalarWrapperTransform{T, S}, x::Number) where {T, S}
+    ctor = constructorof(T)
+    y = transform(t.inner, x)
+    ctor(y)
+end
+function transform_and_logjac(t::ScalarWrapperTransform{T, S}, x::Number) where {T, S<:ScalarTransform}
+    ctor = constructorof(T)
+    y, ℓ = transform_and_logjac(t.inner, x)
+    ctor(y), ℓ 
+end
+
+function inverse(t::ScalarWrapperTransform{C, S}, y::T) where {C, T<:C, S}
+    inverse(t.inner, getfield(y, 1))
+end
+function inverse_and_logjac(t::ScalarWrapperTransform{C, S}, y::T) where {C, T<:C, S}
+    inverse_and_logjac(t.inner, getfield(y, 1))
+end
+# Informative error for trying to invert a different type
+function inverse(t::ScalarWrapperTransform{C, S}, y::T) where {C, T, S}
+    throw(ArgumentError("Cannot invert a value of type $T as if it were a $C"))
+end
+function inverse_and_logjac(t::ScalarWrapperTransform{C, S}, y::T) where {C, T, S}
+    throw(ArgumentError("Cannot invert a value of type $T as if it were a $C"))
+end
+
+function inverse_eltype(t::ScalarWrapperTransform{C, S}, ::Type{T}) where {C, T<:C, S}
+    inverse_eltype(t.inner, fieldtype(C, 1))
+end
+# Printing for scalar case
+function Base.show(io::IO, t::ScalarWrapperTransform{T, S}) where {T, S}
+    print(io, "as($T, ", t.inner, ")")
+end
+
+####
 #### to_interval interface
 ####
 

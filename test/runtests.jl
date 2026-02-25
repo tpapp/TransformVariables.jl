@@ -575,7 +575,7 @@ end
 
     # Nested custom types
     t1 = as(MyType, as((asℝ₋,)))
-    t2 = as(YourType, asℝ₋,)
+    t2 = as(YourType, asℝ₋)
     t3 = as(CustomType, as((a = t1, b = t2)))
     x = [0.0, -1]
     y = transform(t3, x)

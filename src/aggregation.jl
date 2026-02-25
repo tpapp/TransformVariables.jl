@@ -538,40 +538,6 @@ function inverse_at!(x, index, t::TypeWrapperTransform{T, S}, y::T) where {T, S<
 end
 
 # Informative error for trying to invert an incompatible type
-function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, T, S<:Union{TransformTuple, ScalarTransform}}
+function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, T, S<:TransformTuple}
     throw(ArgumentError("Cannot invert a $T as if it were a $C"))
 end
-
-# Scalar inner transformation, forward and reverse
-function as(::Type{T}, inner_transformation::S) where {T,S<:ScalarTransform}
-    @argcheck isstructtype(T) && length(fieldtypes(T)) == 1
-    TypeWrapperTransform{T,S}(inner_transformation)
-end
-
-function transform(t::TypeWrapperTransform{T, S}, x::Number) where {T, S<:ScalarTransform}
-    ctor = constructorof(T)
-    y = transform(t.inner_transformation, x)
-    ctor(y)
-end
-function transform_and_logjac(t::TypeWrapperTransform{T, S}, x::Number) where {T, S<:ScalarTransform}
-    ctor = constructorof(T)
-    y, ℓ = transform_and_logjac(t.inner_transformation, x)
-    ctor(y), ℓ 
-end
-
-function inverse(t::TypeWrapperTransform{C, S}, y::T) where {C, T<:C, S<:ScalarTransform}
-    inverse(t.inner_transformation, getfield(y, 1))
-end
-function inverse_and_logjac(t::TypeWrapperTransform{C, S}, y::T) where {C, T<:C, S<:ScalarTransform}
-    inverse_and_logjac(t.inner_transformation, getfield(y, 1))
-end
-# Printing for scalar case
-function Base.show(io::IO, t::TypeWrapperTransform{T, S}) where {T, S<:ScalarTransform}
-    print(io, "as($T, ", t.inner_transformation, ")")
-end
-# function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, T<:C, S<:ScalarTransform}
-#     inverse_eltype(t.inner_transformation, T)
-# end
-# function inverse_at!(x, index, t::TypeWrapperTransform{T, S}, y::T) where {T, S<:ScalarTransform}
-#     inverse_at!(x, index, t.inner_transformation, getfield(y, 1))
-# end
