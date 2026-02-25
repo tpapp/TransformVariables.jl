@@ -177,7 +177,7 @@ as(SArray{2,3}, asℝ₊, 2, 3)     # transform to a 2x3 SMatrix of positive num
 as(SVector{3})                   # ℝ³ → ℝ³, identity, but an SVector
 ```
 """
-function as(::Type{<:SArray{S}}, inner_transformation = Identity()) where S
+function as(::Type{<:SArray{S}}, inner_transformation::AbstractTransform = Identity()) where S
     dim = fieldtypes(S)
     @argcheck all(x -> x ≥ 1, dim)
     StaticArrayTransformation{prod(dim),S,typeof(inner_transformation)}(inner_transformation)
@@ -264,7 +264,6 @@ struct TransformTuple{T} <: VectorTransform
     end
 end
 
-
 """
 $(SIGNATURES)
 
@@ -282,12 +281,13 @@ Base.getindex(t::TransformTuple, i::Int) = getindex(_inner(t), i)
 Base.propertynames(t::TransformTuple) = propertynames(_inner(t))
 Base.getproperty(t::TransformTuple, i::Int) = getproperty(_inner(t), i)
 Base.getproperty(t::TransformTuple{<:NamedTuple}, i::Symbol) = getproperty(_inner(t), i)
+
 """
 $(SIGNATURES)
 
 Merge multiple `TransformTuple{<:NamedTuple}` by merging the underlying `NamedTuple`s.
 """
-function Base.merge(t1::TransformTuple{<:NamedTuple}, 
+function Base.merge(t1::TransformTuple{<:NamedTuple},
                     ts::Vararg{TransformTuple{<:NamedTuple}})
     TransformTuple(merge(_inner(t1), map(_inner, ts)...))
 end
@@ -487,25 +487,21 @@ end
 #### type wrapper transformation
 ####
 
-struct TypeWrapperTransform{T} <: AbstractTransform
-    inner_transformation::AbstractTransform
+"""
+$(TYPEDEF)
+"""
+struct TypeWrapperTransform{T,S} <: VectorTransform
+    inner_transformation::S
 end
 
-function as(::Type{T}, transformation) where T
-    TypeWrapperTransform{T}(transformation)
+function as(::Type{T}, inner_transformation::S) where {T,S<:AbstractTransform}
+    @argcheck isstructtype(T)
+    TypeWrapperTransform{T,S}(inner_transformation)
 end
+
+as(::Type{T}, inner_transformation::NTransforms) where T  = as(T, as(inner_transformation))
 
 dimension(t::TypeWrapperTransform) = dimension(t.inner_transformation)
-
-function transform(t::TypeWrapperTransform{T}, x) where T
-    @argcheck dimension(t) == length(x) 
-    first(transform_with(NOLOGJAC, t, x, firstindex(x)))
-end
-function transform_and_logjac(t::TypeWrapperTransform{T}, x) where T
-    @argcheck dimension(t) == length(x) 
-    y, ℓ, _ = transform_with(LOGJAC, t, x, firstindex(x))
-    y, ℓ
-end
 
 function transform_with(flag::LogJacFlag, t::TypeWrapperTransform{T}, x, index) where T
     (; inner_transformation) = t
@@ -513,27 +509,13 @@ function transform_with(flag::LogJacFlag, t::TypeWrapperTransform{T}, x, index) 
     ctor = constructorof(T)
     ctor(y...), ℓ, index′
 end
-# function transform(t::TypeWrapperTransform{T}, x::VectorTransform) where T
-#     T(x...)
-# end
-# function transform(t::TypeWrapperTransform{T}, x::ScalarTransform) where T
-#     T(x)
-# end
-function inverse(t::TypeWrapperTransform{T}, y::T) where T
-    x = Vector{inverse_eltype(t, T)}(undef, dimension(t))
-    inverse!(x, t, y)
-end
-function inverse!(x::AbstractVector, t::TypeWrapperTransform{T}, y::T) where T
-    inverse_at!(x, firstindex(x), t, y)
-end
-function inverse_at!(x, index, t::TypeWrapperTransform{T}, y::T) where T
-    fields = getfields(y)
-    index′ = index + dimension(t)
-    x[index:(index′-1)] .= fields
-    index′
-end
+
 function inverse_eltype(t::TypeWrapperTransform, ::Type{T}) where T
-    inverse_eltype(t.inner_transformation, typeof.(getfields(T)))
+    inverse_eltype(t.inner_transformation,
+                   # FIXME this is specific to inner_transformation::TupleTransform
+                   NamedTuple{fieldnames(T),Tuple{fieldtypes(T)...}})
 end
 
-
+function inverse_at!(x, index, t::TypeWrapperTransform{T}, y::T) where T
+    inverse_at!(x, index, t.inner_transformation, getfields(y))
+end
