@@ -487,18 +487,18 @@ end
 #### type wrapper transformation
 ####
 
-struct TypeWrapperTransformation{T} <: AbstractTransform
+struct TypeWrapperTransform{T} <: AbstractTransform
     inner_transformation::AbstractTransform
 end
 
 function as(::Type{T}, transformation) where T
-    TypeWrapperTransformation{T}(transformation)
+    TypeWrapperTransform{T}(transformation)
 end
 
-dimension(t::TypeWrapperTransformation) = dimension(t.inner_transformation)
+dimension(t::TypeWrapperTransform) = dimension(t.inner_transformation)
 
-function transform(t::TypeWrapperTransformation{T}, x) where T
-    T(transform(t.inner_transformation, x)...)
+function transform(t::TypeWrapperTransform{T}, x) where T
+    constructorof(T)(transform(t.inner_transformation, x)...)
 end
 # function transform(t::TypeWrapperTransformation{T}, x::VectorTransform) where T
 #     T(x...)
@@ -506,7 +506,7 @@ end
 # function transform(t::TypeWrapperTransformation{T}, x::ScalarTransform) where T
 #     T(x)
 # end
-function inverse(t::TypeWrapperTransformation{T}, x::T) where T
+function inverse(t::TypeWrapperTransform{T}, x::T) where T
     fields = [getfield(x, i) for i in 1:nfields(x)]
     inverse(t.inner_transformation, fields)
 end
