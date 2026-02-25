@@ -182,6 +182,13 @@ function as(::Type{<:SArray{S}}, inner_transformation::AbstractTransform = Ident
     @argcheck all(x -> x ≥ 1, dim)
     StaticArrayTransformation{prod(dim),S,typeof(inner_transformation)}(inner_transformation)
 end
+# Repeated with more specific typing to eliminate method ambiguity with 
+# the ScalarWrapperTransform method for `as`
+function as(::Type{<:SArray{S}}, inner_transformation::ScalarTransform = Identity()) where S
+    dim = fieldtypes(S)
+    @argcheck all(x -> x ≥ 1, dim)
+    StaticArrayTransformation{prod(dim),S,typeof(inner_transformation)}(inner_transformation)
+end
 
 function dimension(transformation::StaticArrayTransformation{D}) where D
     D * dimension(transformation.inner_transformation)
