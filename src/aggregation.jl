@@ -295,7 +295,11 @@ end
 function _summary_rows(transformation::TransformTuple, mime)
     inner = _inner(transformation)
     repr1 = string(nameof(typeof(inner)), " of transformations")
-    rows = _summary_row(transformation, repr1)
+    _tuple_summary_rows(repr1, transformation, mime)
+end
+function _tuple_summary_rows(named, transformation::TransformTuple, mime)
+    inner = _inner(transformation)
+    rows = _summary_row(transformation, named)
     _index = 0
     for (key, t) in pairs(inner)
         for row in _summary_rows(t, mime)
@@ -503,6 +507,13 @@ as(::Type{T}, inner_transformation::NTransforms) where T  = as(T, as(inner_trans
 
 dimension(t::TypeWrapperTransform) = dimension(t.inner_transformation)
 
+function _summary_rows(transformation::TypeWrapperTransform{T, S}, mime) where {T, S<:TransformTuple}
+    (; inner_transformation) = transformation
+    innerinner = _inner(inner_transformation)
+    name = string("$T wrapper on ", nameof(typeof(innerinner)), " of transformations") 
+    _tuple_summary_rows(name, inner_transformation, mime)
+end
+
 function transform_with(flag::LogJacFlag, t::TypeWrapperTransform{T}, x, index) where T
     (; inner_transformation) = t
     y, ℓ, index′ = transform_with(flag, inner_transformation, x, index)
@@ -553,6 +564,10 @@ function inverse(t::TypeWrapperTransform{C, S}, y::T) where {C, T<:C, S<:ScalarT
 end
 function inverse_and_logjac(t::TypeWrapperTransform{C, S}, y::T) where {C, T<:C, S<:ScalarTransform}
     inverse_and_logjac(t.inner_transformation, getfield(y, 1))
+end
+# Printing for scalar case
+function Base.show(io::IO, t::TypeWrapperTransform{T, S}) where {T, S<:ScalarTransform}
+    print(io, "as($T, ", t.inner_transformation, ")")
 end
 # function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, T<:C, S<:ScalarTransform}
 #     inverse_eltype(t.inner_transformation, T)
