@@ -542,22 +542,57 @@ end
 end
 
 @testset "transform to custom type" begin
-    struct CustomType
-        a::Float64
-        b::Float64
+    
+    struct CustomType{A, B}
+        a::A
+        b::B
+    end
+    struct MyType{C}
+        c::C
+    end
+    struct YourType
+        d::Float64
     end
 
+    # From named tuple to type
     t1 = as((a = asℝ, b = asℝ))
     t2 = as(CustomType, t1)
     y = transform(t2, [1.0, 2.0])
     @test y == CustomType(1.0, 2.0)
     @test inverse(t2, y) == [1.0, 2.0]
+    @test_throws ArgumentError inverse(t2, [1.0, 2.0])
+    @test_throws ArgumentError inverse(t2, MyType(3.0))
 
-    t3 = as(Vector, asℝ₊, 2)
-    t4 = as(CustomType, t3)
-    y = transform(t4, [0.0, 0.0])
+    # From tuple to type
+    t1 = as(ntuple(i->asℝ₊, Val(2)))
+    t2 = as(CustomType, t1)
+    y = transform(t2, [0.0, 0.0])
     @test y == CustomType(1.0, 1.0)
-    @test_broken inverse(t4, y) == [0.0, 0.0]
+    @test inverse(t2, y) == [0.0, 0.0]
+    # Trying to invert from another type should error
+    @test_throws ArgumentError inverse(t2, [1.0, 2.0])
+    @test_throws ArgumentError inverse(t2, MyType(3.0))
+
+    # Nested custom types
+    t1 = as(MyType, as((asℝ₋,)))
+    t2 = as(YourType, asℝ₋,)
+    t3 = as(CustomType, as((a = t1, b = t2)))
+    x = [0.0, -1]
+    y = transform(t3, x)
+    @test y == CustomType(MyType(-1.0), YourType(-exp(-1)))
+    @test inverse(t3, y) == x
+    # Inverting with wrong type
+    @test_throws ArgumentError inverse(t3, CustomType(-1.0, YourType(-exp(-1))))
+    @test_throws ArgumentError inverse(t3, CustomType(-1.0, YourType(-exp(-1))))
+
+    # Type with single argument should work without tuple wrapper
+    t1 = as(MyType, asℝ₋)
+    x = 0.0
+    y = transform(t1, x)
+    @test y == MyType(-exp(0.0))
+    @test inverse(t1, y) == x
+    @test_throws ArgumentError inverse(t1, -exp(0.0))
+
 end
 
 ####

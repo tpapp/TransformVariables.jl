@@ -494,7 +494,7 @@ struct TypeWrapperTransform{T,S} <: VectorTransform
     inner_transformation::S
 end
 
-function as(::Type{T}, inner_transformation::S) where {T,S<:AbstractTransform}
+function as(::Type{T}, inner_transformation::S) where {T,S<:TransformTuple}
     @argcheck isstructtype(T)
     TypeWrapperTransform{T,S}(inner_transformation)
 end
@@ -510,12 +510,53 @@ function transform_with(flag::LogJacFlag, t::TypeWrapperTransform{T}, x, index) 
     ctor(y...), ℓ, index′
 end
 
-function inverse_eltype(t::TypeWrapperTransform, ::Type{T}) where T
-    inverse_eltype(t.inner_transformation,
-                   # FIXME this is specific to inner_transformation::TupleTransform
-                   NamedTuple{fieldnames(T),Tuple{fieldtypes(T)...}})
+# NamedTuple inner transformations
+function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, T<:C, S<:TransformTuple{<:NamedTuple}}
+    inverse_eltype(t.inner_transformation, NamedTuple{fieldnames(T),Tuple{fieldtypes(T)...}})
 end
-
-function inverse_at!(x, index, t::TypeWrapperTransform{T}, y::T) where T
+function inverse_at!(x, index, t::TypeWrapperTransform{T, S}, y::T) where {T, S<:TransformTuple{<:NamedTuple}}
     inverse_at!(x, index, t.inner_transformation, getfields(y))
 end
+
+# Regular Tuple inner transformation
+function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, T<:C, S<:TransformTuple}
+    inverse_eltype(t.inner_transformation, Tuple{fieldtypes(T)...})
+end
+function inverse_at!(x, index, t::TypeWrapperTransform{T, S}, y::T) where {T, S<:TransformTuple}
+    inverse_at!(x, index, t.inner_transformation, Tuple(getfields(y)))
+end
+
+# Informative error for trying to invert an incompatible type
+function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, T, S<:Union{TransformTuple, ScalarTransform}}
+    throw(ArgumentError("Cannot invert a $T as if it were a $C"))
+end
+
+# Scalar inner transformation, forward and reverse
+function as(::Type{T}, inner_transformation::S) where {T,S<:ScalarTransform}
+    @argcheck isstructtype(T) && length(fieldtypes(T)) == 1
+    TypeWrapperTransform{T,S}(inner_transformation)
+end
+
+function transform(t::TypeWrapperTransform{T, S}, x::Number) where {T, S<:ScalarTransform}
+    ctor = constructorof(T)
+    y = transform(t.inner_transformation, x)
+    ctor(y)
+end
+function transform_and_logjac(t::TypeWrapperTransform{T, S}, x::Number) where {T, S<:ScalarTransform}
+    ctor = constructorof(T)
+    y, ℓ = transform_and_logjac(t.inner_transformation, x)
+    ctor(y), ℓ 
+end
+
+function inverse(t::TypeWrapperTransform{C, S}, y::T) where {C, T<:C, S<:ScalarTransform}
+    inverse(t.inner_transformation, getfield(y, 1))
+end
+function inverse_and_logjac(t::TypeWrapperTransform{C, S}, y::T) where {C, T<:C, S<:ScalarTransform}
+    inverse_and_logjac(t.inner_transformation, getfield(y, 1))
+end
+# function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, T<:C, S<:ScalarTransform}
+#     inverse_eltype(t.inner_transformation, T)
+# end
+# function inverse_at!(x, index, t::TypeWrapperTransform{T, S}, y::T) where {T, S<:ScalarTransform}
+#     inverse_at!(x, index, t.inner_transformation, getfield(y, 1))
+# end
