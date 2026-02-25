@@ -498,17 +498,42 @@ end
 dimension(t::TypeWrapperTransform) = dimension(t.inner_transformation)
 
 function transform(t::TypeWrapperTransform{T}, x) where T
-    constructorof(T)(transform(t.inner_transformation, x)...)
+    @argcheck dimension(t) == length(x) 
+    first(transform_with(NOLOGJAC, t, x, firstindex(x)))
 end
-# function transform(t::TypeWrapperTransformation{T}, x::VectorTransform) where T
+function transform_and_logjac(t::TypeWrapperTransform{T}, x) where T
+    @argcheck dimension(t) == length(x) 
+    y, ℓ, _ = transform_with(LOGJAC, t, x, firstindex(x))
+    y, ℓ
+end
+
+function transform_with(flag::LogJacFlag, t::TypeWrapperTransform{T}, x, index) where T
+    (; inner_transformation) = t
+    y, ℓ, index′ = transform_with(flag, inner_transformation, x, index)
+    ctor = constructorof(T)
+    ctor(y...), ℓ, index′
+end
+# function transform(t::TypeWrapperTransform{T}, x::VectorTransform) where T
 #     T(x...)
 # end
-# function transform(t::TypeWrapperTransformation{T}, x::ScalarTransform) where T
+# function transform(t::TypeWrapperTransform{T}, x::ScalarTransform) where T
 #     T(x)
 # end
-function inverse(t::TypeWrapperTransform{T}, x::T) where T
-    fields = [getfield(x, i) for i in 1:nfields(x)]
-    inverse(t.inner_transformation, fields)
+function inverse(t::TypeWrapperTransform{T}, y::T) where T
+    x = Vector{inverse_eltype(t, T)}(undef, dimension(t))
+    inverse!(x, t, y)
+end
+function inverse!(x::AbstractVector, t::TypeWrapperTransform{T}, y::T) where T
+    inverse_at!(x, firstindex(x), t, y)
+end
+function inverse_at!(x, index, t::TypeWrapperTransform{T}, y::T) where T
+    fields = getfields(y)
+    index′ = index + dimension(t)
+    x[index:(index′-1)] .= fields
+    index′
+end
+function inverse_eltype(t::TypeWrapperTransform, ::Type{T}) where T
+    inverse_eltype(t.inner_transformation, typeof.(getfields(T)))
 end
 
 
