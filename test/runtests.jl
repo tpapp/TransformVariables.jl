@@ -11,6 +11,7 @@ using TransformVariables:
 import ChangesOfVariables, InverseFunctions
 using Enzyme: autodiff, ReverseWithPrimal, Active, Const
 using Unitful: @u_str, ustrip, uconvert
+using Reactant
 
 "are we in a CI environment (fewer iterations)"
 const CIENV = get(ENV, "CI", "") == "true"
@@ -652,6 +653,7 @@ end
     end
 end
 
+
 # if VERSION ≥ v"1.1"
 #     if CIENV
 #         @info "installing Zygote"
@@ -995,6 +997,37 @@ end
     t = as(Vector, asℝ₊, 3)
     @test_throws InexactError inverse(t, fill(Complex(0, 1), 3))
 end
+
+
+###
+###  Reactant compat tests
+###
+@testset "Reactant.jl" begin
+    
+    @testset "Scalar transforms" begin
+        a = 3.1
+        ar = ConcreteRNumber(a)
+        @test @jit(transform(asℝ, ar)) ≈ transform(asℝ, a)
+        @test @jit(transform(asℝ₊, ar)) ≈ transform(asℝ₊, a)
+        @test @jit(transform(asℝ₋, ar)) ≈ transform(asℝ₋, a)
+        @test @jit(transform(as𝕀, ar)) ≈ transform(as𝕀, a)
+    end
+
+    @testset "Array transforms begin" begin
+        tr = as(Array, as(Array, asℝ₊, 3), 3)
+        a = randn(dimension(tr))
+        ar = Reactant.to_rarray(a)
+
+        outr = @jit(transform_and_logjac(tr, ar))
+        out  = transform_and_logjac(tr, a)
+        @test outr[1] ≈ out[1]
+        @test outr[2] ≈ out[2]
+
+    end
+
+
+end
+
 
 ####
 #### static analysis with JET
