@@ -509,6 +509,11 @@ function as(::Type{T}, inner_transformation::S) where {T,S<:TransformTuple}
     @argcheck isstructtype(T)
     TypeWrapperTransform{T,S}(inner_transformation)
 end
+function as(::Type{T}, inner::S) where {T,S<:ScalarTransform}
+    @argcheck isstructtype(T) && length(fieldtypes(T)) == 1
+    tuplewrap = as((inner,))
+    TypeWrapperTransform{T, typeof(tuplewrap)}(tuplewrap)
+end
 
 as(::Type{T}, inner_transformation::NTransforms) where T  = as(T, as(inner_transformation))
 

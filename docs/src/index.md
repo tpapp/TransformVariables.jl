@@ -98,6 +98,37 @@ t_abc = merge(t_a, t_b, t_c)
 t_collision = merge(t_a, as((;a = asℝ₋))) # Will have a = asℝ₋, from rightmost
 ```
 
+In some of these cases, it may be helpful for some of the transformed variables to be wrapped in a user-provided type.
+For example, given
+```julia
+struct Foo
+a
+b
+end
+struct Bar
+c
+d
+end
+```
+it may be useful to transform a flat vector `[1, 2, 3, 4]` into a named tuple like `(e = 1, foo = Foo(2, Bar(3, 4)))`. This can be achieved with a transform like the following:
+```julia
+tb = as(Bar, (Identity(), Identity()))
+tf = as(Foo, (Identity(), tb))
+t = as((;e=Identity(), foo=tf))
+```
+where each instance of `Identity()` here could be replaced with an arbitrary scalar transform.
+
+For structs with a single field, the following
+```julia
+struct Baz; f; end
+tbaz = as(Baz, Identity())
+```
+is equivalent to
+```julia
+tbaz = as(Baz, (Identity(),))
+```
+That is, a single scalar transform can be provided to the `as` function (so long as the accompanying struct has exactly one field), but it will internally be wrapped in a tuple transform. As a consequence calling `transform` or `transform_and_logjac` with this transform will expect vector input, not scalar input.
+
 ## Scalar transforms
 
 The symbol `∞` is a placeholder for infinity. It does not correspond to `Inf`, but acts as a placeholder for the correct dispatch. `-∞` is valid.
@@ -131,7 +162,7 @@ TVShift
 TVNeg
 ```
 
-Consistent with common notation, transforms are applied right-to-left; for example, `as(Real, ∞, 3)` is equivalent to `TVShift(3) ∘ TVNeg() ∘ TVExp()`.
+Consistent with common notation, transforms are applied right-to-left; for example, `as(Real, -∞, 3)` is equivalent to `TVShift(3) ∘ TVNeg() ∘ TVExp()`.
 If you are working in an editor where typing Unicode is difficult, `TransformVariables.compose` is also available, as in `TransformVariables.compose(TVScale(5.0), TVNeg(), TVExp())`.
 
 This composition works with any scalar transform in any order, so `TVScale(4) ∘ as(Real, 2, ∞) ∘ TVShift(1e3)` is a valid transform.

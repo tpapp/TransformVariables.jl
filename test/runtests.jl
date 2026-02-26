@@ -574,7 +574,7 @@ end
     @test_throws ArgumentError inverse(t2, MyType(3.0))
 
     # Nested custom types
-    t1 = as(MyType, as((asℝ₋,)))
+    t1 = as(MyType, (asℝ₋,))
     t2 = as(YourType, asℝ₋)
     t3 = as(CustomType, as((a = t1, b = t2)))
     x = [0.0, -1]
@@ -585,9 +585,9 @@ end
     @test_throws ArgumentError inverse(t3, CustomType(-1.0, YourType(-exp(-1))))
     @test_throws ArgumentError inverse(t3, CustomType(-1.0, YourType(-exp(-1))))
 
-    # Type with single argument should work without tuple wrapper
+    # Type with scalar transform argument wraps it in a tuple
     t1 = as(MyType, asℝ₋)
-    x = 0.0
+    x = [0.0] # Needs to be vector, since full scalar interface not implemented
     y = transform(t1, x)
     @test y == MyType(-exp(0.0))
     @test inverse(t1, y) == x
