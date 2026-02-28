@@ -532,12 +532,28 @@ function transform_with(flag::LogJacFlag, t::TypeWrapperTransform{T}, x, index) 
     ctor = constructorof(T)
     ctor(y...), ℓ, index′
 end
+function transform_with(flag::LogJacFlag, t::TypeWrapperTransform{C, T}, x, index) where {C, T<:TransformTuple{<:NamedTuple}}
+    (; inner_transformation) = t
+    y, ℓ, index′ = transform_with(flag, inner_transformation, x, index)
+    ctor = constructorof(C)
+    # tupnames = N
+    # typnames = fieldnames(C)
+    # y_ordered = map(fieldnames(C)) do name
+    #     getfield(y, name)
+    # end
+    y_ordered = ntuple(i-> getfield(y, fieldname(C, i)), nfields(C))
+    if length(y_ordered) != length(y)
+        throw(ArgumentError("Fields of named tuple do not match fields of provided type"))
+    end
+    # @show tupnames typnames
+    ctor(y_ordered...), ℓ, index′
+end
 
 # NamedTuple inner transformations
 function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, T<:C, S<:TransformTuple{<:NamedTuple}}
     inverse_eltype(t.inner_transformation, NamedTuple{fieldnames(T),Tuple{fieldtypes(T)...}})
 end
-function inverse_at!(x, index, t::TypeWrapperTransform{T, S}, y::T) where {T, S<:TransformTuple{<:NamedTuple}}
+function inverse_at!(x, index, t::TypeWrapperTransform{T, S}, y::T) where {T, N, S<:TransformTuple{<:NamedTuple{N}}}
     inverse_at!(x, index, t.inner_transformation, getfields(y))
 end
 

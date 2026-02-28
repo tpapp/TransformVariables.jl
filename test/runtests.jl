@@ -563,6 +563,24 @@ end
     @test_throws ArgumentError inverse(t2, [1.0, 2.0])
     @test_throws ArgumentError inverse(t2, MyType(3.0))
 
+    # Named tuple with different ordering
+    t1 = as((b = asℝ, a = asℝ))    
+    t2 = as(CustomType, t1)
+    y = transform(t2, [1.0, 2.0])
+    @test y == CustomType(2.0, 1.0) 
+    @test inverse(t2, y) == [1.0, 2.0]
+
+    # Named tuple with wrong number or names of fields
+    t1 = as((;b = asℝ))    
+    t2 = as(CustomType, t1)
+    @test_throws FieldError transform(t2, [1.0])
+    t1 = as((a = asℝ, c = asℝ))    
+    t2 = as(CustomType, t1)
+    @test_throws FieldError transform(t2, [1.0, 3.0])
+    t1 = as((b = asℝ, a = asℝ, c = asℝ))    
+    t2 = as(CustomType, t1)
+    @test_throws ArgumentError transform(t2, [1.0, 2.0, 3.0])
+
     # From tuple to type
     t1 = as(ntuple(i->asℝ₊, Val(2)))
     t2 = as(CustomType, t1)

@@ -129,6 +129,8 @@ tbaz = as(Baz, (Identity(),))
 ```
 That is, a single scalar transform can be provided to the `as` function (so long as the accompanying struct has exactly one field), but it will internally be wrapped in a tuple transform. As a consequence calling `transform` or `transform_and_logjac` with this transform will expect vector input, not scalar input.
 
+This relies on [`constructorof` from ConstructionBase](https://juliaobjects.github.io/ConstructionBase.jl/stable/#ConstructionBase.constructorof). If a Tuple is transformed to a type, it is unpacked and passed to the constructor; if a NamedTuples is transformed, its keys will be reordered to match the fields of the type, so they must match exactly.
+
 ## Scalar transforms
 
 The symbol `∞` is a placeholder for infinity. It does not correspond to `Inf`, but acts as a placeholder for the correct dispatch. `-∞` is valid.
