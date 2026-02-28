@@ -177,7 +177,7 @@ as(SArray{2,3}, asℝ₊, 2, 3)     # transform to a 2x3 SMatrix of positive num
 as(SVector{3})                   # ℝ³ → ℝ³, identity, but an SVector
 ```
 """
-function as(::Type{<:SArray{S}}, inner_transformation::AbstractTransform = Identity()) where S
+function as(::Type{<:SArray{S}}, inner_transformation::AbstractTransform) where S
     dim = fieldtypes(S)
     @argcheck all(x -> x ≥ 1, dim)
     StaticArrayTransformation{prod(dim),S,typeof(inner_transformation)}(inner_transformation)
