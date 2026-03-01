@@ -1011,17 +1011,69 @@ end
         @test @jit(transform(asℝ₊, ar)) ≈ transform(asℝ₊, a)
         @test @jit(transform(asℝ₋, ar)) ≈ transform(asℝ₋, a)
         @test @jit(transform(as𝕀, ar)) ≈ transform(as𝕀, a)
+
     end
 
     @testset "Array transforms begin" begin
-        tr = as(Array, as(Array, asℝ₊, 3), 3)
-        a = randn(dimension(tr))
-        ar = Reactant.to_rarray(a)
 
-        outr = @jit(transform_and_logjac(tr, ar))
-        out  = transform_and_logjac(tr, a)
-        @test outr[1] ≈ out[1]
-        @test outr[2] ≈ out[2]
+        @testset "Single Array Transform" begin
+            for T in (asℝ, asℝ₊, asℝ₋, as𝕀)
+                tr = as(Array, T, 5)
+                a = randn(dimension(tr))
+                ar = Reactant.to_rarray(a)
+                outr = @jit(transform_and_logjac(tr, ar))
+                out  = transform_and_logjac(tr, a)
+                @test outr[1] ≈ out[1]
+                @test outr[2] ≈ out[2]
+            end
+        end        
+        @testset "Test inner transformations" begin
+            for T in (asℝ, asℝ₊, asℝ₋, as𝕀)
+                tr = as(Array, as(Array, T, 3), 3)
+                a = randn(dimension(tr))
+                ar = Reactant.to_rarray(a)
+
+                outr = @jit(transform_and_logjac(tr, ar))
+                out  = transform_and_logjac(tr, a)
+                @test all(x->x[1]≈x[2], zip(outr[1], out[1]))
+                @test outr[2] ≈ out[2]
+            end
+        end
+
+        @testset "Test shape" begin
+
+            tr = as(Array, as(Array, asℝ₊, 3,3), 3)
+            a = randn(dimension(tr))
+            ar = Reactant.to_rarray(a)
+
+            outr = @jit(transform_and_logjac(tr, ar))
+            out  = transform_and_logjac(tr, a)
+            @test all(x->x[1]≈x[2], zip(outr[1], out[1]))
+            @test outr[2] ≈ out[2]
+
+            tr = as(Array, as(Array, asℝ₊, 3,3), 5,5)
+            a = randn(dimension(tr))
+            ar = Reactant.to_rarray(a)
+
+            outr = @jit(transform_and_logjac(tr, ar))
+            out  = transform_and_logjac(tr, a)
+            @test all(x->x[1]≈x[2], zip(outr[1], out[1]))
+            @test size(outr[1]) == size(out[1])
+            @test outr[2] ≈ out[2]
+
+            tr = as(Array, as(Array, asℝ₊, 3), 5,5)
+            a = randn(dimension(tr))
+            ar = Reactant.to_rarray(a)
+
+            outr = @jit(transform_and_logjac(tr, ar))
+            out  = transform_and_logjac(tr, a)
+            @test all(x->x[1]≈x[2], zip(outr[1], out[1]))
+            @test size(outr[1]) == size(out[1])
+            @test outr[2] ≈ out[2]
+
+        end
+
+
 
     end
 

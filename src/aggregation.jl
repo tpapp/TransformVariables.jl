@@ -9,9 +9,9 @@ $(TYPEDEF)
 
 Apply `transformation` repeatedly to create an array with given `dims`.
 """
-struct ArrayTransformation{T <: AbstractTransform,M} <: VectorTransform
+struct ArrayTransformation{T <: AbstractTransform, M, I} <: VectorTransform
     inner_transformation::T
-    dims::NTuple{M, Int}
+    dims::NTuple{M, I}
 end
 
 function _summary_rows(transformation::ArrayTransformation, mime)
@@ -82,7 +82,7 @@ function transform_with(flag::LogJacFlag, transformation::ArrayTransformation, x
     first.(yℓ), isempty(yℓ) ? ℓz : ℓz + sum(last, yℓ), index′
 end
 
-function transform_with(flag::LogJacFlag, t::ArrayTransformation{Identity}, x, index)
+function transform_with(flag::LogJacFlag, t::ArrayTransformation{Identity}, x::AbstractArray, index)
     index′ = index+dimension(t)
     y = reshape(x[index:(index′-1)], t.dims)
     y, logjac_zero(flag, _ensure_float(eltype(x))), index′
