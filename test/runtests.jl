@@ -1073,6 +1073,38 @@ end
 
         end
 
+        @testset "NamedTuples" begin
+            tr = as((a = as(Array, asℝ₊, 3), d = asℝ, b = as(Array, asℝ₋, 5), c = as(Real, 4.0, 5.0)))
+            a = randn(dimension(tr))
+            ar = Reactant.to_rarray(a)
+
+            outr = @jit(transform_and_logjac(tr, ar))
+            out  = transform_and_logjac(tr, a)
+            all(x->x[1]≈x[2], zip(outr[1], out[1]))
+            @test outr[2] ≈ out[2]
+        end
+
+        @testset "Nested NamedTuples" begin
+            tr = as((a = as(Array, asℝ₊, 3), b = as((b0 = as(Array, asℝ₋, 5), b1 = as(Real, 4.0, 5.0)))))
+            a = randn(dimension(tr))
+            ar = Reactant.to_rarray(a)
+
+            outr = @jit(transform_and_logjac(tr, ar))
+            out  = transform_and_logjac(tr, a)
+            @test outr[1].a ≈ out[1].a
+            all(x->x[1]≈x[2], zip(outr[1].b, out[1].b))
+            @test outr[2] ≈ out[2]
+        end
+
+        @testset "Nested vectors" begin
+            t = as(Vector, as((a = asℝ,)), 4)
+            a = randn(dimension(t))
+            ar = Reactant.to_rarray(a)
+            
+            @test_throws ArgumentError @jit(transform_and_logjac(t, ar))
+        end
+
+
 
 
     end

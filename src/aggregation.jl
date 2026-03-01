@@ -9,9 +9,9 @@ $(TYPEDEF)
 
 Apply `transformation` repeatedly to create an array with given `dims`.
 """
-struct ArrayTransformation{T <: AbstractTransform, M, I} <: VectorTransform
+struct ArrayTransformation{T <: AbstractTransform, M} <: VectorTransform
     inner_transformation::T
-    dims::NTuple{M, I}
+    dims::NTuple{M, Int}
 end
 
 function _summary_rows(transformation::ArrayTransformation, mime)

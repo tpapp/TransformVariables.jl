@@ -9,6 +9,19 @@ Base.@propagate_inbounds function TransformVariables.tv_getindex(a::AnyTracedRAr
     Reactant.@allowscalar a[i]
 end
 
+# The dims of the ArrayTransformation must be constant because Reactant can only deal with non-dynamic arrays.
+Base.@nospecialize function Reactant.traced_type_inner(
+    @nospecialize(prev::Type{ArrayTransformation{T, M}}),
+    seen,
+    @nospecialize(mode::TraceMode),
+    @nospecialize(track_numbers::Type),
+    @nospecialize(sharding),
+    @nospecialize(runtime)
+) where {T, M}
+    T_traced = Reactant.traced_type_inner(T, seen, mode, track_numbers, sharding, runtime)
+    return TransformVariables.ArrayTransformation{T_traced, M}
+end
+
 TransformVariables._ensure_float(x::Type{T}) where {T<:TracedRNumber} = T
 
 @noinline function TransformVariables.transform_with(
