@@ -118,7 +118,11 @@ t = as((;e=Identity(), foo=tf))
 ```
 where each instance of `Identity()` here could be replaced with an arbitrary scalar transform.
 
-For structs with a single field, the following
+This relies on [`constructorof` from ConstructionBase](https://juliaobjects.github.io/ConstructionBase.jl/stable/#ConstructionBase.constructorof). If a Tuple transform is wrapped in a type this way, transform results will be unpacked and passed to the constructor, hence in the same order as the transform. 
+If a NamedTuple transform is used, it will be unpacked as keyword arguments to the constructor of the type. 
+Tuple or NamedTuple transforms that do not provide proper arguments to the constructor of a given type will simply result in `MethodErrors`.
+
+For structs with a single field (or with a constructor that accepts a single argument), the following
 ```julia
 struct Baz; f; end
 tbaz = as(Baz, Identity())
@@ -127,9 +131,8 @@ is equivalent to
 ```julia
 tbaz = as(Baz, (Identity(),))
 ```
-That is, a single scalar transform can be provided to the `as` function (so long as the accompanying struct has exactly one field), but it will internally be wrapped in a tuple transform. As a consequence calling `transform` or `transform_and_logjac` with this transform will expect vector input, not scalar input.
+That is, a single scalar transform can be provided to the `as` function (so long as the accompanying type can be constructed with a single argument), but it will internally be wrapped in a tuple transform. As a consequence calling `transform` or `transform_and_logjac` with this transform will expect vector input, not scalar input.
 
-This relies on [`constructorof` from ConstructionBase](https://juliaobjects.github.io/ConstructionBase.jl/stable/#ConstructionBase.constructorof). If a Tuple is transformed to a type, it is unpacked and passed to the constructor; if a NamedTuples is transformed, its keys will be reordered to match the fields of the type, so they must match exactly.
 
 ## Scalar transforms
 

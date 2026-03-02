@@ -510,7 +510,7 @@ function as(::Type{T}, inner_transformation::S) where {T,S<:TransformTuple}
     TypeWrapperTransform{T,S}(inner_transformation)
 end
 function as(::Type{T}, inner::S) where {T,S<:ScalarTransform}
-    @argcheck isstructtype(T) && length(fieldtypes(T)) == 1
+    @argcheck isstructtype(T) 
     tuplewrap = as((inner,))
     TypeWrapperTransform{T, typeof(tuplewrap)}(tuplewrap)
 end
@@ -532,21 +532,34 @@ function transform_with(flag::LogJacFlag, t::TypeWrapperTransform{T}, x, index) 
     ctor = constructorof(T)
     ctor(y...), ℓ, index′
 end
-function transform_with(flag::LogJacFlag, t::TypeWrapperTransform{C, T}, x, index) where {C, T<:TransformTuple{<:NamedTuple}}
+function transform_with(flag::LogJacFlag, t::TypeWrapperTransform{C, T}, x, index) where {C, N, T<:TransformTuple{<:NamedTuple{N}}}
     (; inner_transformation) = t
     y, ℓ, index′ = transform_with(flag, inner_transformation, x, index)
     ctor = constructorof(C)
     # tupnames = N
-    # typnames = fieldnames(C)
-    # y_ordered = map(fieldnames(C)) do name
-    #     getfield(y, name)
+    # typenames = fieldnames(C)
+    # # Version 1
+    # for c in typenames
+    #     c ∈ N || throw(ArgumentError("Field name $c in the provided type $C is not found in the transformation $N. If $C has a constructor with less arguments than fields, consider transforming to a Tuple rather than a NamedTuple."))
     # end
-    y_ordered = ntuple(i-> getfield(y, fieldname(C, i)), nfields(C))
-    if length(y_ordered) != length(y)
-        throw(ArgumentError("Fields of named tuple do not match fields of provided type"))
-    end
-    # @show tupnames typnames
-    ctor(y_ordered...), ℓ, index′
+    # if length(typenames) != length(N)
+    #     throw(ArgumentError("The transformation to $N has more names than the fields $typenames of the provided type $C."))
+    # end
+    # y_ordered = ntuple(i-> getfield(y, typenames[i]), length(typenames))
+    # return ctor(y_ordered...), ℓ, index′
+
+    # Version 2
+    # ordering = map(N) do n
+    #     idx = findfirst(==(n), typenames)
+    #     isnothing(idx) && throw(ArgumentError("Field name $n in the transformations is not found in the provided type $C."))
+    #     idx
+    # end
+    # y_ordered = map(Base.Fix1(getindex, y), ordering)
+    # return ctor(y_ordered...), ℓ, index′
+    # @show tupnames typenames
+
+    # Version 3
+    ctor(;y...), ℓ, index′
 end
 
 # NamedTuple inner transformations
