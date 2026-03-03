@@ -563,19 +563,29 @@ function transform_with(flag::LogJacFlag, t::TypeWrapperTransform{C, T}, x, inde
 end
 
 # NamedTuple inner transformations
-function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, T<:C, S<:TransformTuple{<:NamedTuple}}
-    inverse_eltype(t.inner_transformation, NamedTuple{fieldnames(T),Tuple{fieldtypes(T)...}})
+function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, N, T<:C, S<:TransformTuple{<:NamedTuple{N}}}
+    used_names = filter(n->n ∈ fieldnames(C), N)
+    types = map(n->fieldtype(T, n), used_names)
+    inverse_eltype(t.inner_transformation, NamedTuple{used_names,Tuple{types...}})
 end
 function inverse_at!(x, index, t::TypeWrapperTransform{T, S}, y::T) where {T, N, S<:TransformTuple{<:NamedTuple{N}}}
-    inverse_at!(x, index, t.inner_transformation, getfields(y))
+    yvals = NamedTuple{N}(map(n->(getfield(y,n)), N))
+    inverse_at!(x, index, t.inner_transformation, yvals)
 end
 
 # Regular Tuple inner transformation
 function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, T<:C, S<:TransformTuple}
-    inverse_eltype(t.inner_transformation, Tuple{fieldtypes(T)...})
+    num_args = length(t.inner_transformation)
+    inverse_eltype(t.inner_transformation, Tuple{fieldtypes(T)[begin:num_args]...})
 end
 function inverse_at!(x, index, t::TypeWrapperTransform{T, S}, y::T) where {T, S<:TransformTuple}
-    inverse_at!(x, index, t.inner_transformation, Tuple(getfields(y)))
+    inner = t.inner_transformation
+    num_args = length(inner)
+    if length(fieldnames(typeof(y))) > num_args
+        @warn "The provided type $T has more fields than the inner transformation, only the first $num_args will be used for inversion."
+    end
+    yvals = Tuple(getfield(y, i) for i in 1:num_args)
+    inverse_at!(x, index, inner, yvals)
 end
 
 # Informative error for trying to invert an incompatible type

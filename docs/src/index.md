@@ -133,6 +133,8 @@ tbaz = as(Baz, (Identity(),))
 ```
 That is, a single scalar transform can be provided to the `as` function (so long as the accompanying type can be constructed with a single argument), but it will internally be wrapped in a tuple transform. As a consequence calling `transform` or `transform_and_logjac` with this transform will expect vector input, not scalar input.
 
+Inverting these transforms would, in the most general case, require inverting the constructor of the given type, which may itself have several valid dispatches. 
+Rather than conduct a close inspection of user types and their available constructors, inverting a Tuple-based struct transform will simply use the first $n$ fields of the struct, where $n$ is the length of the Tuple transform (which will work for any structs with only the default constructor). Inverting a NamedTuple-based struct transform will attempt to use struct fields with names matching the fields of the NamedTuple transform, which fails if the struct does not have matching fields. 
 
 ## Scalar transforms
 
