@@ -581,12 +581,15 @@ end
     t1 = as((;b = asℝ))    
     t2 = as(KwCustomType, t1)
     @test_throws UndefKeywordError transform(t2, [1.0])
+    @test inverse(t2, KwCustomType(1.0, 3.0)) == [3.0]
     t1 = as((a = asℝ, c = asℝ))    
     t2 = as(KwCustomType, t1)
     @test_throws UndefKeywordError transform(t2, [1.0, 3.0])
+    @test_throws ArgumentError inverse(t2, KwCustomType(1.0, 3.0))
     t1 = as((b = asℝ, a = asℝ, c = asℝ))    
     t2 = as(KwCustomType, t1)
     @test_throws MethodError transform(t2, [1.0, 2.0, 3.0])
+    @test_throws ArgumentError inverse(t2, KwCustomType(1.0, 3.0))
 
     # Type with shortened constructor
     struct MaskedType{A, B}

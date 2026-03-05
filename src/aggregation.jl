@@ -564,7 +564,7 @@ end
 
 # NamedTuple inner transformations
 function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, N, T<:C, S<:TransformTuple{<:NamedTuple{N}}}
-    used_names = filter(n->n ∈ fieldnames(C), N)
+    used_names = filter(n->n ∈ fieldnames(T), N)
     types = map(n->fieldtype(T, n), used_names)
     inverse_eltype(t.inner_transformation, NamedTuple{used_names,Tuple{types...}})
 end
