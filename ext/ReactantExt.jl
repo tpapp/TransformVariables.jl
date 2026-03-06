@@ -36,7 +36,7 @@ TransformVariables._ensure_float(x::Type{T}) where {T<:TracedRNumber} = T
     len = prod(dims)              # number of elements
     𝐼 = range(index; length = len, step = d)
 
-    # # Reactant can't easily handle the usual return type because the array eltype is not a Reacant primitive
+    # # Reactant can't easily handle the usual return type because the array eltype is not a Reactant primitive
     # # so we have to do a 2-pass algorithm
     # yℓ = map(index -> ((y, ℓ, _) = transform_with(flag, inner_transformation, x, index); y), 𝐼)
     # ℓa = map(index -> ((y, ℓ, _) = transform_with(flag, inner_transformation, x, index); ℓ), 𝐼)
