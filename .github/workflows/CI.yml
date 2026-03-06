@@ -17,6 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         version:
+          # revert lts to min when https://github.com/julia-actions/setup-julia/issues/372 is fixed
           - 'lts'
           - '1'
         os:
