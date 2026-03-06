@@ -536,29 +536,6 @@ function transform_with(flag::LogJacFlag, t::TypeWrapperTransform{C, T}, x, inde
     (; inner_transformation) = t
     y, ℓ, index′ = transform_with(flag, inner_transformation, x, index)
     ctor = constructorof(C)
-    # tupnames = N
-    # typenames = fieldnames(C)
-    # # Version 1
-    # for c in typenames
-    #     c ∈ N || throw(ArgumentError("Field name $c in the provided type $C is not found in the transformation $N. If $C has a constructor with less arguments than fields, consider transforming to a Tuple rather than a NamedTuple."))
-    # end
-    # if length(typenames) != length(N)
-    #     throw(ArgumentError("The transformation to $N has more names than the fields $typenames of the provided type $C."))
-    # end
-    # y_ordered = ntuple(i-> getfield(y, typenames[i]), length(typenames))
-    # return ctor(y_ordered...), ℓ, index′
-
-    # Version 2
-    # ordering = map(N) do n
-    #     idx = findfirst(==(n), typenames)
-    #     isnothing(idx) && throw(ArgumentError("Field name $n in the transformations is not found in the provided type $C."))
-    #     idx
-    # end
-    # y_ordered = map(Base.Fix1(getindex, y), ordering)
-    # return ctor(y_ordered...), ℓ, index′
-    # @show tupnames typenames
-
-    # Version 3
     ctor(;y...), ℓ, index′
 end
 
