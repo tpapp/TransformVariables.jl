@@ -22,7 +22,7 @@ Base.@nospecialize function Reactant.traced_type_inner(
     return TransformVariables.ArrayTransformation{T_traced, M}
 end
 
-TransformVariables._ensure_float(x::Type{T}) where {T<:TracedRNumber} = T
+TransformVariables._ensure_float(x::Type{TracedRNumber{T}}) where T = TracedRNumber{_ensure_float(T)}
 
 @noinline function TransformVariables.transform_with(
     flag::TransformVariables.LogJacFlag, 
