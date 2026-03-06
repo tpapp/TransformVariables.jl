@@ -558,8 +558,8 @@ end
 function inverse_at!(x, index, t::TypeWrapperTransform{T, S}, y::T) where {T, S<:TransformTuple}
     inner = t.inner_transformation
     num_args = length(inner)
-    if length(fieldnames(typeof(y))) > num_args
-        @warn "The provided type $T has more fields than the inner transformation, only the first $num_args will be used for inversion."
+    if length(fieldnames(typeof(y))) != num_args
+        throw(ArgumentError("The provided type $T has a different number of fields than the inner transformation, so it cannot be inverted."))
     end
     yvals = Tuple(getfield(y, i) for i in 1:num_args)
     inverse_at!(x, index, inner, yvals)

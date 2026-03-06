@@ -608,9 +608,10 @@ end
     # When constructor accepts less args than struct has fields, 
     # inverse takes only the first fields of the struct and warns user
     t = as(MaskedType, asℝ)
-    test_transformation(t, y -> y isa MaskedType; N=1, jac=false)
-    @test_logs (:warn,r"more fields") inverse(t, MaskedType(1.0, nothing))
-    @test inverse(t, MaskedType(1.0, 2.0)) == [1.0]
+    x = [1.0]
+    y = transform(t, x)
+    @test y == MaskedType(1.0, nothing)
+    @test_throws ArgumentError inverse(t, MaskedType(1.0, nothing))
     # test_transformation(t, y -> y isa MaskedType; N=1, jac=false)
 
     # Insufficient arguments in provided tuple for constructor
