@@ -54,6 +54,7 @@ jobs:
       fail-fast: false
       matrix:
         version:
+          # see comment above
           - 'lts'
           - '1'
         os:
