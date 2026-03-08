@@ -36,16 +36,10 @@ TransformVariables._ensure_float(x::Type{TracedRNumber{T}}) where T = TracedRNum
     len = prod(dims)              # number of elements
     𝐼 = range(index; length = len, step = d)
 
-    # # Reactant can't easily handle the usual return type because the array eltype is not a Reactant primitive
-    # # so we have to do a 2-pass algorithm
-    # yℓ = map(index -> ((y, ℓ, _) = transform_with(flag, inner_transformation, x, index); y), 𝐼)
-    # ℓa = map(index -> ((y, ℓ, _) = transform_with(flag, inner_transformation, x, index); ℓ), 𝐼)
-
-    # index′ = index + d * len
-    # y = reshape(yℓ, dims)
-    # ℓa = sum(ℓa)
-    # y, ℓa, index′
+    # Reactant can't handle arrays of non-primitive types so we have to be more explicity about 
+    # the output and use a `@trace` for loop. 
     
+    # Reactant can compile this away since we are only using its type
     tmp,_,_ = transform_with(flag, inner_transformation, x, first(𝐼))
     ℓa = logjac_zero(flag, _ensure_float(eltype(x)))
     if typeof(tmp) <: Number
@@ -70,6 +64,7 @@ TransformVariables._ensure_float(x::Type{TracedRNumber{T}}) where T = TracedRNum
         end
     end
 
+    # Generator seems to give the wrong answer so we used collect + eachslice instead.
     if tmp isa AbstractArray
         yℓ0 = collect(eachslice(yℓ, dims=ndims(yℓ)))
     else
