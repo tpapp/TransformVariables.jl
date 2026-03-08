@@ -36,10 +36,7 @@ TransformVariables._ensure_float(x::Type{TracedRNumber{T}}) where T = TracedRNum
     len = prod(dims)              # number of elements
     𝐼 = range(index; length = len, step = d)
 
-    # Reactant can't handle arrays of non-primitive types so we have to be more explicity about 
-    # the output and use a `@trace` for loop. 
-    
-    # Reactant can compile this away since we are only using its type
+    # Determine array container types (must be either a Number or Array)
     tmp,_,_ = transform_with(flag, inner_transformation, x, first(𝐼))
     ℓa = logjac_zero(flag, _ensure_float(eltype(x)))
     if typeof(tmp) <: Number
@@ -50,6 +47,9 @@ TransformVariables._ensure_float(x::Type{TracedRNumber{T}}) where T = TracedRNum
     else
         throw(ArgumentError("Number and AbstractArray transformations are only supported in Reactant compilation mode"))
     end
+
+    # Reactant can't handle arrays of non-primitive types so we have to be more explicity about 
+    # the output and use a `@trace` for loop. 
     @trace track_numbers=false for i in eachindex(𝐼)
         idx = 𝐼[i]
         y, ℓ, _ = transform_with(flag, inner_transformation, x, idx)
