@@ -4,7 +4,7 @@ using TransformVariables: TransformVariables, ArrayTransformation, LogJacFlag,
 using Reactant
 using Reactant: TracedRNumber, AnyTracedRArray
 
-RInt = Union{Int, TracedRNumber{Int}}
+const RInt = Union{Int, TracedRNumber{Int}}
 Base.@propagate_inbounds function TransformVariables.tv_getindex(a::AnyTracedRArray, i::RInt)
     Reactant.@allowscalar a[i]
 end
