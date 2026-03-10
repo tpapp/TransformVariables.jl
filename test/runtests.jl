@@ -411,6 +411,7 @@ end
         @test tt[1] == inner[1]
         @test tt[2] == inner[2]
         @test tt[3] == inner[3]
+        @test tt[1] == inner[1]
         @test_throws BoundsError tt[4]
         @test propertynames(tt) == propertynames(inner)
         @test (@set tt[3] = t2) == as((t1, t2, t2))
@@ -982,12 +983,17 @@ end
     t = as((as(Array, asℝ₊, 3),
             as(Array, asℝ₋, 3, 3),
             as(Array, TVScale(5.0) ∘ asℝ₋, 3, 3, 3),
+            as(Array, as((a=asℝ₊, b = as𝕀)), 3)
             ))
     repr_t = """
-[1:39] Tuple of transformations
+[1:45] Tuple of transformations
   [1:3] 1 → 3×asℝ₊
   [4:12] 2 → 3×3×asℝ₋
-  [13:39] 3 → 3×3×3×TVScale(5.0) ∘ TVNeg() ∘ asℝ₊"""
+  [13:39] 3 → 3×3×3×TVScale(5.0) ∘ TVNeg() ∘ asℝ₊
+  [40:45] 4 → 3×
+    NamedTuple of transformations
+      :a → asℝ₊
+      :b → as𝕀"""
     @test repr(MIME("text/plain"), t) == repr_t
 end
 
