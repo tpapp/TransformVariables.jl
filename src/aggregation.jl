@@ -17,6 +17,9 @@ end
 function _summary_rows(transformation::ArrayTransformation, mime)
     (; inner_transformation, dims) = transformation
     _dims = foldr((a,b) -> "$(string(a))×$(string(b))", dims, init = "")
+    if inner_transformation isa ScalarTransform
+        return _summary_row(transformation, _dims*string(inner_transformation))
+    end
     rows = _summary_row(transformation, _dims)
     for row in _summary_rows(inner_transformation, mime)
         push!(rows, (level = row.level + 1, indices = nothing, repr = row.repr))

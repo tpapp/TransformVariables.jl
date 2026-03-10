@@ -949,21 +949,35 @@ end
 end
 
 @testset "pretty printing" begin
+    struct SmallType
+        f1
+    end
+    struct LargerType
+        f2
+        f3
+    end
+    LargerType(;f2, f3) = LargerType(f2, f3)
     t = as((a = asℝ₊,
             b = as(Array, asℝ₋, 3, 3),
             c = corr_cholesky_factor(13),
-            d = as((asℝ, corr_cholesky_factor(SMatrix{3,3}), UnitSimplex(3), unit_vector_norm(4)))))
+            d = as((asℝ, corr_cholesky_factor(SMatrix{3,3}), UnitSimplex(3), unit_vector_norm(4))),
+            e = as(LargerType, as((f3 = as(SmallType, asℝ₊), f2 = as𝕀))),
+            ))
     repr_t = """
-[1:97] NamedTuple of transformations
+[1:100] NamedTuple of transformations
   [1:1] :a → asℝ₊
   [2:10] :b → 3×3×asℝ₋
   [11:88] :c → 13×13 correlation cholesky factor
-  [89:97] :d → Tuple of transformations
-    [98:98] 1 → asℝ
-    [108:110] 2 → SMatrix{3,3} correlation cholesky factor
-    [120:121] 3 → 3 element unit simplex transformation
-    [131:133] 4 → 4 element (unit vector, norm) transformation"""
-    repr(MIME("text/plain"), t) == repr_t
+  [89:98] :d → Tuple of transformations
+    [89:89] 1 → asℝ
+    [90:92] 2 → SMatrix{3,3} correlation cholesky factor
+    [93:94] 3 → 3 element unit simplex transformation
+    [95:98] 4 → 4 element (unit vector, norm) transformation
+  [99:100] :e → LargerType wrapper on NamedTuple of transformations
+    [99:99] :f3 → SmallType wrapper on Tuple of transformations
+      [99:99] 1 → asℝ₊
+    [100:100] :f2 → as𝕀"""
+    @test repr(MIME("text/plain"), t) == repr_t
 end
 
 @testset "print ∞" begin
