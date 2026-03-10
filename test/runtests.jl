@@ -978,6 +978,17 @@ end
       [99:99] 1 → asℝ₊
     [100:100] :f2 → as𝕀"""
     @test repr(MIME("text/plain"), t) == repr_t
+
+    t = as((as(Array, asℝ₊, 3),
+            as(Array, asℝ₋, 3, 3),
+            as(Array, TVScale(5.0) ∘ asℝ₋, 3, 3, 3),
+            ))
+    repr_t = """
+[1:39] Tuple of transformations
+  [1:3] 1 → 3×asℝ₊
+  [4:12] 2 → 3×3×asℝ₋
+  [13:39] 3 → 3×3×3×TVScale(5.0) ∘ TVNeg() ∘ asℝ₊"""
+    @test repr(MIME("text/plain"), t) == repr_t
 end
 
 @testset "print ∞" begin
