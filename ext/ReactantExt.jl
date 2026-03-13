@@ -45,7 +45,7 @@ TransformVariables._ensure_float(x::Type{TracedRNumber{T}}) where T = TracedRNum
         # convert to a larger array since reactant can't easily index into an julia array of Reactant arrays with a traced number.
         yℓ = similar(tmp, size(tmp)..., length(𝐼))
     else
-        throw(ArgumentError("Number and AbstractArray transformations are only supported in Reactant compilation mode"))
+        throw(ArgumentError("only `Number` and `AbstractArray` transformations are supported in Reactant compilation mode"))
     end
 
     # Reactant can't handle arrays of non-primitive types so we have to be more explicit about 
@@ -82,6 +82,5 @@ function TransformVariables.transform_with(flag::LogJacFlag, t::ArrayTransformat
     y = reshape(x[inds], t.dims)
     y, logjac_zero(flag, _ensure_float(eltype(x))), index′
 end
-
 
 end
