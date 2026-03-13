@@ -41,7 +41,7 @@ TransformVariables._ensure_float(x::Type{TracedRNumber{T}}) where T = TracedRNum
     ℓa = logjac_zero(flag, _ensure_float(eltype(x)))
     if tmp isa Number
         yℓ = similar(x, typeof(tmp), length(𝐼))
-    elseif typeof(tmp) <: AbstractArray
+    elseif tmp isa AbstractArray
         # convert to a larger array since reactant can't easily index into an julia array of Reactant arrays with a traced number.
         yℓ = similar(tmp, size(tmp)..., length(𝐼))
     else
