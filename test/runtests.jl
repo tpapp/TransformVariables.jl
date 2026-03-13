@@ -653,7 +653,6 @@ end
     end
 end
 
-
 # if VERSION ≥ v"1.1"
 #     if CIENV
 #         @info "installing Zygote"
@@ -998,12 +997,10 @@ end
     @test_throws InexactError inverse(t, fill(Complex(0, 1), 3))
 end
 
-
 ###
 ###  Reactant compat tests
 ###
 @testset "Reactant.jl" begin
-    
     @testset "Scalar transforms" begin
         a = 3.1
         ar = ConcreteRNumber(a)
@@ -1103,13 +1100,7 @@ end
             
             @test_throws ArgumentError @jit(transform_and_logjac(t, ar))
         end
-
-
-
-
     end
-
-
 end
 
 

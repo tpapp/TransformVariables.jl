@@ -2,9 +2,9 @@
 ### logistic and logit
 ###
 
-
 """
     $(SIGNATURES)
+
 Method used in place of `Base.getindex` within this package.
 When `a <: Reactant.AnyTracedRArray` this adds a `@allowscalar` annotation so that the function can 
 be compiled with Reactant. When `a` is not a `Reactant.AnyTracedRArray` it simply returns `a[i]`.
