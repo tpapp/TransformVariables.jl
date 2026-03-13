@@ -48,7 +48,7 @@ TransformVariables._ensure_float(x::Type{TracedRNumber{T}}) where T = TracedRNum
         throw(ArgumentError("Number and AbstractArray transformations are only supported in Reactant compilation mode"))
     end
 
-    # Reactant can't handle arrays of non-primitive types so we have to be more explicity about 
+    # Reactant can't handle arrays of non-primitive types so we have to be more explicit about 
     # the output and use a `@trace` for loop. 
     @trace track_numbers=false for i in eachindex(𝐼)
         idx = 𝐼[i]
