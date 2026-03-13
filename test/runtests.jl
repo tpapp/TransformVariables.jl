@@ -412,6 +412,7 @@ end
         @test tt[1] == inner[1]
         @test tt[2] == inner[2]
         @test tt[3] == inner[3]
+        @test tt[1] == inner[1]
         @test_throws BoundsError tt[4]
         @test propertynames(tt) == propertynames(inner)
         @test (@set tt[3] = t2) == as((t1, t2, t2))
@@ -539,6 +540,114 @@ end
     @test tm != as((a = asℝ, b = as𝕀, c = TVScale(2.0)))
     tm = @inferred(merge(t1, t4, t2))
     @test tm == as((a = asℝ, b = asℝ₋, c = CorrCholeskyFactor(3), d = unit_vector_norm(4)))
+
+end
+
+@testset "transform to custom type" begin
+    
+    struct CustomType{A, B}
+        a::A
+        b::B
+    end
+    @kwdef struct KwCustomType{A, B}
+        a::A
+        b::B
+    end
+    struct MyType{C}
+        c::C
+    end
+    struct YourType
+        d::Float64
+    end
+
+    # From named tuple to type
+    t1 = as((a = asℝ, b = asℝ))
+    t2 = as(CustomType, t1)
+    @test_throws MethodError transform(t2, [1.0, 2.0])
+
+    t1 = as((a = asℝ, b = asℝ))
+    t2 = as(KwCustomType, t1)
+    x = [1.0, 2.0]
+    test_transformation(t2, y -> y isa KwCustomType; N=1, jac=false)
+    @test_throws ArgumentError inverse(t2, [1.0, 2.0])
+    @test_throws ArgumentError inverse(t2, MyType(3.0))
+
+    # Named tuple with different ordering
+    t1 = as((b = asℝ, a = asℝ))    
+    t2 = as(KwCustomType, t1)
+    y = @inferred transform(t2, [1.0, 2.0])
+    @test y == KwCustomType(a = 2.0, b = 1.0) 
+    test_transformation(t2, y -> y isa KwCustomType; N=1, jac=false)
+
+    # Named tuple with wrong number or names of fields
+    t1 = as((;b = asℝ))    
+    t2 = as(KwCustomType, t1)
+    @test_throws UndefKeywordError transform(t2, [1.0])
+    @test inverse(t2, KwCustomType(1.0, 3.0)) == [3.0]
+    t1 = as((a = asℝ, c = asℝ))    
+    t2 = as(KwCustomType, t1)
+    @test_throws UndefKeywordError transform(t2, [1.0, 3.0])
+    @test_throws ArgumentError inverse(t2, KwCustomType(1.0, 3.0))
+    t1 = as((b = asℝ, a = asℝ, c = asℝ))    
+    t2 = as(KwCustomType, t1)
+    @test_throws MethodError transform(t2, [1.0, 2.0, 3.0])
+    @test_throws ArgumentError inverse(t2, KwCustomType(1.0, 3.0))
+
+    # Type with shortened constructor
+    struct MaskedType{A, B}
+        a::A
+        b::B
+    end
+    MaskedType(x) = MaskedType(x, nothing)
+    MaskedType(;b=0.0) = MaskedType(nothing, b)
+    t = as(MaskedType, as((;b=asℝ)))
+    test_transformation(t, y -> y isa MaskedType; N=1, jac=false)
+
+    # No kwarg constructor accepts `a` arg, so errors
+    t = as(MaskedType, as((;a=asℝ)))
+    @test_throws MethodError transform(t, [1.0])
+
+    # When constructor accepts less args than struct has fields, 
+    # inverse takes only the first fields of the struct and warns user
+    t = as(MaskedType, asℝ)
+    x = [1.0]
+    y = transform(t, x)
+    @test y == MaskedType(1.0, nothing)
+    @test_throws ArgumentError inverse(t, MaskedType(1.0, nothing))
+    # test_transformation(t, y -> y isa MaskedType; N=1, jac=false)
+
+    # Insufficient arguments in provided tuple for constructor
+    # Not specially caught, but good to check
+    t1 = as(CustomType, (asℝ₊))
+    @test_throws MethodError transform(t1, [1.0])
+
+    # From tuple to type
+    t1 = as(ntuple(i->asℝ₊, Val(2)))
+    t2 = as(CustomType, t1)
+    test_transformation(t2, y -> y isa CustomType; N=1, jac=false)
+    # Trying to invert from another type should error
+    @test_throws ArgumentError inverse(t2, [1.0, 2.0])
+    @test_throws ArgumentError inverse(t2, MyType(3.0))
+
+    # Nested custom types
+    t1 = as(MyType, (asℝ₋,))
+    t2 = as(YourType, asℝ₋)
+    t3 = as(KwCustomType, as((a = t1, b = t2)))
+    x = [0.0, -1]
+    y = transform(t3, x)
+    test_transformation(t3, y -> y isa KwCustomType; N=1, jac=false)
+    # Switched order should still work
+    @test y == KwCustomType(;b = YourType(-exp(-1)), a = MyType(-1.0))
+    # Inverting with wrong type
+    @test_throws ArgumentError inverse(t3, KwCustomType(-1.0, YourType(-exp(-1))))
+    @test_throws ArgumentError inverse(t3, CustomType(MyType(-1.0), YourType(-exp(-1))))
+
+    # Type with scalar transform argument wraps it in a tuple
+    t1 = as(MyType, asℝ₋)
+    x = [0.0] # Needs to be vector, since full scalar interface not implemented
+    y = transform(t1, x)
+    test_transformation(t1, y -> y isa MyType; N=1, jac=false)
+    @test_throws ArgumentError inverse(t1, -exp(0.0))
 
 end
 
@@ -842,21 +951,51 @@ end
 end
 
 @testset "pretty printing" begin
+    struct SmallType
+        f1
+    end
+    struct LargerType
+        f2
+        f3
+    end
+    LargerType(;f2, f3) = LargerType(f2, f3)
     t = as((a = asℝ₊,
             b = as(Array, asℝ₋, 3, 3),
             c = corr_cholesky_factor(13),
-            d = as((asℝ, corr_cholesky_factor(SMatrix{3,3}), UnitSimplex(3), unit_vector_norm(4)))))
+            d = as((asℝ, corr_cholesky_factor(SMatrix{3,3}), UnitSimplex(3), unit_vector_norm(4))),
+            e = as(LargerType, as((f3 = as(SmallType, asℝ₊), f2 = as𝕀))),
+            ))
     repr_t = """
-[1:97] NamedTuple of transformations
+[1:100] NamedTuple of transformations
   [1:1] :a → asℝ₊
   [2:10] :b → 3×3×asℝ₋
   [11:88] :c → 13×13 correlation cholesky factor
-  [89:97] :d → Tuple of transformations
-    [98:98] 1 → asℝ
-    [108:110] 2 → SMatrix{3,3} correlation cholesky factor
-    [120:121] 3 → 3 element unit simplex transformation
-    [131:133] 4 → 4 element (unit vector, norm) transformation"""
-    repr(MIME("text/plain"), t) == repr_t
+  [89:98] :d → Tuple of transformations
+    [89:89] 1 → asℝ
+    [90:92] 2 → SMatrix{3,3} correlation cholesky factor
+    [93:94] 3 → 3 element unit simplex transformation
+    [95:98] 4 → 4 element (unit vector, norm) transformation
+  [99:100] :e → LargerType wrapper on NamedTuple of transformations
+    [99:99] :f3 → SmallType wrapper on Tuple of transformations
+      [99:99] 1 → asℝ₊
+    [100:100] :f2 → as𝕀"""
+    @test repr(MIME("text/plain"), t) == repr_t
+
+    t = as((as(Array, asℝ₊, 3),
+            as(Array, asℝ₋, 3, 3),
+            as(Array, TVScale(5.0) ∘ asℝ₋, 3, 3, 3),
+            as(Array, as((a=asℝ₊, b = as𝕀)), 3)
+            ))
+    repr_t = """
+[1:45] Tuple of transformations
+  [1:3] 1 → 3×asℝ₊
+  [4:12] 2 → 3×3×asℝ₋
+  [13:39] 3 → 3×3×3×TVScale(5.0) ∘ TVNeg() ∘ asℝ₊
+  [40:45] 4 → 3×
+    NamedTuple of transformations
+      :a → asℝ₊
+      :b → as𝕀"""
+    @test repr(MIME("text/plain"), t) == repr_t
 end
 
 @testset "print ∞" begin
