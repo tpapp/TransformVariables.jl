@@ -2,7 +2,23 @@
 ### logistic and logit
 ###
 
-function logistic_logjac(x::Real)
+"""
+    $(SIGNATURES)
+
+Method used in place of `Base.getindex` within this package.
+When `a <: Reactant.AnyTracedRArray` this adds a `@allowscalar` annotation so that the function can 
+be compiled with Reactant. When `a` is not a `Reactant.AnyTracedRArray` it simply returns `a[i]`.
+
+!!! warn
+    This is necessary because by default Reactant does not allow scalar indexing of arrays unless you
+    opt in. Note that often `Reactant` is able to raise the scalar indexing to the level of the whole
+    array so this operation is not necessarily slow, but there are no guarantees. 
+"""
+Base.@propagate_inbounds function tv_getindex(a, i)
+    return a[i]
+end
+
+function logistic_logjac(x::Number)
     mx = -abs(x)
     mx - 2*log1pexp(mx)
 end

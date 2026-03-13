@@ -11,6 +11,7 @@ using TransformVariables:
 import ChangesOfVariables, InverseFunctions
 using Enzyme: autodiff, ReverseWithPrimal, Active, Const
 using Unitful: @u_str, ustrip, uconvert
+using Reactant
 
 "are we in a CI environment (fewer iterations)"
 const CIENV = get(ENV, "CI", "") == "true"
@@ -995,6 +996,113 @@ end
     t = as(Vector, asℝ₊, 3)
     @test_throws InexactError inverse(t, fill(Complex(0, 1), 3))
 end
+
+###
+###  Reactant compat tests
+###
+@testset "Reactant.jl" begin
+    @testset "Scalar transforms" begin
+        a = 3.1
+        ar = ConcreteRNumber(a)
+        @test @jit(transform(asℝ, ar)) ≈ transform(asℝ, a)
+        @test @jit(transform(asℝ₊, ar)) ≈ transform(asℝ₊, a)
+        @test @jit(transform(asℝ₋, ar)) ≈ transform(asℝ₋, a)
+        @test @jit(transform(as𝕀, ar)) ≈ transform(as𝕀, a)
+
+    end
+
+    @testset "Array transforms begin" begin
+
+        @testset "Single Array Transform" begin
+            for T in (asℝ, asℝ₊, asℝ₋, as𝕀)
+                tr = as(Array, T, 5)
+                a = randn(dimension(tr))
+                ar = Reactant.to_rarray(a)
+                outr = @jit(transform_and_logjac(tr, ar))
+                out  = transform_and_logjac(tr, a)
+                @test outr[1] ≈ out[1]
+                @test outr[2] ≈ out[2]
+            end
+        end        
+        @testset "Test inner transformations" begin
+            for T in (asℝ, asℝ₊, asℝ₋, as𝕀)
+                tr = as(Array, as(Array, T, 3), 3)
+                a = randn(dimension(tr))
+                ar = Reactant.to_rarray(a)
+
+                outr = @jit(transform_and_logjac(tr, ar))
+                out  = transform_and_logjac(tr, a)
+                @test all(x->x[1]≈x[2], zip(outr[1], out[1]))
+                @test outr[2] ≈ out[2]
+            end
+        end
+
+        @testset "Test shape" begin
+
+            tr = as(Array, as(Array, asℝ₊, 3,3), 3)
+            a = randn(dimension(tr))
+            ar = Reactant.to_rarray(a)
+
+            outr = @jit(transform_and_logjac(tr, ar))
+            out  = transform_and_logjac(tr, a)
+            @test all(x->x[1]≈x[2], zip(outr[1], out[1]))
+            @test outr[2] ≈ out[2]
+
+            tr = as(Array, as(Array, asℝ₊, 3,3), 5,5)
+            a = randn(dimension(tr))
+            ar = Reactant.to_rarray(a)
+
+            outr = @jit(transform_and_logjac(tr, ar))
+            out  = transform_and_logjac(tr, a)
+            @test all(x->x[1]≈x[2], zip(outr[1], out[1]))
+            @test size(outr[1]) == size(out[1])
+            @test outr[2] ≈ out[2]
+
+            tr = as(Array, as(Array, asℝ₊, 3), 5,5)
+            a = randn(dimension(tr))
+            ar = Reactant.to_rarray(a)
+
+            outr = @jit(transform_and_logjac(tr, ar))
+            out  = transform_and_logjac(tr, a)
+            @test all(x->x[1]≈x[2], zip(outr[1], out[1]))
+            @test size(outr[1]) == size(out[1])
+            @test outr[2] ≈ out[2]
+
+        end
+
+        @testset "NamedTuples" begin
+            tr = as((a = as(Array, asℝ₊, 3), d = asℝ, b = as(Array, asℝ₋, 5), c = as(Real, 4.0, 5.0)))
+            a = randn(dimension(tr))
+            ar = Reactant.to_rarray(a)
+
+            outr = @jit(transform_and_logjac(tr, ar))
+            out  = transform_and_logjac(tr, a)
+            all(x->x[1]≈x[2], zip(outr[1], out[1]))
+            @test outr[2] ≈ out[2]
+        end
+
+        @testset "Nested NamedTuples" begin
+            tr = as((a = as(Array, asℝ₊, 3), b = as((b0 = as(Array, asℝ₋, 5), b1 = as(Real, 4.0, 5.0)))))
+            a = randn(dimension(tr))
+            ar = Reactant.to_rarray(a)
+
+            outr = @jit(transform_and_logjac(tr, ar))
+            out  = transform_and_logjac(tr, a)
+            @test outr[1].a ≈ out[1].a
+            all(x->x[1]≈x[2], zip(outr[1].b, out[1].b))
+            @test outr[2] ≈ out[2]
+        end
+
+        @testset "Nested vectors" begin
+            t = as(Vector, as((a = asℝ,)), 4)
+            a = randn(dimension(t))
+            ar = Reactant.to_rarray(a)
+            
+            @test_throws ArgumentError @jit(transform_and_logjac(t, ar))
+        end
+    end
+end
+
 
 ####
 #### static analysis with JET

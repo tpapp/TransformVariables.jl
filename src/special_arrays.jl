@@ -84,7 +84,7 @@ function transform_with(flag::LogJacFlag, t::UnitVector, x::AbstractVector, inde
     (; n) = t
     T = _ensure_float(eltype(x))
     log_r = zero(T)
-    y = Vector{T}(undef, n)
+    y = similar(x, T, n)
     ℓ = logjac_zero(flag, T)
     @inbounds for i in 1:(n - 1)
         xi = x[index]
@@ -171,7 +171,7 @@ function transform_with(flag::LogJacFlag, t::UnitVectorNorm, x::AbstractVector, 
     (; n, chi_prior) = t
     T = _ensure_float(eltype(x))
     log_r = zero(T)
-    y = Vector{T}(undef, n)
+    y = similar(x, T, n)
     copyto!(y, 1, x, index, n)
     r = norm(y, 2)
     __normalize!(y, r)
@@ -230,7 +230,7 @@ function transform_with(flag::LogJacFlag, t::UnitSimplex, x::AbstractVector, ind
     T = _ensure_float(eltype(x))
     ℓ = logjac_zero(flag, T)
     stick = one(T)
-    y = Vector{T}(undef, n)
+    y = similar(x, T, n)
     @inbounds for i in 1:n-1
         xi = x[index]
         index += 1
