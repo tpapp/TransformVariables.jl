@@ -607,8 +607,8 @@ end
     @test_throws MethodError transform(t, [1.0])
 
     # When constructor accepts less args than struct has fields, 
-    # inverse takes only the first fields of the struct and warns user
-    t = as(MaskedType, asℝ)
+    # inverse errors
+    t = as(MaskedType, (asℝ,))
     x = [1.0]
     y = transform(t, x)
     @test y == MaskedType(1.0, nothing)
@@ -617,7 +617,7 @@ end
 
     # Insufficient arguments in provided tuple for constructor
     # Not specially caught, but good to check
-    t1 = as(CustomType, (asℝ₊))
+    t1 = as(CustomType, (asℝ₊,))
     @test_throws MethodError transform(t1, [1.0])
 
     # From tuple to type
@@ -630,7 +630,7 @@ end
 
     # Nested custom types
     t1 = as(MyType, (asℝ₋,))
-    t2 = as(YourType, asℝ₋)
+    t2 = as(YourType, (asℝ₋,))
     t3 = as(KwCustomType, as((a = t1, b = t2)))
     x = [0.0, -1]
     y = transform(t3, x)
@@ -640,13 +640,6 @@ end
     # Inverting with wrong type
     @test_throws ArgumentError inverse(t3, KwCustomType(-1.0, YourType(-exp(-1))))
     @test_throws ArgumentError inverse(t3, CustomType(MyType(-1.0), YourType(-exp(-1))))
-
-    # Type with scalar transform argument wraps it in a tuple
-    t1 = as(MyType, asℝ₋)
-    x = [0.0] # Needs to be vector, since full scalar interface not implemented
-    y = transform(t1, x)
-    test_transformation(t1, y -> y isa MyType; N=1, jac=false)
-    @test_throws ArgumentError inverse(t1, -exp(0.0))
 
 end
 
@@ -962,7 +955,7 @@ end
             b = as(Array, asℝ₋, 3, 3),
             c = corr_cholesky_factor(13),
             d = as((asℝ, corr_cholesky_factor(SMatrix{3,3}), UnitSimplex(3), unit_vector_norm(4))),
-            e = as(LargerType, as((f3 = as(SmallType, asℝ₊), f2 = as𝕀))),
+            e = as(LargerType, as((f3 = as(SmallType, (asℝ₊,)), f2 = as𝕀))),
             ))
     repr_t = """
 [1:100] NamedTuple of transformations
