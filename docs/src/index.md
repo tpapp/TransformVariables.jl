@@ -120,7 +120,7 @@ where each instance of `Identity()` here could be replaced with an arbitrary sca
 
 This relies on [`constructorof` from ConstructionBase](https://juliaobjects.github.io/ConstructionBase.jl/stable/#ConstructionBase.constructorof). If a Tuple transform is wrapped in a type this way, transform results will be unpacked and passed to the constructor, hence in the same order as the transform. 
 If a NamedTuple transform is used, it will be unpacked as keyword arguments to the constructor of the type. 
-Tuple or NamedTuple transforms that do not provide proper arguments to the constructor of a given type will simply result in `MethodErrors`.
+Tuple or NamedTuple transforms that do not provide proper arguments to the constructor of a given type will simply result in `MethodError`s.
 
 For structs with a single field (or with a constructor that accepts a single argument), the following
 ```julia
@@ -134,7 +134,7 @@ tbaz = as(Baz, (Identity(),))
 That is, a single scalar transform can be provided to the `as` function (so long as the accompanying type can be constructed with a single argument), but it will internally be wrapped in a tuple transform. As a consequence calling `transform` or `transform_and_logjac` with this transform will expect vector input, not scalar input.
 
 Inverting these transforms would, in the most general case, require inverting the constructor of the given type, which may itself have several valid dispatches. 
-Rather than conduct a close inspection of user types and their available constructors, inverting a Tuple-based struct transform will check that the struct has exactly `n` fields, where `n` is the length of the Tuple transform, and use those fields in their struct order; if there are not `n` fields the inversion will error. This will work for any structs with only the default constructor. Inverting a `NamedTuple`-based struct transform will attempt to use struct fields with names matching the fields of the `NamedTuple` transform, which fails if the struct does not have matching fields. 
+Rather than conduct a close inspection of user types and their available constructors, inverting a Tuple-based struct transform will check that the struct has exactly `n` fields, where `n` is the length of the Tuple transform, and use those fields in their struct order; if there are not `n` fields the inversion will error. This will work for any structs with only the default constructor. Inverting a `NamedTuple`-based struct transform will attempt to use struct fields with names matching the names in the `NamedTuple` transform, which fails if the struct does not have matching fields. 
 
 ## Scalar transforms
 
