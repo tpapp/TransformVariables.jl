@@ -17,5 +17,6 @@ include("special_arrays.jl")
 include("constant.jl")
 include("aggregation.jl")
 include("custom.jl")
+include("vector.jl")
 
 end # module
