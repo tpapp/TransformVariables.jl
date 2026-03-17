@@ -9,6 +9,7 @@ using LinearAlgebra: UpperTriangular, logabsdet, norm, rmul!
 using Random: AbstractRNG, GLOBAL_RNG
 using StaticArrays: MMatrix, SMatrix, SArray, SVector, pushfirst
 using CompositionsBase
+using ConstructionBase
 
 include("utilities.jl")
 include("generic.jl")

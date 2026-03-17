@@ -17,6 +17,9 @@ end
 function _summary_rows(transformation::ArrayTransformation, mime)
     (; inner_transformation, dims) = transformation
     _dims = foldr((a,b) -> "$(string(a))×$(string(b))", dims, init = "")
+    if inner_transformation isa ScalarTransform
+        return _summary_row(transformation, _dims*string(inner_transformation))
+    end
     rows = _summary_row(transformation, _dims)
     for row in _summary_rows(inner_transformation, mime)
         push!(rows, (level = row.level + 1, indices = nothing, repr = row.repr))
@@ -177,7 +180,14 @@ as(SArray{2,3}, asℝ₊, 2, 3)     # transform to a 2x3 SMatrix of positive num
 as(SVector{3})                   # ℝ³ → ℝ³, identity, but an SVector
 ```
 """
-function as(::Type{<:SArray{S}}, inner_transformation = Identity()) where S
+function as(::Type{<:SArray{S}}, inner_transformation::AbstractTransform) where S
+    dim = fieldtypes(S)
+    @argcheck all(x -> x ≥ 1, dim)
+    StaticArrayTransformation{prod(dim),S,typeof(inner_transformation)}(inner_transformation)
+end
+# Repeated with more specific typing to eliminate method ambiguity with 
+# the ScalarWrapperTransform method for `as`
+function as(::Type{<:SArray{S}}, inner_transformation::ScalarTransform = Identity()) where S
     dim = fieldtypes(S)
     @argcheck all(x -> x ≥ 1, dim)
     StaticArrayTransformation{prod(dim),S,typeof(inner_transformation)}(inner_transformation)
@@ -264,7 +274,6 @@ struct TransformTuple{T} <: VectorTransform
     end
 end
 
-
 """
 $(SIGNATURES)
 
@@ -282,12 +291,13 @@ Base.getindex(t::TransformTuple, i::Int) = getindex(_inner(t), i)
 Base.propertynames(t::TransformTuple) = propertynames(_inner(t))
 Base.getproperty(t::TransformTuple, i::Int) = getproperty(_inner(t), i)
 Base.getproperty(t::TransformTuple{<:NamedTuple}, i::Symbol) = getproperty(_inner(t), i)
+
 """
 $(SIGNATURES)
 
 Merge multiple `TransformTuple{<:NamedTuple}` by merging the underlying `NamedTuple`s.
 """
-function Base.merge(t1::TransformTuple{<:NamedTuple}, 
+function Base.merge(t1::TransformTuple{<:NamedTuple},
                     ts::Vararg{TransformTuple{<:NamedTuple}})
     TransformTuple(merge(_inner(t1), map(_inner, ts)...))
 end
@@ -295,7 +305,11 @@ end
 function _summary_rows(transformation::TransformTuple, mime)
     inner = _inner(transformation)
     repr1 = string(nameof(typeof(inner)), " of transformations")
-    rows = _summary_row(transformation, repr1)
+    _tuple_summary_rows(repr1, transformation, mime)
+end
+function _tuple_summary_rows(named, transformation::TransformTuple, mime)
+    inner = _inner(transformation)
+    rows = _summary_row(transformation, named)
     _index = 0
     for (key, t) in pairs(inner)
         for row in _summary_rows(t, mime)
@@ -481,4 +495,75 @@ function _domain_label(t::TransformTuple, index::Int)
         end
     end
     error("internal error")
+end
+
+####
+#### type wrapper transformation
+####
+
+"""
+$(TYPEDEF)
+"""
+struct TypeWrapperTransform{T,S} <: VectorTransform
+    inner_transformation::S
+end
+
+function as(::Type{T}, inner_transformation::S) where {T,S<:TransformTuple}
+    @argcheck isstructtype(T)
+    TypeWrapperTransform{T,S}(inner_transformation)
+end
+
+as(::Type{T}, inner_transformation::NTransforms) where T  = as(T, as(inner_transformation))
+
+dimension(t::TypeWrapperTransform) = dimension(t.inner_transformation)
+
+function _summary_rows(transformation::TypeWrapperTransform{T, S}, mime) where {T, S<:TransformTuple}
+    (; inner_transformation) = transformation
+    innerinner = _inner(inner_transformation)
+    name = string("$T wrapper on ", nameof(typeof(innerinner)), " of transformations") 
+    _tuple_summary_rows(name, inner_transformation, mime)
+end
+
+function transform_with(flag::LogJacFlag, t::TypeWrapperTransform{T}, x, index) where T
+    (; inner_transformation) = t
+    y, ℓ, index′ = transform_with(flag, inner_transformation, x, index)
+    ctor = constructorof(T)
+    ctor(y...), ℓ, index′
+end
+function transform_with(flag::LogJacFlag, t::TypeWrapperTransform{C, T}, x, index) where {C, N, T<:TransformTuple{<:NamedTuple{N}}}
+    (; inner_transformation) = t
+    y, ℓ, index′ = transform_with(flag, inner_transformation, x, index)
+    ctor = constructorof(C)
+    ctor(;y...), ℓ, index′
+end
+
+# NamedTuple inner transformations
+function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, N, T<:C, S<:TransformTuple{<:NamedTuple{N}}}
+    used_names = filter(n->n ∈ fieldnames(T), N)
+    types = map(n -> fieldtype(T, n), used_names)
+    inverse_eltype(t.inner_transformation, NamedTuple{used_names,Tuple{types...}})
+end
+function inverse_at!(x, index, t::TypeWrapperTransform{T, S}, y::T) where {T, N, S<:TransformTuple{<:NamedTuple{N}}}
+    yvals = NamedTuple{N}(map(n->(getfield(y,n)), N))
+    inverse_at!(x, index, t.inner_transformation, yvals)
+end
+
+# Regular Tuple inner transformation
+function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, T<:C, S<:TransformTuple}
+    num_args = length(t.inner_transformation)
+    inverse_eltype(t.inner_transformation, Tuple{fieldtypes(T)[begin:num_args]...})
+end
+function inverse_at!(x, index, t::TypeWrapperTransform{T, S}, y::T) where {T, S<:TransformTuple}
+    inner = t.inner_transformation
+    num_args = length(inner)
+    if length(fieldnames(typeof(y))) != num_args
+        throw(ArgumentError("The provided type $T has a different number of fields than the inner transformation, so it cannot be inverted."))
+    end
+    yvals = Tuple(getfield(y, i) for i in 1:num_args)
+    inverse_at!(x, index, inner, yvals)
+end
+
+# Informative error for trying to invert an incompatible type
+function inverse_eltype(t::TypeWrapperTransform{C, S}, ::Type{T}) where {C, T, S<:TransformTuple}
+    throw(ArgumentError("Cannot invert a $T as if it were a $C"))
 end
