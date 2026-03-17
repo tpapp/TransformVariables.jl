@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## 0.8.21
+
+### Added
+
+Transform into structs (https://github.com/tpapp/TransformVariables.jl/pull/163/).
+
 ## 0.8.20
 
 ### Fixed
