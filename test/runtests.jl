@@ -20,6 +20,17 @@ const ALLOCS = get(ENV, "BUILD_IS_PRODUCTION_BUILD", "false") == "true"
 
 @info "test environment" CIENV ALLOCS
 
+####
+#### static analysis with JET
+####
+
+import JET
+JET.test_package(TransformVariables; target_modules = (TransformVariables,))
+
+####
+#### setup
+####
+
 include("utilities.jl")
 
 Random.seed!(1)
@@ -544,7 +555,7 @@ end
 end
 
 @testset "transform to custom type" begin
-    
+
     struct CustomType{A, B}
         a::A
         b::B
@@ -573,22 +584,22 @@ end
     @test_throws ArgumentError inverse(t2, MyType(3.0))
 
     # Named tuple with different ordering
-    t1 = as((b = asℝ, a = asℝ))    
+    t1 = as((b = asℝ, a = asℝ))
     t2 = as(KwCustomType, t1)
     y = @inferred transform(t2, [1.0, 2.0])
-    @test y == KwCustomType(a = 2.0, b = 1.0) 
+    @test y == KwCustomType(a = 2.0, b = 1.0)
     test_transformation(t2, y -> y isa KwCustomType; N=1, jac=false)
 
     # Named tuple with wrong number or names of fields
-    t1 = as((;b = asℝ))    
+    t1 = as((;b = asℝ))
     t2 = as(KwCustomType, t1)
     @test_throws UndefKeywordError transform(t2, [1.0])
     @test inverse(t2, KwCustomType(1.0, 3.0)) == [3.0]
-    t1 = as((a = asℝ, c = asℝ))    
+    t1 = as((a = asℝ, c = asℝ))
     t2 = as(KwCustomType, t1)
     @test_throws UndefKeywordError transform(t2, [1.0, 3.0])
     @test_throws ArgumentError inverse(t2, KwCustomType(1.0, 3.0))
-    t1 = as((b = asℝ, a = asℝ, c = asℝ))    
+    t1 = as((b = asℝ, a = asℝ, c = asℝ))
     t2 = as(KwCustomType, t1)
     @test_throws MethodError transform(t2, [1.0, 2.0, 3.0])
     @test_throws ArgumentError inverse(t2, KwCustomType(1.0, 3.0))
@@ -607,7 +618,7 @@ end
     t = as(MaskedType, as((;a=asℝ)))
     @test_throws MethodError transform(t, [1.0])
 
-    # When constructor accepts less args than struct has fields, 
+    # When constructor accepts less args than struct has fields,
     # inverse errors
     t = as(MaskedType, (asℝ,))
     x = [1.0]
@@ -1009,6 +1020,11 @@ end
 @testset "static arrays inference" begin
     @test @inferred transform_with(NOLOGJAC, as(SVector{3, Float64}), zeros(3), 1) == (SVector(0.0, 0.0, 0.0), NOLOGJAC, 4)
     @test @inferred transform_with(NOLOGJAC, as(SVector{1, Float64}), zeros(1), 1) == (SVector(0.0), NOLOGJAC, 2)
+
+    @testset "type stability of captured variable" begin
+        t = as(SVector{3}, asℝ₊)
+        @test isempty(JET.get_reports(JET.@report_opt transform(t, ones(3))))
+    end
 end
 
 @testset "view transformations" begin
@@ -1155,7 +1171,7 @@ end
                 @test outr[1] ≈ out[1]
                 @test outr[2] ≈ out[2]
             end
-        end        
+        end
         @testset "Test inner transformations" begin
             for T in (asℝ, asℝ₊, asℝ₋, as𝕀)
                 tr = as(Array, as(Array, T, 3), 3)
@@ -1229,16 +1245,8 @@ end
             t = as(Vector, as((a = asℝ,)), 4)
             a = randn(dimension(t))
             ar = Reactant.to_rarray(a)
-            
+
             @test_throws ArgumentError @jit(transform_and_logjac(t, ar))
         end
     end
 end
-
-
-####
-#### static analysis with JET
-####
-
-import JET
-JET.test_package(TransformVariables; target_modules = (TransformVariables,))

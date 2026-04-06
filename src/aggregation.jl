@@ -185,7 +185,7 @@ function as(::Type{<:SArray{S}}, inner_transformation::AbstractTransform) where 
     @argcheck all(x -> x ≥ 1, dim)
     StaticArrayTransformation{prod(dim),S,typeof(inner_transformation)}(inner_transformation)
 end
-# Repeated with more specific typing to eliminate method ambiguity with 
+# Repeated with more specific typing to eliminate method ambiguity with
 # the ScalarWrapperTransform method for `as`
 function as(::Type{<:SArray{S}}, inner_transformation::ScalarTransform = Identity()) where S
     dim = fieldtypes(S)
@@ -206,17 +206,16 @@ function transform_with(flag::LogJacFlag, transformation::StaticArrayTransformat
     # first element.
     y1, ℓ1, index1 = transform_with(flag, inner_transformation, x, index)
     D == 1 && return SArray{S}(y1), ℓ1, index1
-    L = typeof(ℓ1)
-    let ℓ::L = ℓ1, index::Int = index1
-        function _f(_)
-            y, ℓΔ, index′ = transform_with(flag, inner_transformation, x, index)
-            index = index′
-            ℓ = ℓ + ℓΔ
-            y
-        end
-        yrest = SVector{D-1}(_f(i) for i in 2:D)
-        SArray{S}(pushfirst(yrest, y1)), ℓ, index
+    ℓ = Ref(ℓ1)
+    index = Ref(index1)
+    function _f(_)
+        y, ℓΔ, index′ = transform_with(flag, inner_transformation, x, index[])
+        index[] = index′
+        ℓ[] += ℓΔ
+        y
     end
+    yrest = SVector{D-1}(_f(i) for i in 2:D)
+    SArray{S}(pushfirst(yrest, y1)), ℓ[], index[]
 end
 
 function inverse_eltype(transformation::Union{ArrayTransformation,StaticArrayTransformation},
@@ -520,7 +519,7 @@ dimension(t::TypeWrapperTransform) = dimension(t.inner_transformation)
 function _summary_rows(transformation::TypeWrapperTransform{T, S}, mime) where {T, S<:TransformTuple}
     (; inner_transformation) = transformation
     innerinner = _inner(inner_transformation)
-    name = string("$T wrapper on ", nameof(typeof(innerinner)), " of transformations") 
+    name = string("$T wrapper on ", nameof(typeof(innerinner)), " of transformations")
     _tuple_summary_rows(name, inner_transformation, mime)
 end
 
