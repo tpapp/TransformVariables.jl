@@ -20,6 +20,8 @@ const ALLOCS = get(ENV, "BUILD_IS_PRODUCTION_BUILD", "false") == "true"
 
 @info "test environment" CIENV ALLOCS
 
+Reactant.set_default_backend("cpu") # use CPU backend for CI
+
 ####
 #### static analysis with JET
 ####
