@@ -7,3 +7,6 @@
 /docs/Manifest.toml
 /test/coverage/Manifest.toml
 /test/Manifest.toml
+/Manifest-v1.10.toml
+/Manifest-v1.12.toml
+/test/Manifest-v1.10.toml
