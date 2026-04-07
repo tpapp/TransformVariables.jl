@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## 0.8.23
+
+### Fixed
+
+- eliminate `Union` in `as(SArray{}, ...)` implementation
+
 ## 0.8.22
 
 ### Fixed

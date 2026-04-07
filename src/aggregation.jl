@@ -207,15 +207,15 @@ function transform_with(flag::LogJacFlag, transformation::StaticArrayTransformat
     y1, ℓ1, index1 = transform_with(flag, inner_transformation, x, index)
     D == 1 && return SArray{S}(y1), ℓ1, index1
     ℓ = Ref(ℓ1)
-    index = Ref(index1)
+    cum_index = Ref(index1)
     function _f(_)
-        y, ℓΔ, index′ = transform_with(flag, inner_transformation, x, index[])
-        index[] = index′
+        y, ℓΔ, index′ = transform_with(flag, inner_transformation, x, cum_index[])
+        cum_index[] = index′
         ℓ[] += ℓΔ
         y
     end
     yrest = SVector{D-1}(_f(i) for i in 2:D)
-    SArray{S}(pushfirst(yrest, y1)), ℓ[], index[]
+    SArray{S}(pushfirst(yrest, y1)), ℓ[], cum_index[]
 end
 
 function inverse_eltype(transformation::Union{ArrayTransformation,StaticArrayTransformation},
