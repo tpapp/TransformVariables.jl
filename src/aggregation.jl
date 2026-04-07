@@ -209,7 +209,7 @@ function transform_with(flag::LogJacFlag, transformation::StaticArrayTransformat
     ℓ = Ref(ℓ1)
     cum_index = Ref(index1)
     function _f(_)
-        y, ℓΔ, index′ = transform_with(flag, inner_transformation, x, index[])
+        y, ℓΔ, index′ = transform_with(flag, inner_transformation, x, cum_index[])
         cum_index[] = index′
         ℓ[] += ℓΔ
         y
