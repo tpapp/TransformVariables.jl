@@ -74,10 +74,7 @@ function inverse(::TVExp, x::Number)
     log(x)
 end
 
-function inverse_and_logjac(t::TVExp, x::Number)
-    log_x = log(x)
-    return log_x, -log_x
-end
+inverse_and_logjac(t::TVExp, x::Number) = inverse(t, x), -log(x)
 
 """
 $(TYPEDEF)
