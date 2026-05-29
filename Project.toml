@@ -1,7 +1,10 @@
 name = "TransformVariables"
 uuid = "84d833dd-6860-57f9-a1a7-6da5db126cff"
-authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
 version = "0.8.24"
+authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
+
+[workspace]
+projects = ["test"]
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
@@ -38,11 +41,8 @@ DocStringExtensions = "0.8, 0.9"
 ForwardDiff = "0.10, 1"
 InverseFunctions = "0.1"
 LinearAlgebra = "1.6"
-LogExpFunctions = "0.3"
+LogExpFunctions = "0.3, 1"
 Random = "1.6"
 Reactant = "0.2.229"
 StaticArrays = "1"
 julia = "1.10"
-
-[workspace]
-projects = ["test"]
