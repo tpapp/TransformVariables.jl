@@ -14,6 +14,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## 0.8.26
+
+### Fixed
+
+- Unroll `_transform_tuple` to fix `Enzyme.autodiff` on tuples of length ≥ 33 (#170)
+
+## 0.8.25
+
+### Changed
+
+- compat bumps
+
+## 0.8.24
+
+### Changed
+
+- minor efficiency improvement in TVExp
+
 ## 0.8.23
 
 ### Fixed
