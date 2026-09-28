@@ -5,7 +5,3 @@ TransformVariables = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 
 [sources]
 TransformVariables = {path = ".."}
-
-[compat]
-Accessors = "0.1.44"
-Documenter = "1"
