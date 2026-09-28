@@ -10,9 +10,6 @@ updates:
       - "/"
     schedule:
       interval: "daily"
-    exclude-paths:
-      - "test/**"
-      - "docs/**"
     groups:
       # Group all Julia package updates into a single PR:
       all-julia-packages:
