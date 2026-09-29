@@ -6,8 +6,7 @@ updates:
     schedule:
       interval: "monthly"
   - package-ecosystem: "julia"
-    directory: # Location of Julia projects
-      - "/"
+    directory: "/"
     schedule:
       interval: "daily"
     groups:
