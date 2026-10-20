@@ -118,8 +118,8 @@ t = as((; e = Identity(), foo = tf))
 ```
 where each instance of `Identity()` here could be replaced with an arbitrary scalar transform.
 
-This relies on [`constructorof` from ConstructionBase](https://juliaobjects.github.io/ConstructionBase.jl/stable/#ConstructionBase.constructorof). If a `Tuple` transform is wrapped in a type this way, transform results will be unpacked and passed to the constructor, hence in the same order as the transform. 
-If a `NamedTuple` transform is used, it will be unpacked as keyword arguments to the constructor of the type. 
+This relies on [`constructorof` from ConstructionBase](https://juliaobjects.github.io/ConstructionBase.jl/stable/#ConstructionBase.constructorof). If a `Tuple` transform is wrapped in a type this way, transform results will be unpacked and passed to the constructor, hence in the same order as the transform.
+If a `NamedTuple` transform is used, it will be unpacked as keyword arguments to the constructor of the type.
 `Tuple` or `NamedTuple` transforms that do not provide proper arguments to the constructor of a given type will simply result in `MethodError`s.
 
 For structs that are constructed from a single argument, wrap a single transform in a `Tuple`, like so:
@@ -128,8 +128,8 @@ struct Baz; f; end
 tbaz = as(Baz, (Identity(),))
 ```
 
-Inverting these transforms would, in the most general case, require inverting the constructor of the given type, which may itself have several valid dispatches. 
-Rather than conduct a close inspection of user types and their available constructors, inverting a `Tuple`-based struct transform will check that the struct has exactly `n` fields, where `n` is the length of the `Tuple` transform, and use those fields in their struct order; if there are not `n` fields the inversion will error. This will work for any structs with only the default constructor. Inverting a `NamedTuple`-based struct transform will attempt to use struct fields with names matching the names in the `NamedTuple` transform, which fails if the struct does not have matching fields. 
+Inverting these transforms would, in the most general case, require inverting the constructor of the given type, which may itself have several valid dispatches.
+Rather than conduct a close inspection of user types and their available constructors, inverting a `Tuple`-based struct transform will check that the struct has exactly `n` fields, where `n` is the length of the `Tuple` transform, and use those fields in their struct order; if there are not `n` fields the inversion will error. This will work for any structs with only the default constructor. Inverting a `NamedTuple`-based struct transform will attempt to use struct fields with names matching the names in the `NamedTuple` transform, which fails if the struct does not have matching fields.
 
 ## Scalar transforms
 
@@ -162,6 +162,7 @@ TVLogistic
 TVScale
 TVShift
 TVNeg
+TVSoftPlus
 ```
 
 Consistent with common notation, transforms are applied right-to-left; for example, `as(Real, -∞, 3)` is equivalent to `TVShift(3) ∘ TVNeg() ∘ TVExp()`.
@@ -173,16 +174,16 @@ This is useful especially for making sure that values near 0, when transformed, 
 In addition, the `TVScale` transform accepts arbitrary types. It can be used as the outermost transform (so leftmost in the composition) to add, for example, `Unitful` units to a number (or to create other exotic number types which can be constructed by multiplying, such as a `ForwardDiff.Dual`).
 
 However, note that calculating log Jacobian determinants may error for types that are not real numbers.
-For example, 
+For example,
 
 ```julia
 using Unitful
 t = TVScale(5u"m") ∘ TVExp()
 ```
-produces positive quantities with the dimension of length. 
+produces positive quantities with the dimension of length.
 !!! note
     Because the log-Jacobian of a transform that adds units is not defined, `transform_and_logjac` and `inverse_and_logjac`
-    only have methods defined for `TVScale{T} where {T<:Real}`. 
+    only have methods defined for `TVScale{T} where {T<:Real}`.
 !!! note
     The inverse transform of `TVScale(scale)` divides by `scale`, which is the correct inverse for adding units to a number, but may be inappropriate for other custom number types. A transform that doesn't just multiply or an inverse that extracts a float from an exotic number type could be defined by adding methods to `transform` and `inverse` like the following:
     ```

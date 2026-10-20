@@ -1145,9 +1145,14 @@ end
     @test_throws InexactError inverse(t, fill(Complex(0, 1), 3))
 end
 
+@testset "TVSoftPlus" begin
+    test_transformation(TransformVariables.TVSoftPlus(), y -> y > 0)
+end
+
 ###
 ###  Reactant compat tests
 ###
+
 @testset "Reactant.jl" begin
     @testset "Scalar transforms" begin
         a = 3.1
@@ -1156,7 +1161,6 @@ end
         @test @jit(transform(asℝ₊, ar)) ≈ transform(asℝ₊, a)
         @test @jit(transform(asℝ₋, ar)) ≈ transform(asℝ₋, a)
         @test @jit(transform(as𝕀, ar)) ≈ transform(as𝕀, a)
-
     end
 
     @testset "Array transforms begin" begin

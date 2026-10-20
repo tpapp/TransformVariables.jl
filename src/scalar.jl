@@ -1,4 +1,4 @@
-export TVExp, TVScale, TVShift, TVLogistic, TVNeg
+export TVExp, TVScale, TVShift, TVLogistic, TVNeg, TVSoftPlus
 export ∞, asℝ, asℝ₊, asℝ₋, as𝕀, as_real, as_positive_real, as_negative_real,
     as_unit_interval
 
@@ -156,6 +156,20 @@ transform_and_logjac(t::TVNeg, x::Number) = transform(t, x), logjac_zero(LogJac(
 inverse_eltype(::TVNeg, ::Type{T}) where T = typeof(-oneunit(T))
 inverse(::TVNeg, x::Number) = -x
 inverse_and_logjac(::TVNeg, x::Number) = -x, logjac_zero(LogJac(), typeof(x))
+
+"""
+$(TYPEDEF)
+
+“Softplus” transformation `x ↦ log(1+exp(x))`.
+"""
+struct TVSoftPlus <: ScalarTransform end
+
+transform(::TVSoftPlus, x::Real) = log1pexp(x)
+transform_and_logjac(t::TVSoftPlus, x::Real) = transform(t, x), -log1pexp(-x)
+
+inverse_eltype(::TVSoftPlus, ::Type{T}) where T = _ensure_float(T)
+inverse(::TVSoftPlus, y::Number) = logexpm1(y)
+inverse_and_logjac(::TVSoftPlus, y::Number) = logexpm1(y), -log1mexp(-y)
 
 ####
 #### composite scalar transforms
