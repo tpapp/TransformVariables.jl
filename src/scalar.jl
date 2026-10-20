@@ -182,13 +182,12 @@ also the CDF of the Cauchy distribution.
 struct TVCauchy <: ScalarTransform end
 
 function _cauchy_cdf(x::T) where {T<:Real}
-    _π = T(π)
     _x = float(x)
     if _x > -1
-        one(_x) / 2 + atan(_x) / _π
+        one(_x) / 2 + atan(_x) / π
     else
         # avoid 1/2 - 1/2 cancellations
-        atan(inv(-_x)) / _π
+        atan(inv(-_x)) / π
     end
 end
 

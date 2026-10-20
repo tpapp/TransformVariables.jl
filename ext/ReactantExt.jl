@@ -27,8 +27,7 @@ function TransformVariables._ensure_float(x::Type{TracedRNumber{T}}) where T
 end
 
 function TransformVariables._cauchy_cdf(x::TracedRNumber{T}) where {T<:AbstractFloat}
-    _π = T(π)
-    ifelse(x > -1, one(x) / 2 + atan(x) / _π, atan(inv(-x)) / _π)
+    ifelse(x > -1, one(x) / 2 + atan(x) / π, atan(inv(-x)) / π)
 end
 
 @noinline function TransformVariables.transform_with(
