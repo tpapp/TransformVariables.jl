@@ -166,8 +166,8 @@ numbers.
 """
 struct TVSoftPlus <: ScalarTransform end
 
-transform(::TVSoftPlus, x::Real) = log1pexp(x)
-transform_and_logjac(t::TVSoftPlus, x::Real) = transform(t, x), -log1pexp(-x)
+transform(::TVSoftPlus, x::Number) = log1pexp(x)
+transform_and_logjac(t::TVSoftPlus, x::Number) = transform(t, x), -log1pexp(-x)
 
 inverse_eltype(::TVSoftPlus, ::Type{T}) where T = _ensure_float(T)
 inverse(::TVSoftPlus, y::Number) = logexpm1(y)
@@ -181,9 +181,9 @@ also the CDF of the Cauchy distribution.
 """
 struct TVCauchy <: ScalarTransform end
 
-function transform(::TVCauchy, x::Number)
+function _cauchy_cdf(x::T) where {T<:Real}
+    _π = T(π)
     _x = float(x)
-    _π = oftype(_x, π)
     if _x > -1
         one(_x) / 2 + atan(_x) / _π
     else
@@ -191,6 +191,8 @@ function transform(::TVCauchy, x::Number)
         atan(inv(-_x)) / _π
     end
 end
+
+transform(::TVCauchy, x::Number) = _cauchy_cdf(float(x))
 
 function transform_and_logjac(t::TVCauchy, x::Number)
     y = transform(t, x)
