@@ -1,4 +1,5 @@
-export TVExp, TVScale, TVShift, TVLogistic, TVNeg, TVSoftPlus
+export TVExp, TVScale, TVShift, TVLogistic, TVNeg, TVSoftPlus, TVCauchy
+
 export ∞, asℝ, asℝ₊, asℝ₋, as𝕀, as_real, as_positive_real, as_negative_real,
     as_unit_interval
 
@@ -160,7 +161,8 @@ inverse_and_logjac(::TVNeg, x::Number) = -x, logjac_zero(LogJac(), typeof(x))
 """
 $(TYPEDEF)
 
-“Softplus” transformation `x ↦ log(1+exp(x))`.
+“Softplus” transformation ``x ↦ log(1+exp(x))``, mapping the real line to positive
+numbers.
 """
 struct TVSoftPlus <: ScalarTransform end
 
@@ -170,6 +172,43 @@ transform_and_logjac(t::TVSoftPlus, x::Real) = transform(t, x), -log1pexp(-x)
 inverse_eltype(::TVSoftPlus, ::Type{T}) where T = _ensure_float(T)
 inverse(::TVSoftPlus, y::Number) = logexpm1(y)
 inverse_and_logjac(::TVSoftPlus, y::Number) = logexpm1(y), -log1mexp(-y)
+
+"""
+$(TYPEDEF)
+
+Transformation ``x ↦ 1/2 + arctan(x)/π``, mapping the real line to `[0,1]`, which is
+also the CDF of the Cauchy distribution.
+"""
+struct TVCauchy <: ScalarTransform end
+
+function transform(::TVCauchy, x::Number)
+    _x = float(x)
+    _π = oftype(_x, π)
+    if _x > -1
+        one(_x) / 2 + atan(_x) / _π
+    else
+        # avoid 1/2 - 1/2 cancellations
+        atan(inv(-_x)) / _π
+    end
+end
+
+function transform_and_logjac(t::TVCauchy, x::Number)
+    y = transform(t, x)
+    y,  -log(oftype(y, π)) - log1psq(x)
+end
+
+inverse_eltype(::TVCauchy, ::Type{T}) where T = _ensure_float(T)
+
+function inverse(::TVCauchy, y::Number)
+    @argcheck 0 <= y <= 1 DomainError
+    cotpi(p) = cospi(p) / sinpi(p)
+    y > 0.5 ? cotpi(1 - y) : -cotpi(y)
+end
+
+function inverse_and_logjac(t::TVCauchy, y::Number)
+    x = inverse(t, y)
+    x, log(oftype(x, π)) - 2 * log(sinpi(y))
+end
 
 ####
 #### composite scalar transforms

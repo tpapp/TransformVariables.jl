@@ -163,7 +163,10 @@ TVScale
 TVShift
 TVNeg
 TVSoftPlus
+TVCauchy
 ```
+
+The above include additional transformations that don't have a short syntax with `as`.
 
 Consistent with common notation, transforms are applied right-to-left; for example, `as(Real, -∞, 3)` is equivalent to `TVShift(3) ∘ TVNeg() ∘ TVExp()`.
 If you are working in an editor where typing Unicode is difficult, `TransformVariables.compose` is also available, as in `TransformVariables.compose(TVScale(5.0), TVNeg(), TVExp())`.

@@ -1149,6 +1149,11 @@ end
     test_transformation(TransformVariables.TVSoftPlus(), y -> y > 0)
 end
 
+@testset "TVCauchy" begin
+    test_transformation(TransformVariables.TVCauchy(), y -> 0 < y < 1)
+end
+
+
 ###
 ###  Reactant compat tests
 ###
