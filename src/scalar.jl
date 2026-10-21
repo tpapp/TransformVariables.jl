@@ -195,7 +195,7 @@ transform(::TVCauchy, x::Number) = _cauchy_cdf(float(x))
 
 function transform_and_logjac(t::TVCauchy, x::Number)
     y = transform(t, x)
-    y,  -log(oftype(y, π)) - log1psq(x)
+    y,  -(log1psq(x) + IrrationalConstants.logπ)
 end
 
 inverse_eltype(::TVCauchy, ::Type{T}) where T = _ensure_float(T)
