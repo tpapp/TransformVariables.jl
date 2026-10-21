@@ -202,7 +202,7 @@ inverse_eltype(::TVCauchy, ::Type{T}) where T = _ensure_float(T)
 
 function inverse(::TVCauchy, y::Number)
     @argcheck 0 <= y <= 1 DomainError
-    cotpi(p) = cospi(p) / sinpi(p)
+    cotpi(p) = ((s, c) = sincospi(p); c / s)
     y > 0.5 ? cotpi(1 - y) : -cotpi(y)
 end
 
