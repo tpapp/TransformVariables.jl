@@ -208,7 +208,7 @@ end
 
 function inverse_and_logjac(t::TVCauchy, y::Number)
     x = inverse(t, y)
-    x, log(oftype(x, π)) - 2 * log(sinpi(y))
+    x, IrrationalConstants.logπ - 2 * log(sinpi(y))
 end
 
 ####
