@@ -1,5 +1,5 @@
 module ReactantExt
-using TransformVariables: TransformVariables, ArrayTransformation, LogJacFlag,  
+using TransformVariables: TransformVariables, ArrayTransformation, LogJacFlag,
                           logjac_zero, transform_with, _ensure_float, dimension
 using Reactant
 using Reactant: TracedRNumber, AnyTracedRArray
@@ -22,12 +22,18 @@ Base.@nospecialize function Reactant.traced_type_inner(
     return TransformVariables.ArrayTransformation{T_traced, M}
 end
 
-TransformVariables._ensure_float(x::Type{TracedRNumber{T}}) where T = TracedRNumber{_ensure_float(T)}
+function TransformVariables._ensure_float(x::Type{TracedRNumber{T}}) where T
+    TracedRNumber{_ensure_float(T)}
+end
+
+function TransformVariables._cauchy_cdf(x::TracedRNumber{T}) where {T<:AbstractFloat}
+    ifelse(x > -1, one(x) / 2 + atan(x) / π, atan(inv(-x)) / π)
+end
 
 @noinline function TransformVariables.transform_with(
-    flag::TransformVariables.LogJacFlag, 
-    transformation::TransformVariables.ArrayTransformation, 
-    x::AnyTracedRArray, 
+    flag::TransformVariables.LogJacFlag,
+    transformation::TransformVariables.ArrayTransformation,
+    x::AnyTracedRArray,
     index
 )
     (; inner_transformation, dims) = transformation
@@ -48,18 +54,18 @@ TransformVariables._ensure_float(x::Type{TracedRNumber{T}}) where T = TracedRNum
         throw(ArgumentError("only `Number` and `AbstractArray` transformations are supported in Reactant compilation mode"))
     end
 
-    # Reactant can't handle arrays of non-primitive types so we have to be more explicit about 
-    # the output and use a `@trace` for loop. 
+    # Reactant can't handle arrays of non-primitive types so we have to be more explicit about
+    # the output and use a `@trace` for loop.
     @trace track_numbers=false for i in eachindex(𝐼)
         idx = 𝐼[i]
         y, ℓ, _ = transform_with(flag, inner_transformation, x, idx)
         if !isempty(y)
-            ℓa += ℓ        
+            ℓa += ℓ
         end
         if tmp isa Number
             Reactant.@allowscalar yℓ[i] = y
         else
-            idxs = ntuple(n-> Colon(), ndims(tmp)) 
+            idxs = ntuple(n-> Colon(), ndims(tmp))
             yℓ[idxs..., i] = y
         end
     end
