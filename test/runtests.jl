@@ -1146,7 +1146,13 @@ end
 end
 
 @testset "TVSoftPlus" begin
-    test_transformation(TransformVariables.TVSoftPlus(), y -> y > 0)
+    t = TVSoftPlus()
+    test_transformation(t, y -> y > 0)
+    @test transform(t, 1000.0) == 1000.0
+    @test inverse(t, 1000.0) == 1000.0
+    @test transform(t, -30.0) ≈ exp(-30.0)
+    @test inverse(t, exp(-30.0)) ≈ -30.0
+    @test @inferred(transform(t, 1f0)) isa Float32
 end
 
 @testset "TVCauchy" begin
