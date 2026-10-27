@@ -176,7 +176,7 @@ inverse_and_logjac(::TVSoftPlus, y::Number) = logexpm1(y), -log1mexp(-y)
 """
 $(TYPEDEF)
 
-Transformation ``x ↦ 1/2 + arctan(x)/π``, mapping the real line to `[0,1]`, which is
+Transformation ``x ↦ 1/2 + arctan(x)/π``, mapping the real line to `(0, 1)`, which is
 also the CDF of the Cauchy distribution.
 """
 struct TVCauchy <: ScalarTransform end
