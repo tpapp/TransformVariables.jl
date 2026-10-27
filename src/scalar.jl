@@ -202,13 +202,20 @@ inverse_eltype(::TVCauchy, ::Type{T}) where T = _ensure_float(T)
 
 function inverse(::TVCauchy, y::Number)
     @argcheck 0 <= y <= 1 DomainError
-    cotpi(p) = ((s, c) = sincospi(p); c / s)
-    y > 0.5 ? cotpi(1 - y) : -cotpi(y)
+    first(_cauchy_quantile_and_sinpi(y))
 end
 
-function inverse_and_logjac(t::TVCauchy, y::Number)
-    x = inverse(t, y)
-    x, IrrationalConstants.logπ - 2 * log(sinpi(y))
+function inverse_and_logjac(::TVCauchy, y::Number)
+    @argcheck 0 <= y <= 1 DomainError
+    x, s = _cauchy_quantile_and_sinpi(y)
+    x, IrrationalConstants.logπ - 2 * log(s)
+end
+
+# returns the quantile and sinpi(y)
+function _cauchy_quantile_and_sinpi(y)
+    flip = y > 0.5
+    s, c = sincospi(flip ? 1 - y : y)
+    (flip ? c / s : -c / s), s
 end
 
 ####
