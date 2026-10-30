@@ -1,4 +1,5 @@
-export TVExp, TVScale, TVShift, TVLogistic, TVNeg
+export TVExp, TVScale, TVShift, TVLogistic, TVNeg, TVSoftPlus, TVCauchy
+
 export ∞, asℝ, asℝ₊, asℝ₋, as𝕀, as_real, as_positive_real, as_negative_real,
     as_unit_interval
 
@@ -156,6 +157,66 @@ transform_and_logjac(t::TVNeg, x::Number) = transform(t, x), logjac_zero(LogJac(
 inverse_eltype(::TVNeg, ::Type{T}) where T = typeof(-oneunit(T))
 inverse(::TVNeg, x::Number) = -x
 inverse_and_logjac(::TVNeg, x::Number) = -x, logjac_zero(LogJac(), typeof(x))
+
+"""
+$(TYPEDEF)
+
+“Softplus” transformation ``x ↦ log(1+exp(x))``, mapping the real line to positive
+numbers.
+"""
+struct TVSoftPlus <: ScalarTransform end
+
+transform(::TVSoftPlus, x::Number) = log1pexp(x)
+transform_and_logjac(t::TVSoftPlus, x::Number) = transform(t, x), -log1pexp(-x)
+
+inverse_eltype(::TVSoftPlus, ::Type{T}) where T = _ensure_float(T)
+inverse(::TVSoftPlus, y::Number) = logexpm1(y)
+inverse_and_logjac(::TVSoftPlus, y::Number) = logexpm1(y), -log1mexp(-y)
+
+"""
+$(TYPEDEF)
+
+Transformation ``x ↦ 1/2 + arctan(x)/π``, mapping the real line to `(0, 1)`, which is
+also the CDF of the Cauchy distribution.
+"""
+struct TVCauchy <: ScalarTransform end
+
+function _cauchy_cdf(x::T) where {T<:Real}
+    _x = float(x)
+    if _x > -1
+        one(_x) / 2 + atan(_x) / π
+    else
+        # avoid 1/2 - 1/2 cancellations
+        atan(inv(-_x)) / π
+    end
+end
+
+transform(::TVCauchy, x::Number) = _cauchy_cdf(float(x))
+
+function transform_and_logjac(t::TVCauchy, x::Number)
+    y = transform(t, x)
+    y,  -(log1psq(x) + IrrationalConstants.logπ)
+end
+
+inverse_eltype(::TVCauchy, ::Type{T}) where T = _ensure_float(T)
+
+function inverse(::TVCauchy, y::Number)
+    @argcheck 0 <= y <= 1 DomainError
+    first(_cauchy_quantile_and_sinpi(y))
+end
+
+function inverse_and_logjac(::TVCauchy, y::Number)
+    @argcheck 0 <= y <= 1 DomainError
+    x, s = _cauchy_quantile_and_sinpi(y)
+    x, IrrationalConstants.logπ - 2 * log(s)
+end
+
+# returns the quantile and sinpi(y)
+function _cauchy_quantile_and_sinpi(y)
+    flip = y > 0.5
+    s, c = sincospi(flip ? 1 - y : y)
+    (flip ? c / s : -c / s), s
+end
 
 ####
 #### composite scalar transforms

@@ -470,7 +470,7 @@ end
         @test tn[1] == tn.a == inner[1]
         @test tn[2] == tn.b == inner[2]
         @test tn[3] == tn.c == inner[3]
-        @test_throws ErrorException tn.d
+        @test_throws (VERSION < v"1.12" ? ErrorException : FieldError) tn.d
         @test_throws BoundsError tn[4]
         @test propertynames(tn) == propertynames(inner)
         @test (@set tn[3] = t2) == (@set tn.c = t2) == as((a = t1, b = t2, c = t2))
@@ -1145,9 +1145,25 @@ end
     @test_throws InexactError inverse(t, fill(Complex(0, 1), 3))
 end
 
+@testset "TVSoftPlus" begin
+    t = TVSoftPlus()
+    test_transformation(t, y -> y > 0)
+    @test transform(t, 1000.0) == 1000.0
+    @test inverse(t, 1000.0) == 1000.0
+    @test transform(t, -30.0) ≈ exp(-30.0)
+    @test inverse(t, exp(-30.0)) ≈ -30.0
+    @test @inferred(transform(t, 1f0)) isa Float32
+end
+
+@testset "TVCauchy" begin
+    test_transformation(TransformVariables.TVCauchy(), y -> 0 < y < 1)
+end
+
+
 ###
 ###  Reactant compat tests
 ###
+
 @testset "Reactant.jl" begin
     @testset "Scalar transforms" begin
         a = 3.1
@@ -1156,7 +1172,8 @@ end
         @test @jit(transform(asℝ₊, ar)) ≈ transform(asℝ₊, a)
         @test @jit(transform(asℝ₋, ar)) ≈ transform(asℝ₋, a)
         @test @jit(transform(as𝕀, ar)) ≈ transform(as𝕀, a)
-
+        @test @jit(transform(TVSoftPlus(), ar)) ≈ transform(TVSoftPlus(), a)
+        @test @jit(transform(TVCauchy(), ar)) ≈ transform(TVCauchy(), a)
     end
 
     @testset "Array transforms begin" begin
