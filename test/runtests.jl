@@ -1248,5 +1248,12 @@ end
 
             @test_throws ArgumentError @jit(transform_and_logjac(t, ar))
         end
+
+        @testset "Constant dims when tracing numbers" begin
+            tr = as(Array, as(Array, asℝ₊, 2), 3)
+            @test Reactant.traced_type(typeof(tr), Val(Reactant.ArrayToConcrete), Number,
+                                       Reactant.Sharding.NoSharding(),
+                                       Reactant.XLA.runtime()) == typeof(tr)
+        end
     end
 end
