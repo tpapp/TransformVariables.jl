@@ -1185,6 +1185,7 @@ end
         @test @jit(transform(TVSoftPlus(), -ar)) ≈ transform(TVSoftPlus(), -a)
         @test @jit(transform(TVCauchy(), ar)) ≈ transform(TVCauchy(), a)
         @test @jit(transform(TVCauchy(), -ar)) ≈ transform(TVCauchy(), -a)
+        @test @jit(transform(TVCauchy(), ConcreteRNumber(0.0))) ≈ transform(TVCauchy(), 0.0)
     end
 
     @testset "Array transforms begin" begin
