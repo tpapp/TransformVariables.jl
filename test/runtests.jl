@@ -1169,7 +1169,6 @@ end
     @test transform_and_logjac(t, 2^40)[2] ≈ transform_and_logjac(t, 2.0^40)[2]
 end
 
-
 ###
 ###  Reactant compat tests
 ###
@@ -1183,7 +1182,9 @@ end
         @test @jit(transform(asℝ₋, ar)) ≈ transform(asℝ₋, a)
         @test @jit(transform(as𝕀, ar)) ≈ transform(as𝕀, a)
         @test @jit(transform(TVSoftPlus(), ar)) ≈ transform(TVSoftPlus(), a)
+        @test @jit(transform(TVSoftPlus(), -ar)) ≈ transform(TVSoftPlus(), -a)
         @test @jit(transform(TVCauchy(), ar)) ≈ transform(TVCauchy(), a)
+        @test @jit(transform(TVCauchy(), -ar)) ≈ transform(TVCauchy(), -a)
     end
 
     @testset "Array transforms begin" begin
@@ -1200,7 +1201,7 @@ end
             end
         end
         @testset "Test inner transformations" begin
-            for T in (asℝ, asℝ₊, asℝ₋, as𝕀)
+            for T in (asℝ, asℝ₊, asℝ₋, as𝕀, TVSoftPlus(), TVCauchy())
                 tr = as(Array, as(Array, T, 3), 3)
                 a = randn(dimension(tr))
                 ar = Reactant.to_rarray(a)
