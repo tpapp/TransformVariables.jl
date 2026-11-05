@@ -1156,7 +1156,17 @@ end
 end
 
 @testset "TVCauchy" begin
-    test_transformation(TransformVariables.TVCauchy(), y -> 0 < y < 1)
+    t = TVCauchy()
+    test_transformation(t, y -> 0 < y < 1)
+    @test transform(t, -1e300) ≈ inv(π * 1e300)
+    @test transform(t, -Inf) == 0
+    @test transform(t, Inf) == 1
+    @test inverse(t, 0.0) == -Inf
+    @test inverse(t, 1.0) == Inf
+    @test_throws DomainError inverse(t, 1.5)
+    @test @inferred(transform(t, 1f0)) isa Float32
+    @test @inferred(inverse(t, 0.3f0)) isa Float32
+    @test transform_and_logjac(t, 2^40)[2] ≈ transform_and_logjac(t, 2.0^40)[2]
 end
 
 
