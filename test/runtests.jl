@@ -470,7 +470,7 @@ end
         @test tn[1] == tn.a == inner[1]
         @test tn[2] == tn.b == inner[2]
         @test tn[3] == tn.c == inner[3]
-        @test_throws ErrorException tn.d
+        @test_throws (VERSION < v"1.12" ? ErrorException : FieldError) tn.d
         @test_throws BoundsError tn[4]
         @test propertynames(tn) == propertynames(inner)
         @test (@set tn[3] = t2) == (@set tn.c = t2) == as((a = t1, b = t2, c = t2))
@@ -1145,9 +1145,34 @@ end
     @test_throws InexactError inverse(t, fill(Complex(0, 1), 3))
 end
 
+@testset "TVSoftPlus" begin
+    t = TVSoftPlus()
+    test_transformation(t, y -> y > 0)
+    @test transform(t, 1000.0) == 1000.0
+    @test inverse(t, 1000.0) == 1000.0
+    @test transform(t, -30.0) ≈ exp(-30.0)
+    @test inverse(t, exp(-30.0)) ≈ -30.0
+    @test @inferred(transform(t, 1f0)) isa Float32
+end
+
+@testset "TVCauchy" begin
+    t = TVCauchy()
+    test_transformation(t, y -> 0 < y < 1)
+    @test transform(t, -1e300) ≈ inv(π * 1e300)
+    @test transform(t, -Inf) == 0
+    @test transform(t, Inf) == 1
+    @test inverse(t, 0.0) == -Inf
+    @test inverse(t, 1.0) == Inf
+    @test_throws DomainError inverse(t, 1.5)
+    @test @inferred(transform(t, 1f0)) isa Float32
+    @test @inferred(inverse(t, 0.3f0)) isa Float32
+    @test transform_and_logjac(t, 2^40)[2] ≈ transform_and_logjac(t, 2.0^40)[2]
+end
+
 ###
 ###  Reactant compat tests
 ###
+
 @testset "Reactant.jl" begin
     @testset "Scalar transforms" begin
         a = 3.1
@@ -1156,7 +1181,11 @@ end
         @test @jit(transform(asℝ₊, ar)) ≈ transform(asℝ₊, a)
         @test @jit(transform(asℝ₋, ar)) ≈ transform(asℝ₋, a)
         @test @jit(transform(as𝕀, ar)) ≈ transform(as𝕀, a)
-
+        @test @jit(transform(TVSoftPlus(), ar)) ≈ transform(TVSoftPlus(), a)
+        @test @jit(transform(TVSoftPlus(), -ar)) ≈ transform(TVSoftPlus(), -a)
+        @test @jit(transform(TVCauchy(), ar)) ≈ transform(TVCauchy(), a)
+        @test @jit(transform(TVCauchy(), -ar)) ≈ transform(TVCauchy(), -a)
+        @test @jit(transform(TVCauchy(), ConcreteRNumber(0.0))) ≈ transform(TVCauchy(), 0.0)
     end
 
     @testset "Array transforms begin" begin
@@ -1173,7 +1202,7 @@ end
             end
         end
         @testset "Test inner transformations" begin
-            for T in (asℝ, asℝ₊, asℝ₋, as𝕀)
+            for T in (asℝ, asℝ₊, asℝ₋, as𝕀, TVSoftPlus(), TVCauchy())
                 tr = as(Array, as(Array, T, 3), 3)
                 a = randn(dimension(tr))
                 ar = Reactant.to_rarray(a)

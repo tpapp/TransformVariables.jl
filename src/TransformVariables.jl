@@ -4,6 +4,7 @@ using ArgCheck: @argcheck
 import Compat
 using DocStringExtensions: FUNCTIONNAME, SIGNATURES, TYPEDEF
 import ForwardDiff
+import IrrationalConstants
 using LogExpFunctions
 using LinearAlgebra: UpperTriangular, logabsdet, norm, rmul!
 using Random: AbstractRNG, GLOBAL_RNG
