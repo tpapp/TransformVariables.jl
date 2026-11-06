@@ -165,6 +165,132 @@ end
     @test_throws MethodError transform(t, 0.5)
 end
 
+@testset "TVInterval" begin
+    t = TVInterval(-1.0, 2.0)
+    @test t == as(Real, -1.0, 2.0)
+    @test string(t) == "as(Real, -1.0, 2.0)"
+    @test string(TVInterval(-1.0, 2.0, TVCauchy())) == "TVInterval(-1.0, 2.0, TVCauchy())"
+    @test TVInterval(0, 1.0) isa TVInterval{TVLogistic,Float64}
+    @test_throws ArgumentError TVInterval(2.0, 1.0)
+    @test_throws ArgumentError TVInterval(1.0, 1.0)
+    @test_throws ArgumentError TVInterval(NaN, 1.0)
+    @test_throws ArgumentError TVInterval(-Inf, 1.0)
+    @test_throws ArgumentError TVInterval(0.0, Inf)
+    @test_throws ArgumentError TVInterval(-floatmax(), floatmax())
+    @test_throws ArgumentError as(Real, -Inf, 1.0)
+    @test_throws MethodError TVInterval(0.0, 1.0, TVExp())
+
+    # special inputs, both CDFs
+    for to_unit in (TVLogistic(), TVCauchy())
+        t = TVInterval(0.0, 3.0, to_unit)
+        @test transform(t, Inf) == 3.0
+        @test transform(t, -Inf) == 0.0
+        @test transform(t, 0.0) == transform(t, -0.0) == 1.5
+        @test inverse(t, 0.0) == -Inf
+        @test inverse(t, 3.0) == Inf
+        @test inverse(t, 1.5) == 0.0
+        # derivative at the branch point x = 0
+        f(x) = sum(transform_and_logjac(t, x))
+        d = ForwardDiff.derivative(f, 0.0)
+        @test d ≈ ForwardDiff.derivative(f, 1e-8) rtol = 1e-6
+        @test d ≈ ForwardDiff.derivative(f, -1e-8) rtol = 1e-6
+    end
+
+    # Float32 bounds keep Float32, also for `inverse_eltype`
+    t32 = TVInterval(-1f0, 0.1f0)
+    @test transform(t32, 40f0) === 0.1f0
+    @test inverse(as(Array, t32, 2), Float32[-0.5, 0.05]) isa Vector{Float32}
+
+    # Unitful bounds, like `TVScale`: no log Jacobian
+    tu = TVInterval(1.0u"m", 2.0u"m")
+    test_transformation(tu, y -> 1.0u"m" < y < 2.0u"m"; jac = false)
+    @test_throws MethodError transform_and_logjac(tu, 0.5)
+    @test_throws MethodError inverse_and_logjac(tu, 1.5u"m")
+    @test inverse(as(Array, tu, 2), [1.2u"m", 1.8u"m"]) isa Vector{Float64}
+end
+
+@testset "interval endpoints (#183)" begin
+    # https://github.com/tpapp/TransformVariables.jl/issues/183
+    t = as(Real, -1.0, 0.1)
+    @test string(t) == "as(Real, -1.0, 0.1)"
+    @test transform(t, 40.0) == 0.1
+    @test transform(t, 800.0) == 0.1
+    @test transform(t, -800.0) == -1.0
+
+    intervals = [(-1.0, 0.1), (0.0, 1.0), (13.61598062327974, 14.036953352552084),
+                 (-4.910813079115313, -4.90335241164125), (-1e10, 0.1), (-0.1, 1e10),
+                 (0.02123972603073012, 0.022809135176851163), (1e-300, 2e-300)]
+    xs = -50:0.25:50
+    for (l, r) in intervals, to_unit in (TVLogistic(), TVCauchy())
+        t = TVInterval(l, r, to_unit)
+        ys = map(x -> transform(t, x), xs)
+        @test all(y -> l ≤ y ≤ r, ys)
+        @test issorted(ys)
+        @test all(x -> l ≤ first(transform_and_logjac(t, x)) ≤ r, xs)
+        test_transformation(t, y -> l ≤ y ≤ r; N = 100)
+    end
+
+    # bounds and monotonicity where inverses lose resolution
+    for (l, r) in [(1e10, 1e10 + 1), (0.0, nextfloat(0.0)), (-1f0, 0.1f0), (0f0, 1f-30)],
+            to_unit in (TVLogistic(), TVCauchy())
+        t = TVInterval(l, r, to_unit)
+        ys = map(x -> transform(t, x), xs)
+        @test all(y -> l ≤ y ≤ r, ys)
+        @test issorted(ys)
+        @test transform(t, Inf) == r
+        @test transform(t, -Inf) == l
+        if to_unit isa TVLogistic
+            @test transform(t, 800.0) == r
+            @test transform(t, -800.0) == l
+        end
+    end
+
+    # accuracy near both endpoints, against BigFloat
+    for to_unit in (TVLogistic(), TVCauchy())
+        t = TVInterval(-1.0, 0.1, to_unit)
+        tb = TVInterval(big(-1.0), big(0.1), to_unit)
+        for x in [-35:5:-5; 5:5:35]
+            y = transform(t, x)
+            @test y ≈ transform(tb, big(x)) rtol = 4 * eps()
+            y == 0.1 && continue
+            @test inverse(t, y) ≈ inverse(tb, big(y)) rtol = 4 * eps()
+            x2, lj = inverse_and_logjac(t, y)
+            x2b, ljb = inverse_and_logjac(tb, big(y))
+            @test x2 ≈ x2b rtol = 4 * eps()
+            @test lj ≈ ljb rtol = 4 * eps()
+        end
+    end
+
+    # inside a longer chain the bounds still hold exactly
+    tc = TVScale(2.0) ∘ as(Real, -1.0, 0.1) ∘ TVShift(1.0)
+    @test string(tc) == "TVScale(2.0) ∘ as(Real, -1.0, 0.1) ∘ TVShift(1.0)"
+    @test transform(tc, 800.0) == 2 * 0.1
+    @test transform(tc, -800.0) == -2.0
+
+    # out-of-range inverse still errors
+    for to_unit in (TVLogistic(), TVCauchy())
+        t = TVInterval(1.0, 10.0, to_unit)
+        @test_throws DomainError inverse(t, 0.5)
+        @test_throws DomainError inverse(t, 11.0)
+        @test_throws DomainError inverse_and_logjac(t, 0.5)
+        @test_throws DomainError inverse_and_logjac(t, 11.0)
+    end
+
+    # integer bounds, also inside arrays (exercises `inverse_eltype`)
+    ti = as(Real, 0, 2)
+    @test ti == TVInterval(0, 2)
+    test_transformation(ti, y -> 0 ≤ y ≤ 2; N = 100)
+    ta = as(Array, as(Real, 0, 2), 3)
+    x = inverse(ta, [0.5, 1.0, 1.5])
+    @test x isa Vector{Float64}
+    @test transform(ta, x) ≈ [0.5, 1.0, 1.5]
+
+    # promotion of bounds is unchanged
+    @test transform(as(Real, 0, 1), 0.3) isa Float64
+    @test transform(as(Real, 0f0, 1f0), 0.3f0) isa Float32
+    @test transform(as(Real, 0, 1.0), 0.3f0) isa Float64
+end
+
 @testset "scalar alternatives" begin
     @test as_real ≡ asℝ
     @test as_positive_real ≡ asℝ₊
@@ -751,6 +877,12 @@ end
 
         xd = ForwardDiff.Dual(-800.0, 1.0)
         @test first(ForwardDiff.partials(transform(as(Real, 0.0, 1.0), xd))) == 0.0
+        xd = ForwardDiff.Dual(800.0, 1.0)
+        @test first(ForwardDiff.partials(transform(as(Real, 0.0, 1.0), xd))) == 0.0
+        for x in (-0.5, 0.5) # both branches of the affine map
+            @test ForwardDiff.derivative(x -> transform(as(Real, 0.0, 3.0), x), x) ≈
+                3 * logistic(x) * (1 - logistic(x))
+        end
     end
 
     # Tests https://github.com/tpapp/TransformVariables.jl/pull/102
@@ -760,9 +892,11 @@ end
             y, lj = transform_and_logjac(ss, x)
             return -abs2(y) + lj
         end
-        g, _ = autodiff(ReverseWithPrimal, enzyme, Const(ss), Active(0.5))
-        g2 = ForwardDiff.derivative(x -> enzyme(ss, x), 0.5)
-        @test g[2] ≈ g2
+        for x in (-0.5, 0.5) # both branches of the affine map
+            g, _ = autodiff(ReverseWithPrimal, enzyme, Const(ss), Active(x))
+            g2 = ForwardDiff.derivative(x -> enzyme(ss, x), x)
+            @test g[2] ≈ g2
+        end
     end
 end
 
@@ -1256,6 +1390,20 @@ end
             out  = transform_and_logjac(tr, a)
             all(x->x[1]≈x[2], zip(outr[1], out[1]))
             @test outr[2] ≈ out[2]
+        end
+
+        @testset "TVInterval" begin
+            for to_unit in (TVLogistic(), TVCauchy())
+                tr = as((a = TVInterval(-1.0, 0.1, to_unit), b = TVInterval(-1.0, 0.1, to_unit)))
+                for a in ([-2.0, 2.0], [-800.0, 800.0])
+                    ar = Reactant.to_rarray(a)
+                    outr = @jit(transform_and_logjac(tr, ar))
+                    out = transform_and_logjac(tr, a)
+                    @test Float64(outr[1].a) ≈ out[1].a
+                    @test Float64(outr[1].b) ≈ out[1].b
+                    @test outr[2] ≈ out[2]
+                end
+            end
         end
 
         @testset "Nested NamedTuples" begin
