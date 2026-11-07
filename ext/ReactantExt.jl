@@ -31,6 +31,10 @@ function TransformVariables._cauchy_cdf(x::TracedRNumber{T}) where {T<:AbstractF
     ifelse(x > -1, one(x) / 2 + atan(x) / π, atan(inv(-x)) / π)
 end
 
+function TransformVariables._interval(left::T, right::T, x::TracedRNumber, p::TracedRNumber) where {T}
+    ifelse(x < 0, left + (right - left) * p, right - (right - left) * p)
+end
+
 @noinline function TransformVariables.transform_with(
     flag::TransformVariables.LogJacFlag,
     transformation::TransformVariables.ArrayTransformation,

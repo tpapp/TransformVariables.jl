@@ -164,6 +164,7 @@ TVShift
 TVNeg
 TVSoftPlus
 TVCauchy
+TVInterval
 ```
 
 The above include additional transformations that don't have a short syntax with `as`.

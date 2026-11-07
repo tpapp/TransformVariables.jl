@@ -8,10 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
+
+- `TVInterval(left, right[, to_unit])`, mapping the real line to `(left, right)` with `TVLogistic` (default) or `TVCauchy`
+
 ### Changed
+
+- `as(Real, left, right)` throws an `ArgumentError` if `right - left` is not finite (e.g. `left = -Inf`), instead of returning a transformation that produces `NaN`s
+
 ### Deprecated
 ### Removed
 ### Fixed
+
+- `as(Real, left, right)` no longer returns values outside `[left, right]` due to rounding, and `transform` and `inverse` are more accurate near `right`; it now returns a `TVInterval` (#183)
+
 ### Security
 
 ## 0.8.26

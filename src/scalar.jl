@@ -1,4 +1,4 @@
-export TVExp, TVScale, TVShift, TVLogistic, TVNeg, TVSoftPlus, TVCauchy
+export TVExp, TVScale, TVShift, TVLogistic, TVNeg, TVSoftPlus, TVCauchy, TVInterval
 
 export ∞, asℝ, asℝ₊, asℝ₋, as𝕀, as_real, as_positive_real, as_negative_real,
     as_unit_interval
@@ -217,6 +217,62 @@ function _cauchy_quantile_and_sinpi(y)
     (flip ? c / s : -c / s), s
 end
 
+"""
+    TVInterval(left, right, to_unit = TVLogistic())
+
+Transformation `x ↦ left + (right - left) * to_unit(x)`, mapping the real line to the
+interval `(left, right)`. `to_unit` can be [`TVLogistic`](@ref) or [`TVCauchy`](@ref).
+
+`as(Real, left, right)` is equivalent to `TVInterval(left, right)`.
+"""
+struct TVInterval{F<:Union{TVLogistic,TVCauchy},T} <: ScalarTransform
+    left::T
+    right::T
+    to_unit::F
+    function TVInterval(left::T, right::T, to_unit::F) where {T,F<:Union{TVLogistic,TVCauchy}}
+        @argcheck left < right "the interval ($(left), $(right)) is empty"
+        @argcheck isfinite(right - left) "the interval ($(left), $(right)) must have finite width"
+        new{F,T}(left, right, to_unit)
+    end
+end
+
+function TVInterval(left, right, to_unit::Union{TVLogistic,TVCauchy} = TVLogistic())
+    TVInterval(promote(left, right)..., to_unit)
+end
+
+function _interval(left::T, right::T, x::Number, p::Number) where {T}
+    x < 0 ? left + (right - left) * p : right - (right - left) * p
+end
+
+function transform(t::TVInterval, x::Number)
+    (; left, right, to_unit) = t
+    _interval(left, right, x, transform(to_unit, -abs(x)))
+end
+
+function transform_and_logjac(t::TVInterval{<:Any,<:Real}, x::Number)
+    (; left, right, to_unit) = t
+    p, logjac = transform_and_logjac(to_unit, -abs(x))
+    _interval(left, right, x, p), logjac + log(right - left)
+end
+
+function inverse_eltype(::TVInterval{F,S}, ::Type{T}) where {F,S,T}
+    _ensure_float(typeof(oneunit(T) / oneunit(S)))
+end
+
+function inverse(t::TVInterval, y::Number)
+    (; left, right, to_unit) = t
+    a, b = y - left, right - y
+    a ≤ b ? inverse(to_unit, a / (right - left)) : -inverse(to_unit, b / (right - left))
+end
+
+function inverse_and_logjac(t::TVInterval{<:Any,<:Real}, y::Number)
+    (; left, right, to_unit) = t
+    a, b = y - left, right - y
+    scale = right - left
+    x, logjac = inverse_and_logjac(to_unit, (a ≤ b ? a : b) / scale)
+    (a ≤ b ? x : -x), logjac - log(scale)
+end
+
 ####
 #### composite scalar transforms
 ####
@@ -305,11 +361,7 @@ as(::Type{Real}, left::Real, ::Infinity{true}) = TVShift(left) ∘ TVExp()
 
 as(::Type{Real}, ::Infinity{false}, right::Real) = TVShift(right) ∘ TVNeg() ∘ TVExp()
 
-function as(::Type{Real}, left::Real, right::Real)
-    @argcheck left < right "the interval ($(left), $(right)) is empty"
-    shift, scale = promote(left, right - left)
-    TVShift(shift) ∘ TVScale(scale) ∘ TVLogistic()
-end
+as(::Type{Real}, left::Real, right::Real) = TVInterval(left, right)
 
 """
 Transform to a positive real number. See [`as`](@ref).
@@ -357,6 +409,12 @@ end
 function Base.show(io::IO, t::TVShift)
     print(io, "TVShift(", t.shift, ")")
 end
+function Base.show(io::IO, t::TVInterval)
+    print(io, "TVInterval(", t.left, ", ", t.right, ", ", t.to_unit, ")")
+end
+function Base.show(io::IO, t::TVInterval{TVLogistic})
+    print(io, "as(Real, ", t.left, ", ", t.right, ")")
+end
 
 # Fallback method: print all transforms in order
 Base.show(io::IO, ct::CompositeScalarTransform) = join(io, ct.transforms, " ∘ ")
@@ -367,10 +425,6 @@ function Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVShift{T}, TVExp}
 end
 function Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVShift{T}, TVNeg, TVExp}}) where T
     print(io, "as(Real, -∞, ", ct.transforms[1].shift, ")")
-end
-function Base.show(io::IO, ct::CompositeScalarTransform{Tuple{TVShift{T1}, TVScale{T2}, TVLogistic}}) where {T1, T2}
-    print(io, "as(Real, ", ct.transforms[1].shift, ", ", ct.transforms[1].shift +
-    ct.transforms[2].scale, ")")
 end
 
 # Special case for asR-
